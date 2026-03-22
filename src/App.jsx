@@ -177,38 +177,49 @@ function buildConnCounts(data) {
   return c;
 }
 
-// ─── 2D FORCE LAYOUT ─────────────────────────────────────────────────────────
-// X is softly anchored to birth-year position.
-// Y is fully free — only repulsion and boundary forces.
-// We use a wider virtual canvas (1.7x width) to spread nodes more horizontally.
+// ─── 2D FORCE LAYOUT — CENTRALITY BASED ─────────────────────────────────────
+// Nodes are positioned by graph topology, not birth year.
+// Highly connected photographers sit near the centre.
+// Uses: edge attraction + node repulsion + centre gravity + boundary.
 function computeForceLayout(dims, data) {
   const ids = Object.keys(data);
-  const W = dims.w * 0.92;
+  const W = dims.w;
   const H = dims.h;
+  const cx = W / 2, cy = H / 2;
 
-  // Seed positions — all at vertical midpoint, spread only on x
-  // This ensures repulsion pushes outward from center rather than diagonally
-  const pos = {};
-  ids.forEach((id) => {
-    const p = data[id];
-    const xNorm = (p.born - BORN_MIN) / (BORN_MAX - BORN_MIN);
-    const x = (PAD + xNorm * (1 - 2 * PAD)) * W;
-    // Small y jitter around midpoint to break symmetry without seeding a diagonal
-    const jitter = (Math.sin(id.charCodeAt(0) * 37 + id.length * 13) * 0.5 + 0.5 - 0.5) * H * 0.15;
-    const y = H * 0.5 + jitter;
-    pos[id] = { x, y, vx: 0, vy: 0 };
+  // Build adjacency — bidirectional
+  const adj = {};
+  ids.forEach(id => { adj[id] = new Set(); });
+  ids.forEach(id => {
+    data[id].influences.forEach(inf => {
+      if (adj[id]) adj[id].add(inf);
+      if (adj[inf]) adj[inf].add(id);
+    });
   });
 
-  const MIN_DIST   = Math.min(W, H) * 0.105; // repulsion radius
-  const X_ANCHOR   = 0.65;   // strength pulling x back toward birth-year column
-  const Y_CENTER   = 0.08;   // gentle pull toward vertical midpoint
-  const BOUNDARY   = 0.5;    // strength pushing away from edges
-  const DAMPING    = 0.80;
-  const ITERATIONS = 220;
-  const MARGIN = PAD * Math.min(W, H) * 0.7;
+  // Seed: place nodes in a circle with jitter to break symmetry
+  const pos = {};
+  ids.forEach((id, i) => {
+    const angle = (i / ids.length) * 2 * Math.PI;
+    const r = Math.min(W, H) * 0.32;
+    const jitter = (Math.sin(id.charCodeAt(0) * 17 + id.length * 31) - 0.5) * r * 0.3;
+    pos[id] = {
+      x: cx + Math.cos(angle) * (r + jitter),
+      y: cy + Math.sin(angle) * (r + jitter),
+      vx: 0, vy: 0,
+    };
+  });
+
+  const REPULSION    = Math.min(W, H) * 0.09; // min distance between nodes
+  const EDGE_ATTRACT = 0.012;  // how strongly connected nodes pull together
+  const GRAVITY      = 0.04;   // pull toward centre — keeps graph compact
+  const BOUNDARY_PAD = Math.min(W, H) * 0.06;
+  const BOUNDARY_STR = 0.6;
+  const DAMPING      = 0.78;
+  const ITERATIONS   = 280;
 
   for (let iter = 0; iter < ITERATIONS; iter++) {
-    const alpha = 1 - iter / ITERATIONS; // cool down
+    const alpha = 1 - iter / ITERATIONS;
 
     // Reset forces
     ids.forEach(id => { pos[id].fx = 0; pos[id].fy = 0; });
@@ -219,35 +230,41 @@ function computeForceLayout(dims, data) {
         const a = pos[ids[i]], b = pos[ids[j]];
         const dx = b.x - a.x, dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-        if (dist < MIN_DIST) {
-          const force = ((MIN_DIST - dist) / dist) * alpha * 0.5;
-          const fx = dx * force, fy = dy * force;
-          a.fx -= fx; a.fy -= fy;
-          b.fx += fx; b.fy += fy;
+        if (dist < REPULSION) {
+          const f = ((REPULSION - dist) / dist) * alpha * 0.6;
+          a.fx -= dx * f; a.fy -= dy * f;
+          b.fx += dx * f; b.fy += dy * f;
         }
       }
     }
 
-    // X anchor — pulls x back toward birth-year column
+    // Edge attraction — connected nodes pull toward each other
     ids.forEach(id => {
-      const p = data[id];
-      const xTarget = (PAD + ((p.born - BORN_MIN) / (BORN_MAX - BORN_MIN)) * (1 - 2 * PAD)) * W;
-      pos[id].fx += (xTarget - pos[id].x) * X_ANCHOR * alpha * 0.14;
+      adj[id].forEach(nbId => {
+        if (!pos[nbId]) return;
+        const dx = pos[nbId].x - pos[id].x;
+        const dy = pos[nbId].y - pos[id].y;
+        pos[id].fx += dx * EDGE_ATTRACT * alpha;
+        pos[id].fy += dy * EDGE_ATTRACT * alpha;
+      });
     });
 
-    // Y centering — gentle pull toward vertical midpoint, counteracts diagonal drift
+    // Centre gravity — pulls all nodes gently toward centre
+    // Stronger for less-connected nodes so hubs naturally dominate centre
     ids.forEach(id => {
-      const yMid = H * 0.5;
-      pos[id].fy += (yMid - pos[id].y) * Y_CENTER * alpha * 0.06;
+      const degree = adj[id].size;
+      const gravScale = Math.max(0.2, 1 - degree / 12);
+      pos[id].fx += (cx - pos[id].x) * GRAVITY * gravScale * alpha;
+      pos[id].fy += (cy - pos[id].y) * GRAVITY * gravScale * alpha;
     });
 
     // Boundary repulsion
     ids.forEach(id => {
       const { x, y } = pos[id];
-      if (x < MARGIN)     pos[id].fx += (MARGIN - x) * BOUNDARY;
-      if (x > W - MARGIN) pos[id].fx -= (x - (W - MARGIN)) * BOUNDARY;
-      if (y < MARGIN)     pos[id].fy += (MARGIN - y) * BOUNDARY;
-      if (y > H - MARGIN) pos[id].fy -= (y - (H - MARGIN)) * BOUNDARY;
+      if (x < BOUNDARY_PAD)     pos[id].fx += (BOUNDARY_PAD - x) * BOUNDARY_STR;
+      if (x > W - BOUNDARY_PAD) pos[id].fx -= (x - (W - BOUNDARY_PAD)) * BOUNDARY_STR;
+      if (y < BOUNDARY_PAD)     pos[id].fy += (BOUNDARY_PAD - y) * BOUNDARY_STR;
+      if (y > H - BOUNDARY_PAD) pos[id].fy -= (y - (H - BOUNDARY_PAD)) * BOUNDARY_STR;
     });
 
     // Integrate
@@ -255,8 +272,8 @@ function computeForceLayout(dims, data) {
       const n = pos[id];
       n.vx = (n.vx + n.fx) * DAMPING;
       n.vy = (n.vy + n.fy) * DAMPING;
-      n.x  = Math.max(MARGIN, Math.min(W - MARGIN, n.x + n.vx));
-      n.y  = Math.max(MARGIN, Math.min(H - MARGIN, n.y + n.vy));
+      n.x = Math.max(BOUNDARY_PAD, Math.min(W - BOUNDARY_PAD, n.x + n.vx));
+      n.y = Math.max(BOUNDARY_PAD, Math.min(H - BOUNDARY_PAD, n.y + n.vy));
     });
   }
 
@@ -505,15 +522,11 @@ export default function Lineage() {
       };
     });
 
-    // Place user node based on their birth year, slightly below center
+    // Place user node slightly off-centre — near their influences
     if (userProfile) {
-      const born = parseInt(userProfile.born) || 1980;
-      const xNorm = Math.min(1, Math.max(0, (born - BORN_MIN) / (BORN_MAX - BORN_MIN)));
-      const baseX = (PAD + xNorm * (1 - 2 * PAD)) * dims.w * 0.92;
-      const baseY = dims.h * 0.62;
       result["__user__"] = {
-        x: cx + (baseX - cx) * spread,
-        y: cy + (baseY - cy) * spread,
+        x: cx + (dims.w * 0.55 - cx) * spread,
+        y: cy + (dims.h * 0.62 - cy) * spread,
       };
     }
     return result;
@@ -596,29 +609,134 @@ export default function Lineage() {
   const onMouseUp = () => { setIsPanning(false); setPanStart(null); };
   const onWheel   = (e) => { e.preventDefault(); dismissOnboarding(); setScale(s => Math.min(4.5, Math.max(0.25, s - e.deltaY * 0.0015))); };
 
-  const onTouchStart = (e) => {
+  const onTouchStart = useCallback((e) => {
+    e.preventDefault();
     dismissOnboarding();
+
     if (e.touches.length === 1) {
-      touchRef.current = { x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y };
+      // Record finger start for pan and for tap detection
+      touchRef.current = {
+        mode: "pan",
+        startX: e.touches[0].clientX,
+        startY: e.touches[0].clientY,
+        panOriginX: pan.x,
+        panOriginY: pan.y,
+        moved: false,
+        startTime: Date.now(),
+      };
       lastTouchDist.current = null;
     } else if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastTouchDist.current = Math.sqrt(dx * dx + dy * dy);
-    }
-  };
-  const onTouchMove = (e) => {
-    if (e.touches.length === 1 && touchRef.current) {
-      setPan({ x: e.touches[0].clientX - touchRef.current.x, y: e.touches[0].clientY - touchRef.current.y });
-    } else if (e.touches.length === 2 && lastTouchDist.current) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const t0 = e.touches[0], t1 = e.touches[1];
+      const dx = t1.clientX - t0.clientX;
+      const dy = t1.clientY - t0.clientY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      setScale(s => Math.min(4, Math.max(0.3, s + (dist - lastTouchDist.current) * 0.008)));
       lastTouchDist.current = dist;
+      touchRef.current = {
+        mode: "pinch",
+        startDist: dist,
+        startScale: scale,
+        startPanX: pan.x,
+        startPanY: pan.y,
+        // midpoint in screen coords
+        midX: (t0.clientX + t1.clientX) / 2,
+        midY: (t0.clientY + t1.clientY) / 2,
+      };
     }
-  };
+  }, [pan, scale, dismissOnboarding]);
 
+  const onTouchMove = useCallback((e) => {
+    e.preventDefault();
+    if (!touchRef.current) return;
+
+    if (e.touches.length === 1 && touchRef.current.mode === "pan") {
+      const dx = e.touches[0].clientX - touchRef.current.startX;
+      const dy = e.touches[0].clientY - touchRef.current.startY;
+      // Mark as moved if finger travelled more than 6px
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) touchRef.current.moved = true;
+      if (touchRef.current.moved) {
+        setPan({
+          x: touchRef.current.panOriginX + dx,
+          y: touchRef.current.panOriginY + dy,
+        });
+      }
+    } else if (e.touches.length === 2 && touchRef.current.mode === "pinch") {
+      const t0 = e.touches[0], t1 = e.touches[1];
+      const dx = t1.clientX - t0.clientX;
+      const dy = t1.clientY - t0.clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      const { startDist, startScale, startPanX, startPanY, midX, midY } = touchRef.current;
+
+      // New scale proportional to finger spread
+      const newScale = Math.min(4.5, Math.max(0.25, startScale * (dist / startDist)));
+
+      // Adjust pan so the pinch midpoint stays fixed in the graph
+      // The graph point under midX,midY at startScale was at graph coords:
+      //   gx = (midX - startPanX) / 1  (no CSS scale, just pan)
+      // After scale change, to keep same graph point under midX,midY:
+      //   newPan = mid - gx  →  same as: mid - (mid - startPan) * (newScale/startScale)
+      // But since we don't CSS-scale, spreading nodes changes via scaledPos not CSS,
+      // so pan just tracks finger movement relative to start:
+      const currentMidX = (t0.clientX + t1.clientX) / 2;
+      const currentMidY = (t0.clientY + t1.clientY) / 2;
+      setPan({
+        x: startPanX + (currentMidX - midX),
+        y: startPanY + (currentMidY - midY),
+      });
+      setScale(newScale);
+    }
+  }, []);
+
+  const onTouchEnd = useCallback((e) => {
+    e.preventDefault();
+
+    // Detect tap — single finger, not moved, within 250ms, and never went into pinch mode
+    if (
+      e.changedTouches.length === 1 &&
+      touchRef.current?.mode === "pan" &&
+      !touchRef.current.moved &&
+      !touchRef.current.wasPinch &&
+      Date.now() - touchRef.current.startTime < 250
+    ) {
+      // Fire a synthetic click at the touch point so node tap works
+      const touch = e.changedTouches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (el) el.click();
+    }
+
+    if (e.touches.length === 1) {
+      touchRef.current = {
+        mode: "pan",
+        startX: e.touches[0].clientX,
+        startY: e.touches[0].clientY,
+        panOriginX: pan.x,
+        panOriginY: pan.y,
+        moved: false,
+        wasPinch: true, // came from a pinch — suppress tap
+        startTime: Date.now(),
+      };
+      lastTouchDist.current = null;
+    } else if (e.touches.length === 0) {
+      touchRef.current = null;
+      lastTouchDist.current = null;
+    }
+  }, [pan]);
+
+  // Register touch events with passive:false so preventDefault works
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener("touchstart",  onTouchStart, { passive: false });
+    el.addEventListener("touchmove",   onTouchMove,  { passive: false });
+    el.addEventListener("touchend",    onTouchEnd,   { passive: false });
+    el.addEventListener("touchcancel", onTouchEnd,   { passive: false });
+    return () => {
+      el.removeEventListener("touchstart",  onTouchStart);
+      el.removeEventListener("touchmove",   onTouchMove);
+      el.removeEventListener("touchend",    onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, [onTouchStart, onTouchMove, onTouchEnd]);
   const showNames = scale >= SHOW_NAMES_AT;
   const showYears = scale >= SHOW_YEARS_AT;
 
@@ -729,7 +847,6 @@ export default function Lineage() {
       .map(([id]) => id);
   }, [userProfile, PHOTOGRAPHERS, localEdits]);
 
-  const tickYears = [1860, 1880, 1900, 1920, 1940, 1960];
 
   // Remaining dispute helpers (edgeKey defined above near pathEdges)
   const flagCount = (a, b) => disputes[edgeKey(a, b)] || 0;
@@ -953,7 +1070,7 @@ export default function Lineage() {
       {/* ── GRAPH ── */}
       <div ref={containerRef}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
-        onWheel={onWheel} onTouchStart={onTouchStart} onTouchMove={onTouchMove}
+        onWheel={onWheel}
         style={{ flex: 1, position: "relative", overflow: "hidden", cursor: isPanning ? "grabbing" : "crosshair", touchAction: "none" }}
       >
         {/* paper texture */}
@@ -963,19 +1080,7 @@ export default function Lineage() {
 
         {/* Transformable world — pan only, zoom handled by scaledPos spread */}
         <div style={{ position: "absolute", inset: 0, transform: `translate(${pan.x}px, ${pan.y}px)`, transformOrigin: "center center" }}>
-          <svg style={{ position: "absolute", inset: 0, width: dims.w * 0.92, height: dims.h, overflow: "visible", zIndex: 1 }}>
-
-            {/* Subtle era tick lines — rendered across wider virtual canvas */}
-            {tickYears.map(yr => {
-              const xNorm = (yr - BORN_MIN) / (BORN_MAX - BORN_MIN);
-              const x = (PAD + xNorm * (1 - 2 * PAD)) * dims.w * 0.92;
-              return (
-                <g key={yr}>
-                  <line x1={x} y1={0} x2={x} y2={dims.h}
-                    stroke="rgba(26,24,18,0.05)" strokeWidth={0.5} strokeDasharray="1 12" />
-                </g>
-              );
-            })}
+          <svg style={{ position: "absolute", inset: 0, width: dims.w, height: dims.h, overflow: "visible", zIndex: 1 }}>
 
             {/* Edges — use localEdits influences if present */}
             {Object.entries(PHOTOGRAPHERS).map(([id, p]) => {
@@ -1173,27 +1278,6 @@ export default function Lineage() {
           })()}
         </div>
 
-        {/* ── FIXED: x-axis era labels ── */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 22, pointerEvents: "none", zIndex: 10 }}>
-          {tickYears.map(yr => {
-            const xNorm = (yr - BORN_MIN) / (BORN_MAX - BORN_MIN);
-            const xPct  = (PAD + xNorm * (1 - 2 * PAD)) * 100;
-            return (
-              <div key={yr} style={{
-                position: "absolute",
-                left: `clamp(16px, ${xPct}%, calc(100% - 28px))`,
-                transform: "translateX(-50%)",
-                bottom: 5, fontSize: 8.5, color: T.inkFaint, letterSpacing: "0.07em",
-              }}>
-                {yr}
-              </div>
-            );
-          })}
-          <div style={{ position: "absolute", right: 12, bottom: 5, fontSize: 8, color: T.inkFaint, letterSpacing: "0.09em" }}>
-            ← EARLIER · LATER →
-          </div>
-        </div>
-
         {/* Zoom hint — fades once names visible */}
         <div style={{
           position: "absolute", top: 12, right: 14, zIndex: 10, pointerEvents: "none",
@@ -1256,9 +1340,9 @@ export default function Lineage() {
                         </button>
                       </>
                     )}
-                    <button onClick={() => { setSelected(null); setSheetOpen(false); setEditMode(false); }}
-                      style={{ background: "none", border: "none", color: T.inkLight, cursor: "pointer", fontSize: 19, padding: 0, lineHeight: 1, marginTop: 2 }}
-                    onClick={() => { setSelected(null); setSheetOpen(false); setEditMode(false); zoomOut(); }}>×</button>
+                    <button
+                      onClick={() => { setSelected(null); setSheetOpen(false); setEditMode(false); zoomOut(); }}
+                      style={{ background: "none", border: "none", color: T.inkLight, cursor: "pointer", fontSize: 19, padding: 0, lineHeight: 1, marginTop: 2 }}>×</button>
                   </div>
                 </div>
                 {!editMode && mode === "explore" && (
