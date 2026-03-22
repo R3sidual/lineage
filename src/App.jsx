@@ -159,12 +159,72 @@ const DISPUTE_THRESHOLD = 3; // flags needed to trigger review + dashed line
 // the PHOTOGRAPHERS constant directly — so this is the only change needed.
 //
 function usePhotographers() {
-  // Static data mode — no loading state needed
-  return {
-    data: PHOTOGRAPHERS,
-    loading: false,
-    error: null,
+  return { data: PHOTOGRAPHERS, loading: false, error: null };
+}
+
+// ─── AUTH HOOK ────────────────────────────────────────────────────────────────
+// Single source of truth for the current user.
+// Persists to localStorage so session survives page refresh.
+//
+// TO CONNECT SUPABASE: replace the body of this hook with Supabase auth calls.
+// The shape of `user` must stay the same — everything else just works.
+//
+const STORAGE_KEY = "lineage_user_v1";
+
+function useCurrentUser() {
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+
+  const persist = (u) => {
+    setUser(u);
+    if (u) localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+    else localStorage.removeItem(STORAGE_KEY);
   };
+
+  const signup = ({ name, email, password, country, genre, born, bio, influences }) => {
+    // Dummy signup — in production this calls supabase.auth.signUp()
+    const newUser = {
+      id: `user_${Date.now()}`,
+      email,
+      name,
+      country,
+      genre,
+      born,
+      bio: bio || "",
+      influences: influences || [],
+      tier: 3,
+      createdAt: new Date().toISOString(),
+    };
+    persist(newUser);
+    return newUser;
+  };
+
+  const login = ({ email, password }) => {
+    // Dummy login — checks localStorage for a matching email
+    // In production this calls supabase.auth.signInWithPassword()
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (u.email === email) { persist(u); return { user: u, error: null }; }
+      }
+      return { user: null, error: "No account found with that email." };
+    } catch { return { user: null, error: "Something went wrong." }; }
+  };
+
+  const logout = () => persist(null);
+
+  const updateUser = (updates) => {
+    const updated = { ...user, ...updates };
+    persist(updated);
+    return updated;
+  };
+
+  return { user, signup, login, logout, updateUser };
 }
 
 // ─── CONNECTION COUNT ─────────────────────────────────────────────────────────
@@ -370,14 +430,14 @@ function PhotographerPortrait({ id, name, size = 72 }) {
 
   // Fetch from Wikipedia API if not in the hardcoded lookup
   useEffect(() => {
-    if (PORTRAITS[id]) return; // already have a URL
+    if (PORTRAITS[id]) return;
     if (wikiCache[id]) { setImgSrc(wikiCache[id]); return; }
-    if (wikiCache[id] === null) return; // previously tried and failed
+    if (wikiCache[id] === null) return;
 
-    const searchTerm = encodeURIComponent(name + " photographer");
-    fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(name)}&prop=pageimages&format=json&pithumbsize=300&origin=*`
-    )
+    // Use the search API to find the most relevant page, then get its thumbnail
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(name + " photographer")}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=400&pilimit=1&format=json&origin=*`;
+
+    fetch(url)
       .then(r => r.json())
       .then(data => {
         const pages = data?.query?.pages;
@@ -385,9 +445,9 @@ function PhotographerPortrait({ id, name, size = 72 }) {
         const page = Object.values(pages)[0];
         return page?.thumbnail?.source || null;
       })
-      .then(url => {
-        wikiCache[id] = url || null;
-        if (url) setImgSrc(url);
+      .then(imgUrl => {
+        wikiCache[id] = imgUrl || null;
+        if (imgUrl) setImgSrc(imgUrl);
       })
       .catch(() => { wikiCache[id] = null; });
   }, [id, name]);
@@ -429,20 +489,421 @@ function PhotographerPortrait({ id, name, size = 72 }) {
   );
 }
 
+// ─── AUTH SCREEN ──────────────────────────────────────────────────────────────
+function AuthScreen({ onAuth }) {
+  const { signup, login } = useCurrentUser();
+  const [mode, setMode] = useState("login"); // "login" | "signup"
+  const [step, setStep] = useState(1); // signup: 1=credentials, 2=identity, 3=influences
+  const [error, setError] = useState(null);
+  const [infSearch, setInfSearch] = useState("");
+  const [draft, setDraft] = useState({
+    name: "", email: "", password: "", country: "", genre: "Street", born: "", bio: "", influences: [],
+  });
+
+  const handleLogin = () => {
+    setError(null);
+    const result = login({ email: draft.email, password: draft.password });
+    if (result.error) setError(result.error);
+    else onAuth(result.user);
+  };
+
+  const handleSignup = () => {
+    if (!draft.name || !draft.email || !draft.password) { setError("Please fill in all fields."); return; }
+    const user = signup(draft);
+    onAuth(user);
+  };
+
+  return (
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+      <div style={{ width: "100%", maxWidth: 420, padding: "0 28px" }}>
+
+        {/* Wordmark */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ fontSize: 42, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, color: T.ink, lineHeight: 1, marginBottom: 10 }}>Lineage</div>
+          <div style={{ width: 28, height: 1, background: T.inkFaint, margin: "0 auto 12px" }} />
+          <p style={{ fontSize: 14, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7 }}>
+            {mode === "login" ? "Welcome back." : step === 1 ? "Join the network." : step === 2 ? "Tell us about yourself." : "Who influenced you?"}
+          </p>
+        </div>
+
+        {mode === "login" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[{ label: "EMAIL", key: "email", type: "email" }, { label: "PASSWORD", key: "password", type: "password" }].map(({ label, key, type }) => (
+              <div key={key}>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+                <input type={type} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+                  onKeyDown={e => e.key === "Enter" && handleLogin()}
+                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+              </div>
+            ))}
+            {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
+            <button onClick={handleLogin}
+              style={{ marginTop: 8, padding: "10px", background: T.ink, border: "none", borderRadius: 2, color: T.bg, fontSize: 11, letterSpacing: "0.12em", cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
+              SIGN IN
+            </button>
+            <div style={{ textAlign: "center", fontSize: 12, color: T.inkLight }}>
+              No account?{" "}
+              <span onClick={() => { setMode("signup"); setStep(1); setError(null); }}
+                style={{ color: T.ink, cursor: "pointer", borderBottom: `1px solid ${T.border}` }}>
+                Join Lineage
+              </span>
+            </div>
+            <div style={{ textAlign: "center", marginTop: 8 }}>
+              <span onClick={() => onAuth(null)}
+                style={{ fontSize: 11, color: T.inkFaint, cursor: "pointer", letterSpacing: "0.06em" }}>
+                EXPLORE WITHOUT ACCOUNT →
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Step indicator */}
+            <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+              {[1,2,3].map(n => (
+                <div key={n} style={{ height: 2, flex: 1, borderRadius: 1, background: step >= n ? T.ink : T.border, transition: "background 0.2s" }} />
+              ))}
+            </div>
+
+            {step === 1 && (
+              <>
+                {[{ label: "FULL NAME", key: "name", type: "text" }, { label: "EMAIL", key: "email", type: "email" }, { label: "PASSWORD", key: "password", type: "password" }].map(({ label, key, type }) => (
+                  <div key={key}>
+                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+                    <input type={type} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                {[{ label: "BIRTH YEAR", key: "born", placeholder: "e.g. 1988" }, { label: "COUNTRY OF BIRTH", key: "country", placeholder: "e.g. Germany" }].map(({ label, key, placeholder }) => (
+                  <div key={key}>
+                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+                    <input value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))} placeholder={placeholder}
+                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                ))}
+                <div>
+                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>GENRE</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"].map(g => (
+                      <button key={g} onClick={() => setDraft(d => ({ ...d, genre: g }))}
+                        style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.genre === g ? T.ink : T.border}`, borderRadius: 2, background: draft.genre === g ? T.ink : "transparent", color: draft.genre === g ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif", transition: "all 0.12s" }}>
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO <span style={{ color: T.inkFaint }}>(optional)</span></div>
+                  <textarea value={draft.bio} onChange={e => setDraft(d => ({ ...d, bio: e.target.value }))} placeholder="A few words about your work…" rows={2}
+                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
+                </div>
+              </>
+            )}
+
+            {step === 3 && (
+              <div>
+                <p style={{ fontSize: 13, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, marginBottom: 12 }}>Which photographers shaped your vision?</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                  {(draft.influences || []).map(infId => (
+                    <div key={infId} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 10px", border: `1px solid rgba(74,111,165,0.3)`, borderRadius: 2, background: "rgba(74,111,165,0.05)" }}>
+                      <span style={{ fontSize: 11.5, color: T.blue, fontFamily: "'EB Garamond', serif" }}>{PHOTOGRAPHERS[infId]?.name}</span>
+                      <button onClick={() => setDraft(d => ({ ...d, influences: d.influences.filter(i => i !== infId) }))}
+                        style={{ background: "none", border: "none", color: "rgba(74,111,165,0.5)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
+                    </div>
+                  ))}
+                  {draft.influences.length === 0 && <span style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic" }}>None yet — you can always add these later</span>}
+                </div>
+                <div style={{ position: "relative" }}>
+                  <input autoFocus value={infSearch} onChange={e => setInfSearch(e.target.value)} placeholder="Search photographers…"
+                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                  {infSearch.trim().length > 0 && (() => {
+                    const cur = new Set(draft.influences);
+                    const matches = Object.entries(PHOTOGRAPHERS).filter(([id, p]) => !cur.has(id) && p.name.toLowerCase().includes(infSearch.toLowerCase())).slice(0, 5);
+                    return matches.length > 0 ? (
+                      <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, boxShadow: "0 6px 20px rgba(26,24,18,0.09)", zIndex: 10 }}>
+                        {matches.map(([id, p], i) => (
+                          <div key={id} onClick={() => { setDraft(d => ({ ...d, influences: [...d.influences, id] })); setInfSearch(""); }}
+                            style={{ padding: "9px 14px", cursor: "pointer", borderBottom: i < matches.length-1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 8, alignItems: "baseline" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "rgba(74,111,165,0.05)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                            <span style={{ fontSize: 14, fontFamily: "'Libre Baskerville', serif", color: T.ink }}>{p.name}</span>
+                            <span style={{ fontSize: 9, color: T.inkLight }}>{p.born} · {p.genre}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              {step > 1 && (
+                <button onClick={() => setStep(s => s - 1)}
+                  style={{ padding: "9px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
+                  ← BACK
+                </button>
+              )}
+              {step < 3 ? (
+                <button onClick={() => {
+                  if (step === 1 && (!draft.name || !draft.email || !draft.password)) { setError("Please fill in all fields."); return; }
+                  setError(null); setStep(s => s + 1);
+                }}
+                  style={{ flex: 1, padding: "9px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.12em", fontFamily: "'EB Garamond', serif" }}>
+                  NEXT →
+                </button>
+              ) : (
+                <button onClick={handleSignup}
+                  style={{ flex: 1, padding: "9px", background: T.amber, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.12em", fontFamily: "'EB Garamond', serif" }}>
+                  JOIN LINEAGE
+                </button>
+              )}
+            </div>
+
+            <div style={{ textAlign: "center", fontSize: 12, color: T.inkLight, marginTop: 4 }}>
+              Already have an account?{" "}
+              <span onClick={() => { setMode("login"); setError(null); }} style={{ color: T.ink, cursor: "pointer", borderBottom: `1px solid ${T.border}` }}>Sign in</span>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <span onClick={() => onAuth(null)} style={{ fontSize: 11, color: T.inkFaint, cursor: "pointer", letterSpacing: "0.06em" }}>
+                EXPLORE WITHOUT ACCOUNT →
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
+function ProfilePage({ user, onExplore, onLogout, updateUser, nodeStates, PHOTOGRAPHERS }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState({ ...user });
+  const [infSearch, setInfSearch] = useState("");
+
+  const discovered = Object.values(nodeStates).filter(s => s === "discovered").length;
+  const toExplore  = Object.values(nodeStates).filter(s => s === "to-explore").length;
+
+  const tierLabel = { 1: "Tier 1 — Canonical", 2: "Tier 2 — Verified", 3: "Tier 3 — Member" };
+  const tierColor = { 1: T.amber, 2: T.blue, 3: T.inkLight };
+
+  return (
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
+      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+      {/* Header */}
+      <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0 }}>
+        <div style={{ fontSize: 19, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Lineage</div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+          <button onClick={onExplore}
+            style={{ fontSize: 10.5, letterSpacing: "0.1em", padding: "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
+            EXPLORE NETWORK →
+          </button>
+          <button onClick={onLogout}
+            style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkLight, fontFamily: "'EB Garamond', serif" }}>
+            SIGN OUT
+          </button>
+        </div>
+      </header>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "28px 22px" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+
+          {/* Profile header */}
+          <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 32, paddingBottom: 28, borderBottom: `1px solid ${T.border}` }}>
+            {/* Avatar */}
+            <div style={{ width: 72, height: 72, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 24, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
+                {user.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+              </span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 8.5, letterSpacing: "0.12em", color: tierColor[user.tier], marginBottom: 4 }}>
+                {tierLabel[user.tier]}
+              </div>
+              <div style={{ fontSize: 26, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1.1, marginBottom: 4 }}>
+                {user.name}
+              </div>
+              <div style={{ fontSize: 12, color: T.inkLight, letterSpacing: "0.04em" }}>
+                {[user.genre, user.country, user.born].filter(Boolean).join(" · ")}
+              </div>
+              {user.bio && (
+                <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "10px 0 0" }}>{user.bio}</p>
+              )}
+            </div>
+            <button onClick={() => { setDraft({ ...user }); setEditing(true); }}
+              style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif', flexShrink: 0" }}>
+              EDIT
+            </button>
+          </div>
+
+          {/* Stats row */}
+          <div style={{ display: "flex", gap: 24, marginBottom: 32, paddingBottom: 28, borderBottom: `1px solid ${T.border}` }}>
+            {[
+              { label: "INFLUENCES", value: user.influences?.length || 0 },
+              { label: "DISCOVERED", value: discovered, color: "#4a7fa5" },
+              { label: "TO EXPLORE", value: toExplore, color: "#4a8a5a" },
+            ].map(({ label, value, color }) => (
+              <div key={label}>
+                <div style={{ fontSize: 22, fontFamily: "'Libre Baskerville', serif", color: color || T.ink }}>{value}</div>
+                <div style={{ fontSize: 8, letterSpacing: "0.1em", color: T.inkLight, marginTop: 2 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Influences */}
+          {user.influences?.length > 0 && (
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 10 }}>INFLUENCED BY</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {user.influences.map(id => (
+                  <div key={id} style={{ fontSize: 13, color: T.blue, padding: "4px 10px", border: `1px solid rgba(74,111,165,0.25)`, borderRadius: 2 }}>
+                    {PHOTOGRAPHERS[id]?.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Explore CTA */}
+          <div style={{ padding: "20px", border: `1px solid ${T.border}`, borderRadius: 2, background: T.paper, textAlign: "center" }}>
+            <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "0 0 14px" }}>
+              {discovered === 0
+                ? "Start exploring the network to discover photographers and build your lineage."
+                : `You've discovered ${discovered} photographer${discovered === 1 ? "" : "s"}. Keep exploring.`}
+            </p>
+            <button onClick={onExplore}
+              style={{ fontSize: 10.5, letterSpacing: "0.12em", padding: "9px 24px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
+              EXPLORE THE NETWORK →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit modal */}
+      {editing && (
+        <div style={{ position: "absolute", inset: 0, background: T.paper, zIndex: 90, display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "14px 22px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
+            <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Edit Profile</div>
+            <button onClick={() => setEditing(false)} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 20, cursor: "pointer", color: T.inkLight }}>×</button>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "20px 22px" }}>
+            <div style={{ maxWidth: 440, display: "flex", flexDirection: "column", gap: 14 }}>
+              {[
+                { label: "NAME", key: "name" }, { label: "BIRTH YEAR", key: "born" },
+                { label: "COUNTRY", key: "country" },
+              ].map(({ label, key }) => (
+                <div key={key}>
+                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+                  <input value={draft[key] || ""} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                </div>
+              ))}
+              <div>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>GENRE</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {["Street","Documentary","Portrait","Landscape","Fashion","Fine Art","War","Conceptual","Experimental"].map(g => (
+                    <button key={g} onClick={() => setDraft(d => ({ ...d, genre: g }))}
+                      style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.genre === g ? T.ink : T.border}`, borderRadius: 2, background: draft.genre === g ? T.ink : "transparent", color: draft.genre === g ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO</div>
+                <textarea value={draft.bio || ""} onChange={e => setDraft(d => ({ ...d, bio: e.target.value }))} rows={3}
+                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
+              </div>
+              {/* Influences */}
+              <div>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.blue, marginBottom: 8 }}>INFLUENCED BY</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+                  {(draft.influences || []).map(infId => (
+                    <div key={infId} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 10px", border: `1px solid rgba(74,111,165,0.3)`, borderRadius: 2 }}>
+                      <span style={{ fontSize: 11.5, color: T.blue }}>{PHOTOGRAPHERS[infId]?.name}</span>
+                      <button onClick={() => setDraft(d => ({ ...d, influences: d.influences.filter(i => i !== infId) }))}
+                        style={{ background: "none", border: "none", color: "rgba(74,111,165,0.5)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ position: "relative" }}>
+                  <input value={infSearch} onChange={e => setInfSearch(e.target.value)} placeholder="Add an influence…"
+                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "5px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                  {infSearch.trim().length > 0 && (() => {
+                    const cur = new Set(draft.influences || []);
+                    const matches = Object.entries(PHOTOGRAPHERS).filter(([id, p]) => !cur.has(id) && p.name.toLowerCase().includes(infSearch.toLowerCase())).slice(0, 5);
+                    return matches.length > 0 ? (
+                      <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, boxShadow: "0 4px 16px rgba(26,24,18,0.08)", zIndex: 10 }}>
+                        {matches.map(([id, p], i) => (
+                          <div key={id} onClick={() => { setDraft(d => ({ ...d, influences: [...(d.influences||[]), id] })); setInfSearch(""); }}
+                            style={{ padding: "8px 12px", cursor: "pointer", borderBottom: i < matches.length-1 ? `1px solid ${T.border}` : "none" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "rgba(74,111,165,0.05)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                            <span style={{ fontSize: 13, fontFamily: "'Libre Baskerville', serif" }}>{p.name}</span>
+                            <span style={{ fontSize: 9, color: T.inkLight, marginLeft: 8 }}>{p.born}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ padding: "12px 22px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <button onClick={() => setEditing(false)}
+              style={{ padding: "7px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
+              CANCEL
+            </button>
+            <button onClick={() => { updateUser(draft); setEditing(false); }}
+              style={{ padding: "7px 20px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif" }}>
+              SAVE
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function Lineage() {
   // ── DATA ──
   const { data: PHOTOGRAPHERS, loading: dataLoading } = usePhotographers();
+  const { user, signup, login, logout, updateUser } = useCurrentUser();
 
-  // ── USER PROFILE ──
-  // null = not added yet, object = user is on the graph
-  const [userProfile, setUserProfile]   = useState(null);
+  // ── APP ROUTING STATE ──
+  const [authDone, setAuthDone] = useState(user !== null);
+  const [view, setView] = useState(user ? "profile" : "graph");
+
+  // ── PERSONAL GRAPH STATE ──
+  const [nodeStates, setNodeStates] = useState(() => {
+    try {
+      const saved = user ? localStorage.getItem(`lineage_nodes_${user.id}`) : null;
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  // ── USER PROFILE STATE ──
+  const userProfile = user || null;
+  const setUserProfile = (p) => updateUser(p);
   const [showAddSelf, setShowAddSelf]   = useState(false);
-  const [addSelfStep, setAddSelfStep]   = useState(1); // 1=identity 2=influences
+  const [addSelfStep, setAddSelfStep]   = useState(1);
   const [selfDraft, setSelfDraft]       = useState({ name: "", born: "", country: "", genre: "Street", bio: "", influences: [] });
   const [selfInfSearch, setSelfInfSearch] = useState("");
-  // Per-node states: "discovered" | "to-explore" | null
-  const [nodeStates, setNodeStates]     = useState({});
+  useEffect(() => {
+    if (!user) return;
+    localStorage.setItem(`lineage_nodes_${user.id}`, JSON.stringify(nodeStates));
+  }, [nodeStates, user]);
 
   // ── STATE ──
   const [onboarding, setOnboarding]     = useState(true);
@@ -484,7 +945,7 @@ export default function Lineage() {
   const [pan, setPan]                   = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning]       = useState(false);
   const [panStart, setPanStart]         = useState(null);
-  const [dims, setDims]                 = useState({ w: 900, h: 560 });
+  const [dims, setDims] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [isMobile, setIsMobile]         = useState(false);
   const containerRef   = useRef(null);
   const touchRef       = useRef(null);
@@ -510,6 +971,7 @@ export default function Lineage() {
     return () => obs.disconnect();
   }, []);
 
+
   useEffect(() => {
     if (!pathResult) return;
     setPathStep(0);
@@ -528,6 +990,8 @@ export default function Lineage() {
 
   const positions  = useMemo(() => computeForceLayout(dims, PHOTOGRAPHERS), [dims, PHOTOGRAPHERS]);
   const connCounts = useMemo(() => buildConnCounts(PHOTOGRAPHERS), [PHOTOGRAPHERS]);
+
+  const centredRef = useRef(false);
   const maxConn    = useMemo(() => Object.values(connCounts).length ? Math.max(...Object.values(connCounts)) : 1, [connCounts]);
 
   // Zoom-spread positions: as scale increases, nodes move away from the
@@ -557,6 +1021,17 @@ export default function Lineage() {
     }
     return result;
   }, [positions, scale, userProfile, dims]);
+
+  // Centre the graph on first load and whenever returning to graph view
+  useEffect(() => {
+    if (centredRef.current) return;
+    const ids = Object.keys(scaledPos);
+    if (!dims.w || !dims.h || ids.length === 0) return;
+    centredRef.current = true;
+    const cx = ids.reduce((s, id) => s + scaledPos[id].x, 0) / ids.length;
+    const cy = ids.reduce((s, id) => s + scaledPos[id].y, 0) / ids.length;
+    setPan({ x: dims.w / 2 - cx, y: dims.h / 2 - cy });
+  }, [dims, scaledPos]);
 
   // Animate pan+scale to centre a node at DETAIL_SCALE
   const panToNode = useCallback((id) => {
@@ -884,6 +1359,27 @@ export default function Lineage() {
     setUserFlags(prev => new Set([...prev, key]));
     setDisputes(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
   };
+
+  // ── ROUTING — all hooks declared above, safe to return early now ──
+  const handleAuth = (u) => { setAuthDone(true); setView(u ? "profile" : "graph"); };
+
+  // Reset centring when switching to graph so it recentres each time
+  useEffect(() => {
+    if (view === "graph") centredRef.current = false;
+  }, [view]);
+
+  if (!authDone) return <AuthScreen onAuth={handleAuth} />;
+
+  if (user && view === "profile") return (
+    <ProfilePage
+      user={user}
+      onExplore={() => { setView("graph"); setOnboarding(false); }}
+      onLogout={() => { logout(); setAuthDone(false); setView("graph"); }}
+      updateUser={updateUser}
+      nodeStates={nodeStates}
+      PHOTOGRAPHERS={PHOTOGRAPHERS}
+    />
+  );
 
   // Loading state — shown while fetching from backend (instant with static data)
   if (dataLoading) return (
@@ -1674,16 +2170,16 @@ export default function Lineage() {
             </>
           )}
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center" }}>
-          {!userProfile ? (
-            <button onClick={() => { setShowAddSelf(true); setAddSelfStep(1); }}
-              style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
-              + ADD YOURSELF
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+          {user ? (
+            <button onClick={() => setView("profile")}
+              style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: T.amber, border: `1px solid ${T.amber}`, borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
+              ← MY PROFILE
             </button>
           ) : (
-            <button onClick={() => { setSelected("__user__"); setSheetOpen(true); }}
-              style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: T.amber, border: `1px solid ${T.amber}`, borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-              {userProfile.name}
+            <button onClick={() => setAuthDone(false)}
+              style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
+              SIGN IN
             </button>
           )}
           <div style={{ fontSize: 8, letterSpacing: "0.09em", color: T.inkFaint }}>
