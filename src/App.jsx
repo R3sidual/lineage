@@ -358,13 +358,39 @@ const PORTRAITS = {
 };
 
 // ─── PORTRAIT COMPONENT ──────────────────────────────────────────────────────
+// Simple in-memory cache so we don't re-fetch the same photographer twice in a session
+const wikiCache = {};
+
 function PhotographerPortrait({ id, name, size = 72 }) {
+  const [imgSrc, setImgSrc] = useState(PORTRAITS[id] || null);
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
-  const src = PORTRAITS[id] || null;
 
-  // Initials fallback
   const initials = name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("");
+
+  // Fetch from Wikipedia API if not in the hardcoded lookup
+  useEffect(() => {
+    if (PORTRAITS[id]) return; // already have a URL
+    if (wikiCache[id]) { setImgSrc(wikiCache[id]); return; }
+    if (wikiCache[id] === null) return; // previously tried and failed
+
+    const searchTerm = encodeURIComponent(name + " photographer");
+    fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(name)}&prop=pageimages&format=json&pithumbsize=300&origin=*`
+    )
+      .then(r => r.json())
+      .then(data => {
+        const pages = data?.query?.pages;
+        if (!pages) return null;
+        const page = Object.values(pages)[0];
+        return page?.thumbnail?.source || null;
+      })
+      .then(url => {
+        wikiCache[id] = url || null;
+        if (url) setImgSrc(url);
+      })
+      .catch(() => { wikiCache[id] = null; });
+  }, [id, name]);
 
   return (
     <div style={{
@@ -374,8 +400,8 @@ function PhotographerPortrait({ id, name, size = 72 }) {
       overflow: "hidden", position: "relative",
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
-      {/* Initials placeholder — always rendered, hidden when image loads */}
-      {(!loaded || errored || !src) && (
+      {/* Initials — shown until image loads */}
+      {(!loaded || errored || !imgSrc) && (
         <div style={{
           fontSize: size * 0.28, fontFamily: "'Libre Baskerville', serif",
           color: "rgba(26,24,18,0.25)", letterSpacing: "0.05em", userSelect: "none",
@@ -383,12 +409,12 @@ function PhotographerPortrait({ id, name, size = 72 }) {
           {initials}
         </div>
       )}
-      {src && !errored && (
+      {imgSrc && !errored && (
         <img
-          src={src}
+          src={imgSrc}
           alt={name}
           onLoad={() => setLoaded(true)}
-          onError={() => setErrored(true)}
+          onError={() => { setErrored(true); wikiCache[id] = null; }}
           style={{
             position: "absolute", inset: 0,
             width: "100%", height: "100%",
