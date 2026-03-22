@@ -315,7 +315,7 @@ function findPath(fromId, toId, localEdits = {}, data = PHOTOGRAPHERS, userProfi
 const PORTRAITS = {
   "nadar":                  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/८/Nadar_self_portrait.jpg/300px-Nadar_self_portrait.jpg",
   "julia-margaret-cameron": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Julia_Margaret_Cameron_%28photograph%29.jpg/300px-Julia_Margaret_Cameron_%28photograph%29.jpg",
-  "alfred-stieglitz":       "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Alfred_Stieglitz%2C_1902.jpg/300px-Alfred_Stieglitz%2C_1902.jpg",
+  "alfred-stieglitz":       "/portraits/alfred-stieglitz.jpg",
   "eugene-atget":           "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Eugene_Atget%2C_1900.jpg/300px-Eugene_Atget%2C_1900.jpg",
   "edward-steichen":        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Edward_Steichen.jpg/300px-Edward_Steichen.jpg",
   "paul-strand":            "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Paul_Strand.jpg/300px-Paul_Strand.jpg",
