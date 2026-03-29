@@ -170,6 +170,86 @@ function usePhotographers() {
 // The shape of `user` must stay the same — everything else just works.
 //
 const STORAGE_KEY = "lineage_user_v1";
+const DISCLAIMER_KEY = "lineage_disclaimer_v1";
+const FEEDBACK_URL   = "https://forms.gle/KkufuFe3oHxAvGVx6";
+
+// ─── DISCLAIMER PAGE ──────────────────────────────────────────────────────────
+function DisclaimerPage({ onEnter, feedbackUrl }) {
+  return (
+    <div style={{
+      width: "100%", height: "100dvh", background: T.bg,
+      fontFamily: "'EB Garamond', Georgia, serif",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      color: T.ink, padding: "0 28px",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+      <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+
+        {/* Wordmark */}
+        <div style={{ fontSize: 52, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, letterSpacing: "0.01em", lineHeight: 1, marginBottom: 14 }}>
+          Lineage
+        </div>
+
+        {/* Tagline */}
+        <p style={{ fontSize: 16, fontStyle: "italic", color: T.inkMid, lineHeight: 1.7, marginBottom: 36 }}>
+          A map of photographic influence — and your place in it.
+        </p>
+
+        {/* Divider */}
+        <div style={{ width: 32, height: 1, background: T.inkFaint, margin: "0 auto 32px" }} />
+
+        {/* Note heading */}
+        <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 16 }}>
+          A NOTE BEFORE YOU BEGIN
+        </div>
+
+        {/* Body */}
+        <p style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 18 }}>
+          Lineage is an early prototype. Everything you enter — your name, influences, gear, notes — lives only in your browser. Nothing is sent to any server. Close the tab and it's gone.
+        </p>
+        <p style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 36 }}>
+          There is no sign-up for now, so no personal data is collected. The only data we gather is optional feedback via a short survey — which helps us build this into something lasting.
+        </p>
+
+        {/* Italic invite */}
+        <p style={{ fontSize: 15, fontStyle: "italic", color: T.inkLight, lineHeight: 1.7, marginBottom: 40 }}>
+          Explore freely. Add yourself. Tell us what you think.
+        </p>
+
+        {/* CTA */}
+        <button
+          onClick={onEnter}
+          style={{
+            fontSize: 11, letterSpacing: "0.16em", padding: "12px 36px",
+            background: T.ink, border: "none", borderRadius: 2,
+            cursor: "pointer", color: T.bg,
+            fontFamily: "'EB Garamond', serif",
+            transition: "opacity 0.15s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+        >
+          ENTER LINEAGE
+        </button>
+
+        {/* Footer links */}
+        <div style={{ marginTop: 28, display: "flex", gap: 20, justifyContent: "center", alignItems: "center" }}>
+          {feedbackUrl && (
+            <a href={feedbackUrl} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 10.5, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "4px 12px", borderRadius: 2 }}>
+              SHARE FEEDBACK
+            </a>
+          )}
+          <span style={{ fontSize: 10, color: T.inkFaint, letterSpacing: "0.06em" }}>
+            Early prototype · {new Date().getFullYear()}
+          </span>
+        </div>
+
+      </div>
+    </div>
+  );
+}
 
 function useCurrentUser() {
   const [user, setUser] = useState(() => {
@@ -984,6 +1064,10 @@ function ProfilePage({ user, onExplore, onLogout, updateUser, nodeStates, setNod
       <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0 }}>
         <div style={{ fontSize: 19, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Lineage</div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 9, letterSpacing: "0.1em", padding: "5px 10px", background: T.amber, color: T.bg, textDecoration: "none", borderRadius: 2, whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+            SHARE FEEDBACK
+          </a>
           <button onClick={onExplore}
             style={{ fontSize: 10.5, letterSpacing: "0.1em", padding: "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
             EXPLORE NETWORK →
@@ -1084,10 +1168,52 @@ function ProfilePage({ user, onExplore, onLogout, updateUser, nodeStates, setNod
           <Section title="INFLUENCED BY" onEdit={() => openEdit("influences")}
             empty={!user.influences?.length} emptyText="Which photographers shaped your vision?">
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {(user.influences || []).map(id => (
-                <div key={id} style={{ fontSize: 13, color: T.blue, padding: "4px 10px", border: `1px solid rgba(74,111,165,0.25)`, borderRadius: 2 }}>
-                  {PHOTOGRAPHERS[id]?.name}
-                </div>
+              {(user.influences || []).map(id => {
+                const ns = nodeStates[id] || null;
+                const stateColour = ns === "influenced" ? T.amber : ns === "discovered" ? "#4a7fa5" : ns === "to-explore" ? "#4a8a5a" : null;
+                const stateSymbol = ns === "influenced" ? "★" : ns === "discovered" ? "✓" : ns === "to-explore" ? "◎" : null;
+                return (
+                  <div key={id}
+                    onClick={() => {
+                      setNodeStates(prev => {
+                        const cur = prev[id] || null;
+                        const next = cur === null ? "to-explore" : cur === "to-explore" ? "discovered" : cur === "discovered" ? "influenced" : null;
+                        const n = { ...prev };
+                        if (next === null) delete n[id]; else n[id] = next;
+                        return n;
+                      });
+                    }}
+                    style={{
+                      fontSize: 13, padding: "4px 10px", borderRadius: 2, cursor: "pointer",
+                      border: `1px solid ${stateColour ? stateColour : "rgba(74,111,165,0.25)"}`,
+                      color: stateColour || T.blue,
+                      background: stateColour ? `${stateColour}12` : "transparent",
+                      display: "flex", alignItems: "center", gap: 5,
+                      transition: "all 0.15s",
+                    }}>
+                    {stateSymbol && <span style={{ fontSize: 10 }}>{stateSymbol}</span>}
+                    {PHOTOGRAPHERS[id]?.name}
+                  </div>
+                );
+              })}
+            </div>
+          </Section>
+
+          {/* ── LINKS ── */}
+          <Section title="LINKS" onEdit={() => openEdit("links")}
+            empty={!user.website && !user.instagram && !user.twitter}
+            emptyText="Add your website, Instagram, or other links.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {[
+                { key: "website", label: "Website" },
+                { key: "instagram", label: "Instagram" },
+                { key: "twitter", label: "Twitter / X" },
+              ].filter(({ key }) => user[key]).map(({ key, label }) => (
+                <a key={key} href={user[key].startsWith("http") ? user[key] : `https://${user[key]}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 12.5, color: T.inkMid, padding: "4px 10px", border: `1px solid ${T.border}`, borderRadius: 2, textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}>
+                  {label} <span style={{ fontSize: 10, color: T.inkFaint }}>↗</span>
+                </a>
               ))}
             </div>
           </Section>
@@ -1156,6 +1282,7 @@ function ProfilePage({ user, onExplore, onLogout, updateUser, nodeStates, setNod
               : editSection === "photography" ? "My Photography"
               : editSection === "topics" ? "Talk to Me About"
               : editSection === "lighthouse" ? "Lighthouse Works"
+              : editSection === "links" ? "Links"
               : "Influences" }
             </div>
             <button onClick={() => setEditing(false)} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 20, cursor: "pointer", color: T.inkLight, padding: 0 }}>×</button>
@@ -1323,6 +1450,24 @@ function ProfilePage({ user, onExplore, onLogout, updateUser, nodeStates, setNod
                       ) : null;
                     })()}
                   </div>
+                </div>
+              )}
+
+              {/* LINKS */}
+              {editSection === "links" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {[
+                    { label: "WEBSITE", key: "website", placeholder: "https://yourwebsite.com" },
+                    { label: "INSTAGRAM", key: "instagram", placeholder: "https://instagram.com/yourhandle" },
+                    { label: "TWITTER / X", key: "twitter", placeholder: "https://twitter.com/yourhandle" },
+                  ].map(({ label, key, placeholder }) => (
+                    <div key={key}>
+                      <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+                      <input value={draft[key] || ""} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+                        placeholder={placeholder}
+                        style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -1545,8 +1690,11 @@ export default function Lineage() {
 
   // ── APP ROUTING STATE ──
   const [appView, setAppView] = useState(() => {
-    if (user) return "profile"; // returning logged-in user
-    return "auth"; // first time or logged out
+    // Show disclaimer on first ever visit
+    const seenDisclaimer = localStorage.getItem(DISCLAIMER_KEY);
+    if (!seenDisclaimer) return "disclaimer";
+    if (user) return "profile";
+    return "auth";
   });
 
   // ── PERSONAL GRAPH STATE ──
@@ -2002,6 +2150,22 @@ export default function Lineage() {
     });
   }
 
+  // Second-order connections — connections of highlighted nodes, capped at one degree out
+  const secondOrder = new Set();
+  if (activeId && highlighted.size > 0) {
+    highlighted.forEach(hlId => {
+      if (hlId === activeId) return;
+      const infl = hlId === "__user__"
+        ? (userProfile?.influences || [])
+        : (localEdits[hlId]?.influences ?? PHOTOGRAPHERS[hlId]?.influences ?? []);
+      infl.forEach(i => { if (!highlighted.has(i)) secondOrder.add(i); });
+      Object.entries(PHOTOGRAPHERS).forEach(([id, p]) => {
+        const pInfl = localEdits[id]?.influences ?? p.influences;
+        if (pInfl.includes(hlId) && !highlighted.has(id)) secondOrder.add(id);
+      });
+    });
+  }
+
   // Dispute helpers — defined early so pathEdges can use edgeKey
   const edgeKey = (a, b) => [a, b].sort().join("--");
 
@@ -2119,10 +2283,21 @@ export default function Lineage() {
   };
 
   // ── ROUTING — all hooks declared above, safe to return early now ──
+
   const handleAuth = (u) => {
     freshUserRef.current = u;
     setAppView(u ? "profile" : "graph");
   };
+
+  if (appView === "disclaimer") return (
+    <DisclaimerPage
+      feedbackUrl={FEEDBACK_URL}
+      onEnter={() => {
+        localStorage.setItem(DISCLAIMER_KEY, "1");
+        setAppView(user ? "profile" : "auth");
+      }}
+    />
+  );
 
   if (appView === "auth") return <AuthScreen onAuth={handleAuth} />;
 
@@ -2378,21 +2553,29 @@ export default function Lineage() {
                 const nearThresh = !disputed && flagCount(id, infId) > 0;
                 const edgeInFilter = !filteredIds || (filteredIds.has(id) && filteredIds.has(infId));
 
+                // Second-order: edge connects a highlighted node to a second-order node
+                const isSecondOrder = !isHL && activeId && (
+                  (highlighted.has(id) && secondOrder.has(infId)) ||
+                  (highlighted.has(infId) && secondOrder.has(id))
+                );
+
                 return (
                   <line key={`${id}-${infId}`}
                     x1={from.x} y1={from.y} x2={to.x} y2={to.y}
                     stroke={
                       isLit || isHL
                         ? disputed ? T.amber : T.ink
+                        : isSecondOrder ? T.inkFaint
                         : disputed ? "rgba(160,96,32,0.55)"
                         : nearThresh ? "rgba(160,96,32,0.3)"
                         : T.line
                     }
-                    strokeWidth={isLit ? 1.5 : isHL ? 0.9 : 0.45}
+                    strokeWidth={isLit ? 1.5 : isHL ? 0.9 : isSecondOrder ? 0.35 : 0.45}
                     strokeOpacity={
                       !edgeInFilter ? 0
                       : isLit ? 1
                       : isHL ? 0.65
+                      : isSecondOrder ? 0.18
                       : (disputed || nearThresh) ? 0.25
                       : 0
                     }
@@ -2429,11 +2612,14 @@ export default function Lineage() {
             const exploreActive = mode === "explore" && highlighted.size > 0;
 
             const inFilter = !filteredIds || filteredIds.has(id);
+            const isSecondOrderNode = activeId && secondOrder.has(id);
             const opacity = mode === "path"
               ? (!inFilter ? 0.07
                 : pathResult ? (isInPath ? 1 : 0.13)
                 : (pathFrom === id || pathTo === id ? 1 : 0.35))
-              : (exploreActive ? (inHL ? 1 : 0.1) : (inFilter ? 1 : 0.1));
+              : (exploreActive
+                  ? (inHL ? 1 : isSecondOrderNode ? 0.35 : 0.07)
+                  : (inFilter ? 1 : 0.1));
 
             const activeInfluences = activeId
               ? activeId === "__user__"
@@ -2969,6 +3155,10 @@ export default function Lineage() {
               {Object.keys(PHOTOGRAPHERS).length} photographers · {Object.values(PHOTOGRAPHERS).reduce((a, p) => a + p.influences.length, 0)} connections
             </div>
           )}
+          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 8.5, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "3px 9px", borderRadius: 2, whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+            SHARE FEEDBACK
+          </a>
         </div>
       </div>
       {/* ── USER PROFILE SHEET ── */}
