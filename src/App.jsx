@@ -161,7 +161,7 @@ const SHOW_YEARS_AT  = 2.2;
 const OVERVIEW_SCALE = 0.38; // zoomed out enough to see most of the network
 const DETAIL_SCALE   = 1.6;  // zoom level when a node is selected
 const PAD = 0.04; // tighter padding so nodes use full width
-const DISPUTE_THRESHOLD = 3; // flags needed to trigger review + dashed line
+// Disputed connections are set editorially via CONNECTION_SOURCES status: "disputed"
 
 // ─── DATA HOOK ───────────────────────────────────────────────────────────────
 // Single source of truth for photographer data.
@@ -205,70 +205,89 @@ function DisclaimerPage({ onEnter, feedbackUrl }) {
     <div style={{
       width: "100%", height: "100dvh", background: T.bg,
       fontFamily: "'EB Garamond', Georgia, serif",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      color: T.ink, padding: "0 28px",
+      display: "flex", flexDirection: "column",
+      overflowY: "auto", color: T.ink,
     }}>
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 
-      <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+      <div style={{ maxWidth: 560, width: "100%", margin: "0 auto", padding: "10vh 28px 60px", display: "flex", flexDirection: "column" }}>
 
         {/* Wordmark */}
-        <div style={{ fontSize: 52, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, letterSpacing: "0.01em", lineHeight: 1, marginBottom: 14 }}>
+        <div style={{ fontSize: 58, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, letterSpacing: "0.01em", lineHeight: 1, marginBottom: 16 }}>
           Lineage
         </div>
 
         {/* Tagline */}
-        <p style={{ fontSize: 16, fontStyle: "italic", color: T.inkMid, lineHeight: 1.7, marginBottom: 36 }}>
+        <p style={{ fontSize: 18, fontStyle: "italic", color: T.inkMid, lineHeight: 1.65, marginBottom: 48, maxWidth: 420 }}>
           A map of photographic influence — and your place in it.
         </p>
 
         {/* Divider */}
-        <div style={{ width: 32, height: 1, background: T.inkFaint, margin: "0 auto 32px" }} />
+        <div style={{ width: 32, height: 1, background: T.border, marginBottom: 48 }} />
 
-        {/* Note heading */}
-        <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 16 }}>
-          A NOTE BEFORE YOU BEGIN
-        </div>
+        {/* What is it */}
+        <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>WHAT IS LINEAGE</div>
+        <p style={{ fontSize: 15.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 40 }}>
+          Photography doesn't happen in isolation. Every photographer is shaped by those who came before — a mentor, a book encountered at the right moment, a photographer whose work cracked something open. Lineage maps those connections. 114 photographers, documented influences, an interactive network you can explore and add yourself to.
+        </p>
 
-        {/* Body */}
-        <p style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 18 }}>
+        {/* Who is it for */}
+        <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>WHO IS IT FOR</div>
+        <p style={{ fontSize: 15.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 40 }}>
+          Anyone who takes photography seriously. If you've ever wondered who influenced your favourite photographer, or wanted to understand where your own visual instincts come from, this is for you.
+        </p>
+
+        {/* What do you miss */}
+        <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>WHAT YOU CAN DO</div>
+        <p style={{ fontSize: 15.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 48 }}>
+          Explore the network anonymously — follow threads of influence across generations and traditions. Or add yourself: mark photographers who shaped you, build your own lineage, and see where you sit in the wider history of the medium.
+        </p>
+
+        {/* Divider */}
+        <div style={{ width: 32, height: 1, background: T.border, marginBottom: 40 }} />
+
+        {/* Prototype note */}
+        <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>A NOTE BEFORE YOU BEGIN</div>
+        <p style={{ fontSize: 14, color: T.inkMid, lineHeight: 1.85, marginBottom: 12 }}>
           Lineage is an early prototype. Everything you enter — your name, influences, gear, notes — lives only in your browser. Nothing is sent to any server. Close the tab and it's gone.
         </p>
-        <p style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 36 }}>
+        <p style={{ fontSize: 14, color: T.inkMid, lineHeight: 1.85, marginBottom: 40 }}>
           There is no sign-up for now, so no personal data is collected. The only data we gather is optional feedback via a short survey — which helps us build this into something lasting.
         </p>
 
         {/* Italic invite */}
-        <p style={{ fontSize: 15, fontStyle: "italic", color: T.inkLight, lineHeight: 1.7, marginBottom: 40 }}>
+        <p style={{ fontSize: 16, fontStyle: "italic", color: T.inkLight, lineHeight: 1.7, marginBottom: 36 }}>
           Explore freely. Add yourself. Tell us what you think.
         </p>
 
         {/* CTA */}
-        <button
-          onClick={onEnter}
-          style={{
-            fontSize: 11, letterSpacing: "0.16em", padding: "12px 36px",
-            background: T.ink, border: "none", borderRadius: 2,
-            cursor: "pointer", color: T.bg,
-            fontFamily: "'EB Garamond', serif",
-            transition: "opacity 0.15s",
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-        >
-          ENTER LINEAGE
-        </button>
-
-        {/* Footer links */}
-        <div style={{ marginTop: 28, display: "flex", gap: 20, justifyContent: "center", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={onEnter}
+            style={{
+              fontSize: 11, letterSpacing: "0.16em", padding: "13px 40px",
+              background: T.ink, border: "none", borderRadius: 2,
+              cursor: "pointer", color: T.bg,
+              fontFamily: "'EB Garamond', serif",
+              transition: "opacity 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            ENTER LINEAGE
+          </button>
           {feedbackUrl && (
             <a href={feedbackUrl} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 10.5, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "4px 12px", borderRadius: 2 }}>
+              style={{ fontSize: 10, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "13px 20px", borderRadius: 2, whiteSpace: "nowrap" }}>
               SHARE FEEDBACK
             </a>
           )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ marginTop: 48, borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
           <span style={{ fontSize: 10, color: T.inkFaint, letterSpacing: "0.06em" }}>
-            Early prototype · {new Date().getFullYear()}
+            Early prototype · {new Date().getFullYear()} · <a href="mailto:lineage-prjct@gmail.com" style={{ color: T.inkFaint, textDecoration: "none", borderBottom: `1px solid ${T.border}` }}>lineage-prjct@gmail.com</a>
           </span>
         </div>
 
@@ -646,6 +665,10 @@ const CONNECTION_SOURCES = {
   "martin-parr--william-eggleston":         { text: "Parr acknowledged Eggleston's colour vernacular as transformative", url: "https://www.martinparr.com", status: "confirmed" },
   "lee-miller--man-ray":                    { text: "Miller and Man Ray collaborated in Paris, 1929–32; she co-discovered the solarisation technique", url: "https://www.leemiller.co.uk", status: "confirmed" },
   "graciela-iturbide--manuel-alvarez-bravo": { text: "Iturbide studied under Álvarez Bravo at CUEC, Mexico City, 1969", url: "https://www.gracielaiturbide.org", status: "confirmed" },
+
+  // Editorially disputed — direction or strength of influence debated
+  "robert-capa--henri-cartier-bresson":     { text: "Direction of influence debated — both co-founded Magnum as peers; HCB's influence on Capa's compositional approach is contested", status: "disputed" },
+  "man-ray--lee-miller":                    { text: "Relationship was collaborative rather than directional; Miller co-discovered solarisation and developed her own independent practice", status: "disputed" },
 
   // Cluster A sources
   "ken-domon--w-eugene-smith":              { text: "Domon cited Smith's photo-essay method as foundational to Japanese social documentary; both documented atomic bomb survivors", status: "confirmed" },
@@ -1953,13 +1976,6 @@ export default function Lineage() {
   const [filterOpen, setFilterOpen]       = useState(false);
   // Disputed connections — maps "id1--id2" → flag count
   // Seed a few real historically debated influences for demo
-  const [disputes, setDisputes]         = useState({
-    "robert-capa--henri-cartier-bresson": 1, // direction of influence debated
-    "man-ray--lee-miller":                2, // collaborative vs directional
-    "weegee--diane-arbus":               1, // indirect influence disputed
-  });
-  // Tracks which edges the current user has flagged (prevents double-flagging)
-  const [userFlags, setUserFlags]       = useState(new Set()); // session overrides keyed by photographer id
   const [selected, setSelected]         = useState(null);
   const [hovered, setHovered]           = useState(null);
   const [sheetOpen, setSheetOpen]       = useState(false);
@@ -2492,14 +2508,25 @@ export default function Lineage() {
 
 
   // Remaining dispute helpers (edgeKey defined above near pathEdges)
-  const flagCount = (a, b) => disputes[edgeKey(a, b)] || 0;
-  const isDisputed = (a, b) => flagCount(a, b) >= DISPUTE_THRESHOLD;
-  const hasUserFlagged = (a, b) => userFlags.has(edgeKey(a, b));
-  const flagConnection = (a, b) => {
-    const key = edgeKey(a, b);
-    if (userFlags.has(key)) return;
-    setUserFlags(prev => new Set([...prev, key]));
-    setDisputes(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+  // Disputed status is editorial — set via CONNECTION_SOURCES status: "disputed"
+  const isDisputed = (a, b) => {
+    const key1 = edgeKey(a, b);
+    const src = CONNECTION_SOURCES[key1] || CONNECTION_SOURCES[edgeKey(b, a)] || null;
+    return src?.status === "disputed";
+  };
+
+  // Open mailto to contribute a source or flag a dispute
+  const contributeToConnection = (photographerName, influenceName, photographerId, influenceId) => {
+    const subject = encodeURIComponent(`Connection: ${photographerName} ← ${influenceName}`);
+    const body = encodeURIComponent(
+      `I'd like to contribute to the connection between ${photographerName} and ${influenceName}.\n\n` +
+      `[ ] I can confirm this connection — here is my source:\n` +
+      `Citation: \n` +
+      `URL: \n\n` +
+      `[ ] I think this connection is incorrect — here is my reason:\n` +
+      `Reason: \n`
+    );
+    window.open(`mailto:lineage-prjct@gmail.com?subject=${subject}&body=${body}`);
   };
 
   // ── ROUTING — all hooks declared above, safe to return early now ──
@@ -2774,7 +2801,6 @@ export default function Lineage() {
                 const isLit      = isPathEdge && pathIdx < pathStep;
                 const isHL       = !!(activeId && (id === activeId || infId === activeId));
                 const disputed   = isDisputed(id, infId);
-                const nearThresh = !disputed && flagCount(id, infId) > 0;
                 const edgeInFilter = !filteredIds || (filteredIds.has(id) && filteredIds.has(infId));
 
                 // Check if this connection is confirmed or pending
@@ -2797,7 +2823,6 @@ export default function Lineage() {
                         ? disputed ? T.amber : T.ink
                         : isSecondOrder ? T.inkFaint
                         : disputed ? "rgba(160,96,32,0.55)"
-                        : nearThresh ? "rgba(160,96,32,0.3)"
                         : T.line
                     }
                     strokeWidth={isLit ? 1.5 : isHL ? 0.9 : isSecondOrder ? 0.35 : 0.45}
@@ -2806,12 +2831,11 @@ export default function Lineage() {
                       : isLit ? 1
                       : isHL ? 0.65
                       : isSecondOrder ? 0.18
-                      : (disputed || nearThresh) ? 0.25
+                      : disputed ? 0.25
                       : 0
                     }
                     strokeDasharray={
                       disputed ? "4 4"
-                      : nearThresh ? "6 6"
                       : isPending && (isHL || isLit) ? "2 3"
                       : "none"
                     }
@@ -3087,7 +3111,8 @@ export default function Lineage() {
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
                       {(editDraft.influences || []).map(infId => {
                         const disputed = isDisputed(selected, infId);
-                        const flags    = flagCount(selected, infId);
+                        const src = CONNECTION_SOURCES[edgeKey(selected, infId)] || CONNECTION_SOURCES[edgeKey(infId, selected)] || null;
+                        const status = src?.status || "pending";
                         return (
                           <div key={infId} style={{
                             display: "flex", alignItems: "center", gap: 5,
@@ -3100,13 +3125,12 @@ export default function Lineage() {
                               {PHOTOGRAPHERS[infId]?.name || infId}
                             </span>
                             {disputed && <span style={{ fontSize: 8, color: T.amber, letterSpacing: "0.06em" }}>DISPUTED</span>}
-                            {!disputed && flags > 0 && <span style={{ fontSize: 8, color: T.inkFaint }}>{flags}/{DISPUTE_THRESHOLD}</span>}
+                            {status === "confirmed" && !disputed && <span style={{ fontSize: 8, color: "#4a8a5a", letterSpacing: "0.06em" }}>✓</span>}
                             <button
-                              onClick={() => flagConnection(selected, infId)}
-                              disabled={hasUserFlagged(selected, infId) || disputed}
-                              title="Flag as disputed"
-                              style={{ background: "none", border: "none", color: hasUserFlagged(selected, infId) ? T.amber : T.inkFaint, cursor: disputed || hasUserFlagged(selected, infId) ? "default" : "pointer", fontSize: 10, padding: 0, lineHeight: 1 }}>
-                              ⚐
+                              onClick={() => contributeToConnection(PHOTOGRAPHERS[selected]?.name, PHOTOGRAPHERS[infId]?.name, selected, infId)}
+                              title="Confirm or dispute this connection"
+                              style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 9, padding: 0, lineHeight: 1, letterSpacing: "0.04em", fontFamily: "'EB Garamond', serif" }}>
+                              ?
                             </button>
                             <button
                               onClick={() => setEditDraft(d => ({ ...d, influences: d.influences.filter(i => i !== infId) }))}
@@ -3191,9 +3215,9 @@ export default function Lineage() {
                         <div>
                           <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.blue, marginBottom: 5 }}>INFLUENCED BY</div>
                           {currentP.influences.map(infId => {
-                            const disputed   = isDisputed(selected, infId);
-                            const flags      = flagCount(selected, infId);
-                            const alreadyFlagged = hasUserFlagged(selected, infId);
+                            const disputed = isDisputed(selected, infId);
+                            const src = CONNECTION_SOURCES[edgeKey(selected, infId)] || CONNECTION_SOURCES[edgeKey(infId, selected)] || null;
+                            const status = src?.status || "pending";
                             return (
                               <div key={infId} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                                 <span onClick={() => { setSelected(infId); panToNode(infId); }}
@@ -3205,26 +3229,17 @@ export default function Lineage() {
                                     DISPUTED
                                   </span>
                                 )}
-                                {!disputed && flags > 0 && (
-                                  <span style={{ fontSize: 8.5, color: T.inkFaint, letterSpacing: "0.05em" }}>
-                                    {flags}/{DISPUTE_THRESHOLD} flagged
-                                  </span>
+                                {status === "confirmed" && !disputed && (
+                                  <span style={{ fontSize: 8.5, color: "#4a8a5a", letterSpacing: "0.06em" }}>✓</span>
                                 )}
                                 <button
-                                  onClick={() => flagConnection(selected, infId)}
-                                  disabled={alreadyFlagged || disputed}
-                                  title={alreadyFlagged ? "You've flagged this" : "Flag as disputed"}
-                                  style={{
-                                    background: "none", border: "none", cursor: alreadyFlagged || disputed ? "default" : "pointer",
-                                    padding: 0, fontSize: 10, lineHeight: 1,
-                                    color: alreadyFlagged ? T.amber : T.inkFaint,
-                                    opacity: disputed ? 0 : 1,
-                                    transition: "color 0.15s",
-                                  }}
-                                  onMouseEnter={e => { if (!alreadyFlagged && !disputed) e.currentTarget.style.color = T.amber; }}
-                                  onMouseLeave={e => { if (!alreadyFlagged) e.currentTarget.style.color = T.inkFaint; }}
+                                  onClick={() => contributeToConnection(currentP.name, PHOTOGRAPHERS[infId]?.name, selected, infId)}
+                                  title="Confirm or dispute this connection"
+                                  style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 9, padding: "0 2px", lineHeight: 1, fontFamily: "'EB Garamond', serif", letterSpacing: "0.04em" }}
+                                  onMouseEnter={e => e.currentTarget.style.color = T.ink}
+                                  onMouseLeave={e => e.currentTarget.style.color = T.inkFaint}
                                 >
-                                  {alreadyFlagged ? "⚑" : "⚐"}
+                                  ?
                                 </button>
                               </div>
                             );
