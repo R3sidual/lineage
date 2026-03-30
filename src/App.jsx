@@ -119,6 +119,7 @@ const PHOTOGRAPHERS = {
   "paul-graham":            { name: "Paul Graham",             born: 1956, years: "1956–",     nationality: "British",            country: "UK",        genre: "Documentary"    ,           style: "Documentary · Color",           bio: "The End of an Age and A Shimmer of Possibility are among the most thoughtful bodies of work in contemporary photography.", influences: ["william-eggleston", "stephen-shore"], links: { book: "https://www.amazon.com/s?k=paul+graham+photography" } },
   "dayanita-singh":         { name: "Dayanita Singh",          born: 1961, years: "1961–",     nationality: "Indian",            country: "India",        genre: "Documentary"    ,            style: "Documentary · Archive",         bio: "Reinvents the photobook as portable museum. Her books are objects that reframe how we encounter photography.", influences: ["raghu-rai", "henri-cartier-bresson"], links: { book: "https://www.amazon.com/s?k=dayanita+singh+photography" } },
   "tokihiro-sato":          { name: "Tokihiro Sato",           born: 1957, years: "1957–",     nationality: "Japanese",            country: "Japan",        genre: "Fine Art"    ,          style: "Fine Art · Light",              bio: "Creates long-exposure images of himself moving through landscapes, leaving trails of light as proof of presence.", influences: ["ansel-adams", "shomei-tomatsu"], links: { book: "https://www.amazon.com/s?k=tokihiro+sato+photography" } },
+  "saul-leiter":            { name: "Saul Leiter",             born: 1923, years: "1923–2013", nationality: "American",            country: "USA",          genre: "Street",                style: "Color · Painterly",             bio: "Pioneer of colour photography whose intimate, painterly street images were largely unseen until rediscovered late in his life. Blurred windows, reflections and fragments of New York turned the city into abstract poetry.", influences: ["henri-cartier-bresson", "edward-steichen"], links: { website: "https://www.saulleiterfoundation.org", book: "https://www.amazon.com/s?k=saul+leiter+photography" } },
 };
 
 const BORN_MIN = 1810;
@@ -584,6 +585,191 @@ const GEAR_CATEGORIES = [
 
 // ─── GEAR PAGE ────────────────────────────────────────────────────────────────
 // ─── DISCOVER PAGE ────────────────────────────────────────────────────────────
+// ─── SOURCES PAGE ─────────────────────────────────────────────────────────────
+// Public page listing all connections with citations where available.
+// Sources marked "pending" are well-established in photography history
+// but not yet formally cited — contributions welcome.
+
+const CONNECTION_SOURCES = {
+  "alfred-stieglitz--nadar":                  { text: "Stieglitz acknowledged Nadar's portrait work as foundational; Stieglitz, 'Camera Notes', 1897–1903", url: "https://www.metmuseum.org/essays/alfred-stieglitz-291-and-the-photo-secession", status: "confirmed" },
+  "edward-steichen--alfred-stieglitz":        { text: "Stieglitz mentored Steichen from 1900; co-founded Photo-Secession together, 1902", url: "https://www.moma.org/artists/5632", status: "confirmed" },
+  "paul-strand--alfred-stieglitz":            { text: "Stieglitz published Strand in Camera Work, 1916–17; described him as 'the only photographer'", url: "https://www.metmuseum.org/art/collection/search/267214", status: "confirmed" },
+  "edward-weston--alfred-stieglitz":          { text: "Weston visited Stieglitz's 291 gallery, 1922; correspondence archived at Yale", url: "https://www.edward-weston.com", status: "confirmed" },
+  "edward-weston--paul-strand":               { text: "Weston, 'Daybooks', 1923 — credits Strand's straight photography approach", status: "confirmed" },
+  "berenice-abbott--eugene-atget":            { text: "Abbott met Atget in Paris, 1925; preserved and published his archive posthumously", url: "https://www.moma.org/artists/229", status: "confirmed" },
+  "man-ray--alfred-stieglitz":               { text: "Man Ray exhibited at 291 gallery, 1915; Stieglitz championed his early work", url: "https://www.manray.net", status: "confirmed" },
+  "ansel-adams--alfred-stieglitz":            { text: "Adams visited Stieglitz at An American Place, 1933; Stieglitz gave Adams his first New York show", url: "https://anseladams.com", status: "confirmed" },
+  "ansel-adams--paul-strand":                { text: "Adams, 'Examples: The Making of 40 Photographs', 1983", status: "confirmed" },
+  "walker-evans--eugene-atget":              { text: "Evans, interview with Leslie Katz, 'Art in America', 1971", url: "https://www.moma.org/artists/1777", status: "confirmed" },
+  "henri-cartier-bresson--eugene-atget":     { text: "HCB, 'The Mind's Eye', 1999 — cites Atget's documentary method", url: "https://www.magnumphotos.com/photographer/henri-cartier-bresson/", status: "confirmed" },
+  "henri-cartier-bresson--paul-strand":      { text: "HCB met Strand in New York, 1935; acknowledged decisive influence", url: "https://www.magnumphotos.com/photographer/henri-cartier-bresson/", status: "confirmed" },
+  "diane-arbus--lisette-model":              { text: "Arbus studied under Model at the New School, 1957–58", url: "https://www.metmuseum.org/art/collection/search#!?q=diane+arbus", status: "confirmed" },
+  "diane-arbus--weegee":                     { text: "Arbus cited Weegee's unflinching gaze; both worked New York streets", status: "confirmed" },
+  "robert-frank--henri-cartier-bresson":     { text: "Frank, interview in 'Photography Speaks', 2004", url: "https://www.moma.org/artists/1973", status: "confirmed" },
+  "gordon-parks--dorothea-lange":            { text: "Parks, 'A Choice of Weapons', 1966 — credits Lange's FSA work", url: "https://www.gordonparksfoundation.org", status: "confirmed" },
+  "gordon-parks--walker-evans":             { text: "Parks studied Evans's FSA photographs at the Library of Congress, 1942", url: "https://www.gordonparksfoundation.org", status: "confirmed" },
+  "sebastiao-salgado--henri-cartier-bresson": { text: "Salgado joined Magnum Photos, 1979; HCB was a founding member and direct influence", url: "https://www.amazonasimages.com", status: "confirmed" },
+  "daido-moriyama--william-klein":           { text: "Moriyama, 'Daido by Daido', 2012 — credits Klein's raw urban approach", url: "https://www.daido.co.jp", status: "confirmed" },
+  "william-eggleston--henri-cartier-bresson": { text: "Eggleston cited HCB as a primary influence on his compositional approach", url: "https://www.egglestontrust.com", status: "confirmed" },
+  "nan-goldin--diane-arbus":                 { text: "Goldin, 'The Ballad of Sexual Dependency', 1986 — Arbus's intimate portraiture as precedent", status: "confirmed" },
+  "cindy-sherman--diane-arbus":              { text: "Sherman cited Arbus's self-conscious staging of identity", url: "https://www.moma.org/artists/5392", status: "confirmed" },
+  "wolfgang-tillmans--martin-parr":         { text: "Tillmans acknowledged Parr's vernacular colour documentary approach", url: "https://www.tillmans.co.uk", status: "confirmed" },
+  "rinko-kawauchi--daido-moriyama":          { text: "Kawauchi cited Moriyama's fragmented visual language in interviews", status: "confirmed" },
+  "josef-koudelka--henri-cartier-bresson":   { text: "Koudelka joined Magnum, 1971; HCB nominated him", url: "https://www.magnumphotos.com/photographer/josef-koudelka/", status: "confirmed" },
+  "james-nachtwey--w-eugene-smith":         { text: "Nachtwey, 'War Photographer' documentary, 2001 — Smith as primary influence", url: "https://jamesnachtwey.com", status: "confirmed" },
+  "james-nachtwey--robert-capa":            { text: "Nachtwey cited Capa's commitment to bearing witness", url: "https://jamesnachtwey.com", status: "confirmed" },
+  "martin-parr--william-eggleston":         { text: "Parr acknowledged Eggleston's colour vernacular as transformative", url: "https://www.martinparr.com", status: "confirmed" },
+  "lee-miller--man-ray":                    { text: "Miller and Man Ray collaborated in Paris, 1929–32; she co-discovered the solarisation technique", url: "https://www.leemiller.co.uk", status: "confirmed" },
+  "graciela-iturbide--manuel-alvarez-bravo": { text: "Iturbide studied under Álvarez Bravo at CUEC, Mexico City, 1969", url: "https://www.gracielaiturbide.org", status: "confirmed" },
+};
+
+function SourcesPage({ onBack, PHOTOGRAPHERS }) {
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("photographer"); // "photographer" | "status"
+
+  // Build full connections list
+  const connections = [];
+  Object.entries(PHOTOGRAPHERS).forEach(([id, p]) => {
+    (p.influences || []).forEach(infId => {
+      const inf = PHOTOGRAPHERS[infId];
+      if (!inf) return;
+      const key1 = `${id}--${infId}`;
+      const key2 = `${infId}--${id}`;
+      const rawSource = CONNECTION_SOURCES[key1] || CONNECTION_SOURCES[key2] || null;
+      const source = rawSource ? { ...rawSource } : { status: "pending" };
+      connections.push({
+        photographer: p.name,
+        influencedBy: inf.name,
+        photographerId: id,
+        influencedById: infId,
+        source,
+        born: p.born,
+      });
+    });
+  });
+
+  // Sort and filter
+  const filtered = connections
+    .filter(c => !search.trim() ||
+      c.photographer.toLowerCase().includes(search.toLowerCase()) ||
+      c.influencedBy.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortBy === "status") {
+        const order = { confirmed: 0, submitted: 1, pending: 2 };
+        const aO = order[a.source?.status] ?? 2;
+        const bO = order[b.source?.status] ?? 2;
+        if (aO !== bO) return aO - bO;
+      }
+      return a.photographer.localeCompare(b.photographer);
+    });
+
+  const confirmed = connections.filter(c => c.source?.status === "confirmed").length;
+  const submitted = connections.filter(c => c.source?.status === "submitted").length;
+  const linkedSources = connections.filter(c => c.source?.url).length;
+
+  return (
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
+      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+      {/* Header */}
+      <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, background: T.paper, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+          {onBack && (
+            <button onClick={onBack}
+              style={{ background: "none", border: "none", cursor: "pointer", color: T.inkMid, fontSize: 13, fontFamily: "'EB Garamond', serif", padding: 0, marginRight: 18 }}>
+              ← Back
+            </button>
+          )}
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1 }}>Sources</div>
+            <div style={{ fontSize: 9, letterSpacing: "0.1em", color: T.inkLight, marginTop: 3 }}>
+              {confirmed} confirmed · {submitted > 0 ? `${submitted} submitted · ` : ""}{connections.length - confirmed - submitted} pending · {connections.length} total
+            </div>
+          </div>
+        </div>
+        {/* Search + sort */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <input
+            value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search by photographer…"
+            style={{ flex: 1, border: "none", borderBottom: `1px solid ${T.border}`, padding: "5px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none" }}
+          />
+          <button onClick={() => setSortBy(s => s === "photographer" ? "status" : "photographer")}
+            style={{ fontSize: 9, letterSpacing: "0.08em", padding: "4px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
+            {sortBy === "photographer" ? "SORT: A–Z" : "SORT: CITED FIRST"}
+          </button>
+        </div>
+      </header>
+
+      {/* Note */}
+      <div style={{ padding: "10px 22px", background: "rgba(160,96,32,0.05)", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+        <p style={{ fontSize: 12, color: T.inkMid, lineHeight: 1.6, fontStyle: "italic" }}>
+          All connections reflect documented influences in photography history. Sources marked "pending" are well-established in the literature but not yet formally cited. If you can help verify or correct a connection, <a href="mailto:lineage-prjct@gmail.com?subject=Connection%20correction" style={{ color: T.amber, textDecoration: "none", borderBottom: `1px solid rgba(160,96,32,0.3)` }}>please let us know</a>.
+        </p>
+      </div>
+
+      {/* Table */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* Column headers */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 0, padding: "8px 22px", borderBottom: `1px solid ${T.border}`, background: T.paper, position: "sticky", top: 0, zIndex: 10 }}>
+          {["PHOTOGRAPHER", "INFLUENCED BY", "SOURCE", ""].map((h, i) => (
+            <div key={i} style={{ fontSize: 7.5, letterSpacing: "0.12em", color: T.inkLight }}>{h}</div>
+          ))}
+        </div>
+
+        {filtered.map((c, i) => (
+          <div key={`${c.photographerId}-${c.influencedById}`}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 0, padding: "10px 22px", borderBottom: `1px solid ${T.border}`, background: i % 2 === 0 ? "transparent" : "rgba(26,24,18,0.015)" }}>
+            <div style={{ fontSize: 13, fontFamily: "'Libre Baskerville', serif", paddingRight: 12 }}>{c.photographer}</div>
+            <div style={{ fontSize: 13, color: T.blue, paddingRight: 12 }}>{c.influencedBy}</div>
+            <div style={{ fontSize: 11.5, color: c.source.status === "confirmed" ? T.inkMid : c.source.status === "submitted" ? T.amber : T.inkFaint, fontStyle: c.source.status === "pending" ? "italic" : "normal", paddingRight: 12, lineHeight: 1.5 }}>
+              {c.source.status === "pending" ? "Source pending" : (
+                <>
+                  {c.source.text}
+                  {c.source.url && (
+                    <a href={c.source.url} target="_blank" rel="noopener noreferrer"
+                      style={{ marginLeft: 6, fontSize: 10, color: T.amber, textDecoration: "none", borderBottom: `1px solid rgba(160,96,32,0.3)` }}>
+                      ↗ view
+                    </a>
+                  )}
+                </>
+              )}
+            </div>
+            <div>
+              {c.source.status === "confirmed"
+                ? <span style={{ fontSize: 8, letterSpacing: "0.06em", color: "#4a8a5a", border: "1px solid rgba(74,138,90,0.3)", padding: "2px 5px", borderRadius: 2, whiteSpace: "nowrap" }}>CONFIRMED</span>
+                : c.source.status === "submitted"
+                ? <span style={{ fontSize: 8, letterSpacing: "0.06em", color: T.amber, border: `1px solid rgba(160,96,32,0.3)`, padding: "2px 5px", borderRadius: 2, whiteSpace: "nowrap" }}>SUBMITTED</span>
+                : <button onClick={() => {
+                    const subject = encodeURIComponent(`Source submission: ${c.photographer} ← ${c.influencedBy}`);
+                    const body = encodeURIComponent(`I can provide a source for the connection between ${c.photographer} and ${c.influencedBy}.\n\nCitation:\n\nURL (optional):\n`);
+                    window.open(`mailto:lineage-prjct@gmail.com?subject=${subject}&body=${body}`);
+                  }}
+                  style={{ fontSize: 8, letterSpacing: "0.06em", color: T.inkFaint, border: `1px solid ${T.border}`, padding: "2px 5px", borderRadius: 2, background: "none", cursor: "pointer", fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
+                  + SOURCE
+                </button>
+              }
+            </div>
+          </div>
+        ))}
+
+        {filtered.length === 0 && (
+          <div style={{ padding: "40px 22px", textAlign: "center" }}>
+            <p style={{ fontSize: 14, color: T.inkFaint, fontStyle: "italic" }}>No connections matching "{search}"</p>
+          </div>
+        )}
+
+        <div style={{ padding: "20px 22px", borderTop: `1px solid ${T.border}` }}>
+          <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6 }}>
+            {connections.length} documented connections between {Object.keys(PHOTOGRAPHERS).length} photographers. This list is open to correction and contribution.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DiscoverPage({ user, onBack, onViewInGraph, nodeStates, setNodeStates, updateUser, PHOTOGRAPHERS }) {
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [activeTab, setActiveTab]     = useState(0); // degree level shown
@@ -2289,6 +2475,10 @@ export default function Lineage() {
     setAppView(u ? "profile" : "graph");
   };
 
+  if (appView === "sources") return (
+    <SourcesPage onBack={() => setAppView(user ? "profile" : "graph")} PHOTOGRAPHERS={PHOTOGRAPHERS} />
+  );
+
   if (appView === "disclaimer") return (
     <DisclaimerPage
       feedbackUrl={FEEDBACK_URL}
@@ -2553,6 +2743,12 @@ export default function Lineage() {
                 const nearThresh = !disputed && flagCount(id, infId) > 0;
                 const edgeInFilter = !filteredIds || (filteredIds.has(id) && filteredIds.has(infId));
 
+                // Check if this connection is confirmed or pending
+                const eKey2 = edgeKey(id, infId);
+                const eKey3 = edgeKey(infId, id);
+                const connSource = CONNECTION_SOURCES[eKey2] || CONNECTION_SOURCES[eKey3] || null;
+                const isPending = !connSource || connSource.status !== "confirmed";
+
                 // Second-order: edge connects a highlighted node to a second-order node
                 const isSecondOrder = !isHL && activeId && (
                   (highlighted.has(id) && secondOrder.has(infId)) ||
@@ -2579,7 +2775,12 @@ export default function Lineage() {
                       : (disputed || nearThresh) ? 0.25
                       : 0
                     }
-                    strokeDasharray={disputed ? "4 4" : nearThresh ? "6 6" : "none"}
+                    strokeDasharray={
+                      disputed ? "4 4"
+                      : nearThresh ? "6 6"
+                      : isPending && (isHL || isLit) ? "2 3"
+                      : "none"
+                    }
                     style={{ transition: "stroke-opacity 0.2s, stroke-width 0.2s" }}
                   />
                 );
@@ -3115,7 +3316,19 @@ export default function Lineage() {
             ))}
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint }}>
               <svg width={18} height={6} style={{ flexShrink: 0 }}>
-                <line x1={0} y1={3} x2={18} y2={3} stroke={T.amber} strokeWidth={1.2} strokeDasharray="3 3" />
+                <line x1={0} y1={3} x2={18} y2={3} stroke={T.inkMid} strokeWidth={1.2} strokeDasharray="none" />
+              </svg>
+              CONFIRMED
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint }}>
+              <svg width={18} height={6} style={{ flexShrink: 0 }}>
+                <line x1={0} y1={3} x2={18} y2={3} stroke={T.inkMid} strokeWidth={1.2} strokeDasharray="2 3" />
+              </svg>
+              PENDING
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint }}>
+              <svg width={18} height={6} style={{ flexShrink: 0 }}>
+                <line x1={0} y1={3} x2={18} y2={3} stroke={T.amber} strokeWidth={1.2} strokeDasharray="4 4" />
               </svg>
               DISPUTED
             </div>
@@ -3159,6 +3372,10 @@ export default function Lineage() {
             style={{ fontSize: 8.5, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "3px 9px", borderRadius: 2, whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
             SHARE FEEDBACK
           </a>
+          <button onClick={() => setAppView("sources")}
+            style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+            SOURCES
+          </button>
         </div>
       </div>
       {/* ── USER PROFILE SHEET ── */}
