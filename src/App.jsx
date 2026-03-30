@@ -200,7 +200,7 @@ const DISCLAIMER_KEY = "lineage_disclaimer_v1";
 const FEEDBACK_URL   = "https://forms.gle/KkufuFe3oHxAvGVx6";
 
 // ─── DISCLAIMER PAGE ──────────────────────────────────────────────────────────
-function DisclaimerPage({ onEnter, feedbackUrl }) {
+function DisclaimerPage({ onEnter, feedbackUrl, returning }) {
   return (
     <div style={{
       width: "100%", height: "100dvh", background: T.bg,
@@ -213,6 +213,12 @@ function DisclaimerPage({ onEnter, feedbackUrl }) {
       <div style={{ maxWidth: 560, width: "100%", margin: "0 auto", padding: "10vh 28px 60px", display: "flex", flexDirection: "column" }}>
 
         {/* Wordmark */}
+        {returning && (
+          <button onClick={onEnter}
+            style={{ alignSelf: "flex-start", background: "none", border: "none", cursor: "pointer", color: T.inkMid, fontSize: 13, fontFamily: "'EB Garamond', serif", padding: "0 0 32px", letterSpacing: "0.02em" }}>
+            ← Back
+          </button>
+        )}
         <div style={{ fontSize: 58, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, letterSpacing: "0.01em", lineHeight: 1, marginBottom: 16 }}>
           Lineage
         </div>
@@ -228,19 +234,19 @@ function DisclaimerPage({ onEnter, feedbackUrl }) {
         {/* What is it */}
         <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>WHAT IS LINEAGE</div>
         <p style={{ fontSize: 15.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 40 }}>
-          Photography doesn't happen in isolation. Every photographer is shaped by those who came before — a mentor, a book encountered at the right moment, a photographer whose work cracked something open. Lineage maps those connections. 114 photographers, documented influences, an interactive network you can explore and add yourself to.
+          Lineage maps documented connections between photographers — who influenced whom, across generations and traditions. The network currently covers 114 photographers, with sources cited where available. You can explore it anonymously, or add yourself and mark the photographers who shaped your own practice.
         </p>
 
         {/* Who is it for */}
         <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>WHO IS IT FOR</div>
         <p style={{ fontSize: 15.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 40 }}>
-          Anyone who takes photography seriously. If you've ever wondered who influenced your favourite photographer, or wanted to understand where your own visual instincts come from, this is for you.
+          Photographers, students, educators, and anyone curious about how photographic ideas travel. If you've ever traced a visual lineage — from a photographer back to their influences, and further back still — this is built for that.
         </p>
 
-        {/* What do you miss */}
+        {/* What you can do */}
         <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>WHAT YOU CAN DO</div>
         <p style={{ fontSize: 15.5, color: T.inkMid, lineHeight: 1.85, marginBottom: 48 }}>
-          Explore the network anonymously — follow threads of influence across generations and traditions. Or add yourself: mark photographers who shaped you, build your own lineage, and see where you sit in the wider history of the medium.
+          Browse the network and follow threads of influence. Open any photographer to see their connections, biography, and links. If you create a profile, you can mark photographers as influences, document your gear, and see where your own lineage sits within the broader history of the medium.
         </p>
 
         {/* Divider */}
@@ -249,10 +255,10 @@ function DisclaimerPage({ onEnter, feedbackUrl }) {
         {/* Prototype note */}
         <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 12 }}>A NOTE BEFORE YOU BEGIN</div>
         <p style={{ fontSize: 14, color: T.inkMid, lineHeight: 1.85, marginBottom: 12 }}>
-          Lineage is an early prototype. Everything you enter — your name, influences, gear, notes — lives only in your browser. Nothing is sent to any server. Close the tab and it's gone.
+          Lineage is an early prototype. Everything you enter lives only in your browser — nothing is sent to any server. Your data persists in your browser's local storage until you clear it, and is never shared or collected by us.
         </p>
         <p style={{ fontSize: 14, color: T.inkMid, lineHeight: 1.85, marginBottom: 40 }}>
-          There is no sign-up for now, so no personal data is collected. The only data we gather is optional feedback via a short survey — which helps us build this into something lasting.
+          There is no sign-up, so no personal data is collected. The only data we gather is optional feedback via a short survey.
         </p>
 
         {/* Italic invite */}
@@ -260,7 +266,7 @@ function DisclaimerPage({ onEnter, feedbackUrl }) {
           Explore freely. Add yourself. Tell us what you think.
         </p>
 
-        {/* CTA */}
+        {/* CTAs */}
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <button
             onClick={onEnter}
@@ -274,7 +280,7 @@ function DisclaimerPage({ onEnter, feedbackUrl }) {
             onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
-            ENTER LINEAGE
+            {returning ? "← BACK TO LINEAGE" : "ENTER LINEAGE"}
           </button>
           {feedbackUrl && (
             <a href={feedbackUrl} target="_blank" rel="noopener noreferrer"
@@ -1228,7 +1234,7 @@ function GearPage({ user, onBack, updateUser }) {
   );
 }
 
-function ProfilePage({ user, onExplore, onLogout, updateUser, nodeStates, setNodeStates, PHOTOGRAPHERS }) {
+function ProfilePage({ user, onExplore, onAbout, onLogout, updateUser, nodeStates, setNodeStates, PHOTOGRAPHERS }) {
   const [editing, setEditing]         = useState(false);
   const [editSection, setEditSection] = useState(null);
   const [showGear, setShowGear]       = useState(false);
@@ -1314,6 +1320,10 @@ function ProfilePage({ user, onExplore, onLogout, updateUser, nodeStates, setNod
           <button onClick={onExplore}
             style={{ fontSize: 10.5, letterSpacing: "0.1em", padding: "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
             EXPLORE NETWORK →
+          </button>
+          <button onClick={onAbout}
+            style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkLight, fontFamily: "'EB Garamond', serif" }}>
+            ABOUT
           </button>
           <button onClick={onLogout}
             style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkLight, fontFamily: "'EB Garamond', serif" }}>
@@ -2543,6 +2553,7 @@ export default function Lineage() {
   if (appView === "disclaimer") return (
     <DisclaimerPage
       feedbackUrl={FEEDBACK_URL}
+      returning={!!localStorage.getItem(DISCLAIMER_KEY)}
       onEnter={() => {
         localStorage.setItem(DISCLAIMER_KEY, "1");
         setAppView(user ? "profile" : "auth");
@@ -2556,6 +2567,7 @@ export default function Lineage() {
     <ProfilePage
       user={activeUser}
       onExplore={() => { setAppView("graph"); setOnboarding(false); }}
+      onAbout={() => setAppView("disclaimer")}
       onLogout={() => { freshUserRef.current = null; logout(); setAppView("auth"); }}
       updateUser={updateUser}
       nodeStates={nodeStates}
@@ -3424,6 +3436,10 @@ export default function Lineage() {
           <button onClick={() => setAppView("sources")}
             style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
             SOURCES
+          </button>
+          <button onClick={() => setAppView("disclaimer")}
+            style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+            ABOUT
           </button>
         </div>
       </div>
