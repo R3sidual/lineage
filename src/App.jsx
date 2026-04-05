@@ -176,75 +176,75 @@ const LINK_LABELS = { instagram: "Instagram", website: "Website", book: "Buy Boo
 // All images from Wikimedia Commons (public domain or Creative Commons licensed)
 const PHOTOGRAPHER_WORKS = {
   "henri-cartier-bresson": [
-    { url: "https://upload.wikimedia.org/wikipedia/en/7/77/HCB_BehindSaintLazare.jpg", caption: "Behind the Gare Saint-Lazare, Paris, 1932" },
-    { url: "https://upload.wikimedia.org/wikipedia/en/a/a7/DesperateMigrantMother.jpg", caption: "Srinagar, Kashmir, 1948" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/HCB_BehindSaintLazare.jpg&width=300", caption: "Behind the Gare Saint-Lazare, Paris, 1932" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/DesperateMigrantMother.jpg&width=300", caption: "Srinagar, Kashmir, 1948" },
   ],
   "dorothea-lange": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/5/54/Lange-MigrantMother02.jpg", caption: "Migrant Mother, Nipomo, California, 1936" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Lange-WheatFieldWorkers.jpg", caption: "Toward Los Angeles, California, 1937" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lange-MigrantMother02.jpg&width=300", caption: "Migrant Mother, Nipomo, California, 1936" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lange-WheatFieldWorkers.jpg&width=300", caption: "Toward Los Angeles, California, 1937" },
   ],
   "ansel-adams": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/6/67/Ansel_Adams_-_National_Archives_79-AAB-01.jpg", caption: "Grand Teton National Park, Wyoming, 1942" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Ansel_Adams_-_National_Archives_79-AAF-02.jpg", caption: "White House Ruin, Canyon de Chelly, 1942" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ansel_Adams_-_National_Archives_79-AAB-01.jpg&width=300", caption: "Grand Teton National Park, Wyoming, 1942" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ansel_Adams_-_National_Archives_79-AAF-02.jpg&width=300", caption: "White House Ruin, Canyon de Chelly, 1942" },
   ],
   "robert-frank": [
-    { url: "https://upload.wikimedia.org/wikipedia/en/8/8e/Trolley_New_Orleans.jpg", caption: "Trolley, New Orleans, 1955" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Trolley_New_Orleans.jpg&width=300", caption: "Trolley, New Orleans, 1955" },
   ],
   "diane-arbus": [
-    { url: "https://upload.wikimedia.org/wikipedia/en/4/45/Diane_Arbus_-_Identical_Twins.jpg", caption: "Identical Twins, Roselle, New Jersey, 1967" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Diane_Arbus_-_Identical_Twins.jpg&width=300", caption: "Identical Twins, Roselle, New Jersey, 1967" },
   ],
   "walker-evans": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/f/f0/Floyd_Burroughs_1936.jpg", caption: "Floyd Burroughs, Hale County, Alabama, 1936" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/2/27/Bethlehem_graveyard_and_steel_mill%2C_Pennsylvania%2C_by_Walker_Evans%2C_1935.jpg", caption: "Bethlehem Graveyard and Steel Mill, Pennsylvania, 1935" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Floyd_Burroughs_1936.jpg&width=300", caption: "Floyd Burroughs, Hale County, Alabama, 1936" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Bethlehem_graveyard_and_steel_mill%2C_Pennsylvania%2C_by_Walker_Evans%2C_1935.jpg&width=300", caption: "Bethlehem Graveyard and Steel Mill, Pennsylvania, 1935" },
   ],
   "weegee": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Weegee_Fellig_Murder_1939.jpg", caption: "Their First Murder, Brooklyn, 1941" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Weegee_Fellig_Murder_1939.jpg&width=300", caption: "Their First Murder, Brooklyn, 1941" },
   ],
   "gordon-parks": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/1/19/American_Gothic_-_Gordon_Parks_1942.jpg", caption: "American Gothic, Washington D.C., 1942" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/American_Gothic_-_Gordon_Parks_1942.jpg&width=300", caption: "American Gothic, Washington D.C., 1942" },
   ],
   "sebastiao-salgado": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Sebastiao_Salgado-_Serra_Pelada_Gold_Mine%2C_Brazil%2C_1986_%28cropped%29.jpg", caption: "Serra Pelada Gold Mine, Brazil, 1986" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Sebastiao_Salgado-_Serra_Pelada_Gold_Mine%2C_Brazil%2C_1986_%28cropped%29.jpg&width=300", caption: "Serra Pelada Gold Mine, Brazil, 1986" },
   ],
   "man-ray": [
-    { url: "https://upload.wikimedia.org/wikipedia/en/4/4e/Man_Ray_Le_Violon_d%27Ingres.jpg", caption: "Le Violon d'Ingres, 1924" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Man_Ray_Rayograph_1922.jpg", caption: "Rayograph, 1922" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Man_Ray_Le_Violon_d%27Ingres.jpg&width=300", caption: "Le Violon d'Ingres, 1924" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Man_Ray_Rayograph_1922.jpg&width=300", caption: "Rayograph, 1922" },
   ],
   "edward-weston": [
-    { url: "https://upload.wikimedia.org/wikipedia/en/7/7e/Edward_Weston_Pepper_No._30.jpg", caption: "Pepper No. 30, 1930" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/8/87/Edward_Weston_Nude.jpg", caption: "Nude, 1936" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Weston_Pepper_No._30.jpg&width=300", caption: "Pepper No. 30, 1930" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Weston_Nude.jpg&width=300", caption: "Nude, 1936" },
   ],
   "alfred-stieglitz": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a3/Alfred_Stieglitz_-_The_Steerage_-_Google_Art_Project.jpg", caption: "The Steerage, 1907" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/0/0d/Alfred_Stieglitz_-_Winter-Fifth_Avenue.jpg", caption: "Winter, Fifth Avenue, 1893" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Alfred_Stieglitz_-_The_Steerage_-_Google_Art_Project.jpg&width=300", caption: "The Steerage, 1907" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Alfred_Stieglitz_-_Winter-Fifth_Avenue.jpg&width=300", caption: "Winter, Fifth Avenue, 1893" },
   ],
   "paul-strand": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Paul_Strand_-_Blind_Woman%2C_New_York%2C_1916.jpg", caption: "Blind Woman, New York, 1916" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Paul_Strand_-_Blind_Woman%2C_New_York%2C_1916.jpg&width=300", caption: "Blind Woman, New York, 1916" },
   ],
   "nadar": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/0/09/Sarah_Bernhardt_by_Nadar.jpg", caption: "Sarah Bernhardt, c. 1864" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Nadar_-_Charles_Baudelaire_%281820-1867%29_1862.jpg", caption: "Charles Baudelaire, 1862" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Sarah_Bernhardt_by_Nadar.jpg&width=300", caption: "Sarah Bernhardt, c. 1864" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Nadar_-_Charles_Baudelaire_%281820-1867%29_1862.jpg&width=300", caption: "Charles Baudelaire, 1862" },
   ],
   "eugene-atget": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/b/b0/Atget_Versailles.jpg", caption: "Versailles, 1901" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Atget_-_Quai_Voltaire.jpg", caption: "Quai Voltaire, Paris, 1900" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Atget_Versailles.jpg&width=300", caption: "Versailles, 1901" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Atget_-_Quai_Voltaire.jpg&width=300", caption: "Quai Voltaire, Paris, 1900" },
   ],
   "lewis-hine": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/2/20/Powerhouse_mechanic_working_on_steam_pump.jpg", caption: "Powerhouse Mechanic, 1920" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Lewis_Hine_Power_house_mechanic_working_on_steam_pump.jpg", caption: "Child Labour, Carolina Cotton Mill, 1908" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Powerhouse_mechanic_working_on_steam_pump.jpg&width=300", caption: "Powerhouse Mechanic, 1920" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lewis_Hine_Power_house_mechanic_working_on_steam_pump.jpg&width=300", caption: "Child Labour, Carolina Cotton Mill, 1908" },
   ],
   "lisette-model": [
-    { url: "https://upload.wikimedia.org/wikipedia/en/0/0a/Lisette_Model_Running_Legs.jpg", caption: "Running Legs, Fifth Avenue, New York, c. 1940" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lisette_Model_Running_Legs.jpg&width=300", caption: "Running Legs, Fifth Avenue, New York, c. 1940" },
   ],
   "brassai": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Brassai_Paris_de_Nuit.jpg", caption: "Paris de Nuit, 1932" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Brassai_Paris_de_Nuit.jpg&width=300", caption: "Paris de Nuit, 1932" },
   ],
   "robert-doisneau": [
-    { url: "https://upload.wikimedia.org/wikipedia/en/4/4b/Baiser_de_l%27hotel_de_ville.jpg", caption: "Le Baiser de l'Hôtel de Ville, Paris, 1950" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Baiser_de_l%27hotel_de_ville.jpg&width=300", caption: "Le Baiser de l'Hôtel de Ville, Paris, 1950" },
   ],
   "yousuf-karsh": [
-    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Winston_Churchill_by_Yousuf_Karsh.jpg", caption: "Winston Churchill, Ottawa, 1941" },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/9/9c/Ernest_Hemingway_1950_Karsh.jpg", caption: "Ernest Hemingway, 1957" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Winston_Churchill_by_Yousuf_Karsh.jpg&width=300", caption: "Winston Churchill, Ottawa, 1941" },
+    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ernest_Hemingway_1950_Karsh.jpg&width=300", caption: "Ernest Hemingway, 1957" },
   ],
 };
 const T = {
@@ -776,48 +776,48 @@ function findPath(fromId, toId, localEdits = {}, data = PHOTOGRAPHERS, userProfi
 // ─── PORTRAIT IMAGE LOOKUP ───────────────────────────────────────────────────
 // Direct Wikimedia Commons thumb.php URLs — no API, no hashing needed
 const PORTRAITS = {
-  "nadar":                  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/८/Nadar_self_portrait.jpg/300px-Nadar_self_portrait.jpg",
-  "julia-margaret-cameron": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Julia_Margaret_Cameron_%28photograph%29.jpg/300px-Julia_Margaret_Cameron_%28photograph%29.jpg",
+  "nadar":                  "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Nadar_self_portrait.jpg&width=300",
+  "julia-margaret-cameron": "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Julia_Margaret_Cameron_%28photograph%29.jpg&width=300",
   "alfred-stieglitz":       "/portraits/alfred-stieglitz.jpg",
-  "eugene-atget":           "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Eugene_Atget%2C_1900.jpg/300px-Eugene_Atget%2C_1900.jpg",
-  "edward-steichen":        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Edward_Steichen.jpg/300px-Edward_Steichen.jpg",
-  "paul-strand":            "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Paul_Strand.jpg/300px-Paul_Strand.jpg",
-  "edward-weston":          "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Edward_Weston%2C_1946_%28photo_by_Beaumont_Newhall%29.jpg/300px-Edward_Weston%2C_1946_%28photo_by_Beaumont_Newhall%29.jpg",
-  "dorothea-lange":         "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Dorothea_Lange_Roy_Stryker_1936.jpg/300px-Dorothea_Lange_Roy_Stryker_1936.jpg",
-  "man-ray":                "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Man_Ray%2C_1934.jpg/300px-Man_Ray%2C_1934.jpg",
-  "ansel-adams":            "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ansel_Adams_and_camera.jpg/300px-Ansel_Adams_and_camera.jpg",
-  "walker-evans":           "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Walker_Evans_by_Irving_Penn.jpg/300px-Walker_Evans_by_Irving_Penn.jpg",
-  "weegee":                 "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Weegee-ICP.jpg/300px-Weegee-ICP.jpg",
-  "brassai":                "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Gyula_Hal%C3%A1sz%2C_known_as_Brassai.jpg/300px-Gyula_Hal%C3%A1sz%2C_known_as_Brassai.jpg",
-  "robert-capa":            "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Robert_Capa_-_Slightly_out_of_Focus_-_cover.jpg/300px-Robert_Capa_-_Slightly_out_of_Focus_-_cover.jpg",
-  "henri-cartier-bresson":  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Cartier-Bresson_%281961%29.jpg/300px-Cartier-Bresson_%281961%29.jpg",
-  "gordon-parks":           "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Gordon_Parks_photo.jpg/300px-Gordon_Parks_photo.jpg",
-  "yousuf-karsh":           "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Yousuf-Karsh.jpg/300px-Yousuf-Karsh.jpg",
-  "irving-penn":            "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Irving_Penn.jpg/300px-Irving_Penn.jpg",
-  "richard-avedon":         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Richard_Avedon_1993.jpg/300px-Richard_Avedon_1993.jpg",
-  "helmut-newton":          "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Helmut_Newton.jpg/300px-Helmut_Newton.jpg",
-  "w-eugene-smith":         "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/W._Eugene_Smith.jpg/300px-W._Eugene_Smith.jpg",
-  "diane-arbus":            "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Diane_Arbus_%281949%29.jpg/300px-Diane_Arbus_%281949%29.jpg",
-  "robert-frank":           "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Robert_Frank_2008.jpg/300px-Robert_Frank_2008.jpg",
-  "william-klein":          "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/William_Klein_%28photographer%29.jpg/300px-William_Klein_%28photographer%29.jpg",
-  "garry-winogrand":        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Garry_Winogrand.jpg/300px-Garry_Winogrand.jpg",
-  "lee-friedlander":        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lee_Friedlander.jpg/300px-Lee_Friedlander.jpg",
-  "daido-moriyama":         "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Daido_Moriyama_2013.jpg/300px-Daido_Moriyama_2013.jpg",
-  "william-eggleston":      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/William_Eggleston_2008.jpg/300px-William_Eggleston_2008.jpg",
-  "sebastiao-salgado":      "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Sebastiao_Salgado_2014.jpg/300px-Sebastiao_Salgado_2014.jpg",
-  "nan-goldin":             "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Nan_Goldin.jpg/300px-Nan_Goldin.jpg",
-  "cindy-sherman":          "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Cindy_Sherman.jpg/300px-Cindy_Sherman.jpg",
-  "martin-parr":            "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Martin_Parr_%282011%29.jpg/300px-Martin_Parr_%282011%29.jpg",
-  "wolfgang-tillmans":      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Wolfgang_Tillmans_2012.jpg/300px-Wolfgang_Tillmans_2012.jpg",
-  "rinko-kawauchi":         "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Rinko_Kawauchi.jpg/300px-Rinko_Kawauchi.jpg",
-  "josef-koudelka":         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Josef_Koudelka.jpg/300px-Josef_Koudelka.jpg",
-  "elliott-erwitt":         "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Elliott_Erwitt.jpg/300px-Elliott_Erwitt.jpg",
-  "james-nachtwey":         "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/James_Nachtwey.jpg/300px-James_Nachtwey.jpg",
-  "steve-mccurry":          "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Steve_McCurry_%282014%29.jpg/300px-Steve_McCurry_%282014%29.jpg",
-  "graciela-iturbide":      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Graciela_Iturbide.jpg/300px-Graciela_Iturbide.jpg",
-  "zanele-muholi":          "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Zanele_Muholi_%282018%29.jpg/300px-Zanele_Muholi_%282018%29.jpg",
-  "alec-soth":              "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Alec_Soth.jpg/300px-Alec_Soth.jpg",
-  "viviane-sassen":         "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Viviane_Sassen.jpg/300px-Viviane_Sassen.jpg",
+  "eugene-atget":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Eugene_Atget%2C_1900.jpg&width=300",
+  "edward-steichen":        "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Steichen.jpg&width=300",
+  "paul-strand":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Paul_Strand.jpg&width=300",
+  "edward-weston":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Weston%2C_1946_%28photo_by_Beaumont_Newhall%29.jpg&width=300",
+  "dorothea-lange":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Dorothea_Lange_Roy_Stryker_1936.jpg&width=300",
+  "man-ray":                "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Man_Ray%2C_1934.jpg&width=300",
+  "ansel-adams":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ansel_Adams_and_camera.jpg&width=300",
+  "walker-evans":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Walker_Evans_by_Irving_Penn.jpg&width=300",
+  "weegee":                 "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Weegee-ICP.jpg&width=300",
+  "brassai":                "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Gyula_Hal%C3%A1sz%2C_known_as_Brassai.jpg&width=300",
+  "robert-capa":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Robert_Capa_-_Slightly_out_of_Focus_-_cover.jpg&width=300",
+  "henri-cartier-bresson":  "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Cartier-Bresson_%281961%29.jpg&width=300",
+  "gordon-parks":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Gordon_Parks_photo.jpg&width=300",
+  "yousuf-karsh":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Yousuf-Karsh.jpg&width=300",
+  "irving-penn":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Irving_Penn.jpg&width=300",
+  "richard-avedon":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Richard_Avedon_1993.jpg&width=300",
+  "helmut-newton":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Helmut_Newton.jpg&width=300",
+  "w-eugene-smith":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/W._Eugene_Smith.jpg&width=300",
+  "diane-arbus":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Diane_Arbus_%281949%29.jpg&width=300",
+  "robert-frank":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Robert_Frank_2008.jpg&width=300",
+  "william-klein":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/William_Klein_%28photographer%29.jpg&width=300",
+  "garry-winogrand":        "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Garry_Winogrand.jpg&width=300",
+  "lee-friedlander":        "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lee_Friedlander.jpg&width=300",
+  "daido-moriyama":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Daido_Moriyama_2013.jpg&width=300",
+  "william-eggleston":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/William_Eggleston_2008.jpg&width=300",
+  "sebastiao-salgado":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Sebastiao_Salgado_2014.jpg&width=300",
+  "nan-goldin":             "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Nan_Goldin.jpg&width=300",
+  "cindy-sherman":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Cindy_Sherman.jpg&width=300",
+  "martin-parr":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Martin_Parr_%282011%29.jpg&width=300",
+  "wolfgang-tillmans":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Wolfgang_Tillmans_2012.jpg&width=300",
+  "rinko-kawauchi":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rinko_Kawauchi.jpg&width=300",
+  "josef-koudelka":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Josef_Koudelka.jpg&width=300",
+  "elliott-erwitt":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Elliott_Erwitt.jpg&width=300",
+  "james-nachtwey":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/James_Nachtwey.jpg&width=300",
+  "steve-mccurry":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Steve_McCurry_%282014%29.jpg&width=300",
+  "graciela-iturbide":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Graciela_Iturbide.jpg&width=300",
+  "zanele-muholi":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Zanele_Muholi_%282018%29.jpg&width=300",
+  "alec-soth":              "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Alec_Soth.jpg&width=300",
+  "viviane-sassen":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Viviane_Sassen.jpg&width=300",
 };
 
 // ─── PORTRAIT COMPONENT ──────────────────────────────────────────────────────
@@ -849,6 +849,11 @@ function PhotographerPortrait({ id, name, size = 72 }) {
         return page?.thumbnail?.source || null;
       })
       .then(imgUrl => {
+        // Convert upload.wikimedia.org thumbnails to Special:Redirect (more stable)
+        if (imgUrl && imgUrl.includes('upload.wikimedia.org')) {
+          const match = imgUrl.match(/\/([^/]+\.(?:jpg|jpeg|png|gif|svg))(?:\/\d+px-[^/]+)?$/i);
+          if (match) imgUrl = `https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/${match[1]}&width=400`;
+        }
         wikiCache[id] = imgUrl || null;
         if (imgUrl) setImgSrc(imgUrl);
       })
