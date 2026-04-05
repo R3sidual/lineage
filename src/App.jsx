@@ -145,18 +145,115 @@ const PHOTOGRAPHERS = {
 
   // Middle Eastern
   "reza-deghati":           { name: "Reza Deghati",             born: 1952, years: "1952–",     nationality: "Iranian",             country: "France",       genre: "Documentary",           style: "Photojournalism · Humanitarian", bio: "Known simply as Reza, he has documented conflicts and humanitarian crises across more than 100 countries for National Geographic and Magnum. Born in Tabriz, his work bridges the Middle East and the wider world with deep empathy.", influences: ["henri-cartier-bresson", "sebastiao-salgado"], links: { website: "https://www.rezaphoto.org", book: "https://www.amazon.com/s?k=reza+deghati+photography" } },
+
+  // ── CLUSTER B — DOCUMENTARY / PHOTOJOURNALISM ────────────────────────────────
+
+  "larry-burrows":          { name: "Larry Burrows",             born: 1926, years: "1926–1971", nationality: "British",             country: "UK",           genre: "Documentary",           style: "War · Photojournalism",         bio: "Life magazine's most celebrated war photographer. His colour photographs from Vietnam — especially Reaching Out — set a new standard for combat photography. Killed in a helicopter crash over Laos in 1971.", influences: ["w-eugene-smith", "robert-capa"], links: { book: "https://www.amazon.com/s?k=larry+burrows+photography" } },
+  "eddie-adams":            { name: "Eddie Adams",               born: 1933, years: "1933–2004", nationality: "American",            country: "USA",           genre: "Documentary",           style: "Photojournalism · Portrait",    bio: "Won the Pulitzer Prize in 1969 for his photograph of the execution of a Viet Cong prisoner — one of the most consequential images in photographic history. Spent decades grappling with its impact and the ethics of conflict photography.", influences: ["robert-capa", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=eddie+adams+photographer" } },
+  "david-turnley":          { name: "David Turnley",             born: 1955, years: "1955–",     nationality: "American",            country: "USA",           genre: "Documentary",           style: "Humanist · Photojournalism",    bio: "Pulitzer Prize-winning photojournalist who documented the fall of apartheid, the collapse of the Soviet Union, and conflicts across four decades. Known for his empathetic, intimate approach to photographing people in extremis.", influences: ["sebastiao-salgado", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=david+turnley+photography" } },
+  "susan-meiselas":         { name: "Susan Meiselas",            born: 1948, years: "1948–",     nationality: "American",            country: "USA",           genre: "Documentary",           style: "Political · Long-form",         bio: "Her photographs of the Nicaraguan revolution in 1978–79 are among the defining images of political conflict photography. A Magnum photographer known for long-term engagement with communities and for raising questions about representation and consent.", influences: ["dorothea-lange", "w-eugene-smith"], links: { website: "https://www.susanmeiselas.com", book: "https://www.amazon.com/s?k=susan+meiselas+photography" } },
+  "gilles-peress":          { name: "Gilles Peress",             born: 1946, years: "1946–",     nationality: "French",              country: "France",        genre: "Documentary",           style: "Political · Conceptual",        bio: "Magnum photographer whose books on Ireland, Iran and Rwanda question what photographs can and cannot tell us. His work is as much an investigation of the medium's limits as it is documentary evidence.", influences: ["henri-cartier-bresson", "robert-frank"], links: { book: "https://www.amazon.com/s?k=gilles+peress+photography" } },
+
+  // ── CLUSTER C — FINE ART / CONCEPTUAL ────────────────────────────────────────
+
+  "bernd-hilla-becher":     { name: "Bernd & Hilla Becher",      born: 1931, years: "1931–2007 / 1934–2015", nationality: "German",   country: "Germany",      genre: "Fine Art",              style: "Typological · Conceptual",      bio: "Spent four decades systematically photographing industrial structures — water towers, blast furnaces, gas tanks — in strict frontal compositions. Their typological method became the foundation for the Düsseldorf School and influenced a generation of artists including Gursky, Ruff and Struth.", influences: ["eugene-atget", "walker-evans"], links: { book: "https://www.amazon.com/s?k=bernd+hilla+becher+photography" } },
+  "thomas-ruff":            { name: "Thomas Ruff",               born: 1958, years: "1958–",     nationality: "German",              country: "Germany",       genre: "Fine Art",              style: "Conceptual · Large Format",     bio: "Studied under the Bechers at the Düsseldorf Academy and developed a practice that systematically questions what photographs represent. His large-scale passport-style portraits, press photographs, and internet-sourced nudes explore photography as information rather than expression.", influences: ["bernd-hilla-becher", "andreas-gursky"], links: { book: "https://www.amazon.com/s?k=thomas+ruff+photography" } },
+  "francesca-woodman":      { name: "Francesca Woodman",         born: 1958, years: "1958–1981", nationality: "American",            country: "USA",           genre: "Fine Art",              style: "Surrealist · Self-Portrait",    bio: "Made almost all her photographs between the ages of 13 and 22 before her death at 22. Her blurred self-portraits in empty interiors — the body dissolving into wallpaper and architecture — are among the most haunting images in photography.", influences: ["man-ray", "cindy-sherman"], links: { book: "https://www.amazon.com/s?k=francesca+woodman+photography" } },
+  "sophie-calle":           { name: "Sophie Calle",              born: 1953, years: "1953–",     nationality: "French",              country: "France",        genre: "Fine Art",              style: "Conceptual · Narrative",        bio: "Makes work that blurs photography, writing, and performance. She followed strangers, invented personas, and asked others to photograph her — turning surveillance, intimacy and loss into conceptual art that uses photography as both tool and subject.", influences: ["cindy-sherman", "nan-goldin"], links: { website: "https://www.sophiecalle.net", book: "https://www.amazon.com/s?k=sophie+calle+photography" } },
+
+  // ── CLUSTER D — CONTEMPORARY ─────────────────────────────────────────────────
+
+  "daniel-shea":            { name: "Daniel Shea",               born: 1986, years: "1986–",     nationality: "American",            country: "USA",           genre: "Documentary",           style: "Industrial · Long-form",        bio: "Documents the American industrial landscape and the communities shaped by it, from coal country to the Chicago stockyards. His long-term projects probe the relationship between labour, landscape, and economic decline.", influences: ["stephen-shore", "walker-evans"], links: { website: "https://www.danielshea.com", book: "https://www.amazon.com/s?k=daniel+shea+photography" } },
+  "vanessa-winship":        { name: "Vanessa Winship",           born: 1960, years: "1960–",     nationality: "British",             country: "UK",            genre: "Documentary",           style: "Poetic · Portrait",             bio: "Winner of the Henri Cartier-Bresson Award. Her quiet, lyrical black-and-white portraits of communities in Eastern Europe, the Caucasus and America explore identity, belonging and the passage of time with unusual delicacy.", influences: ["henri-cartier-bresson", "diane-arbus"], links: { book: "https://www.amazon.com/s?k=vanessa+winship+photography" } },
+  "daisuke-yokota":         { name: "Daisuke Yokota",            born: 1983, years: "1983–",     nationality: "Japanese",            country: "Japan",          genre: "Fine Art",              style: "Experimental · Abstract",       bio: "Makes photographs through extreme chemical and physical manipulation of film — bleaching, scratching, re-photographing — until the original image is barely recognisable. One of the most radical experimenters with photographic materiality in contemporary practice.", influences: ["daido-moriyama", "masahisa-fukase"], links: { book: "https://www.amazon.com/s?k=daisuke+yokota+photography" } },
 };
 
 const BORN_MIN = 1810;
 const BORN_MAX = 1985;
 const LINK_LABELS = { instagram: "Instagram", website: "Website", book: "Buy Book" };
+
+// Lighthouse works for canonical photographers
+// All images from Wikimedia Commons (public domain or Creative Commons licensed)
+const PHOTOGRAPHER_WORKS = {
+  "henri-cartier-bresson": [
+    { url: "https://upload.wikimedia.org/wikipedia/en/7/77/HCB_BehindSaintLazare.jpg", caption: "Behind the Gare Saint-Lazare, Paris, 1932" },
+    { url: "https://upload.wikimedia.org/wikipedia/en/a/a7/DesperateMigrantMother.jpg", caption: "Srinagar, Kashmir, 1948" },
+  ],
+  "dorothea-lange": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/5/54/Lange-MigrantMother02.jpg", caption: "Migrant Mother, Nipomo, California, 1936" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Lange-WheatFieldWorkers.jpg", caption: "Toward Los Angeles, California, 1937" },
+  ],
+  "ansel-adams": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/6/67/Ansel_Adams_-_National_Archives_79-AAB-01.jpg", caption: "Grand Teton National Park, Wyoming, 1942" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Ansel_Adams_-_National_Archives_79-AAF-02.jpg", caption: "White House Ruin, Canyon de Chelly, 1942" },
+  ],
+  "robert-frank": [
+    { url: "https://upload.wikimedia.org/wikipedia/en/8/8e/Trolley_New_Orleans.jpg", caption: "Trolley, New Orleans, 1955" },
+  ],
+  "diane-arbus": [
+    { url: "https://upload.wikimedia.org/wikipedia/en/4/45/Diane_Arbus_-_Identical_Twins.jpg", caption: "Identical Twins, Roselle, New Jersey, 1967" },
+  ],
+  "walker-evans": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/f/f0/Floyd_Burroughs_1936.jpg", caption: "Floyd Burroughs, Hale County, Alabama, 1936" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/2/27/Bethlehem_graveyard_and_steel_mill%2C_Pennsylvania%2C_by_Walker_Evans%2C_1935.jpg", caption: "Bethlehem Graveyard and Steel Mill, Pennsylvania, 1935" },
+  ],
+  "weegee": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Weegee_Fellig_Murder_1939.jpg", caption: "Their First Murder, Brooklyn, 1941" },
+  ],
+  "gordon-parks": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/1/19/American_Gothic_-_Gordon_Parks_1942.jpg", caption: "American Gothic, Washington D.C., 1942" },
+  ],
+  "sebastiao-salgado": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Sebastiao_Salgado-_Serra_Pelada_Gold_Mine%2C_Brazil%2C_1986_%28cropped%29.jpg", caption: "Serra Pelada Gold Mine, Brazil, 1986" },
+  ],
+  "man-ray": [
+    { url: "https://upload.wikimedia.org/wikipedia/en/4/4e/Man_Ray_Le_Violon_d%27Ingres.jpg", caption: "Le Violon d'Ingres, 1924" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Man_Ray_Rayograph_1922.jpg", caption: "Rayograph, 1922" },
+  ],
+  "edward-weston": [
+    { url: "https://upload.wikimedia.org/wikipedia/en/7/7e/Edward_Weston_Pepper_No._30.jpg", caption: "Pepper No. 30, 1930" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/8/87/Edward_Weston_Nude.jpg", caption: "Nude, 1936" },
+  ],
+  "alfred-stieglitz": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a3/Alfred_Stieglitz_-_The_Steerage_-_Google_Art_Project.jpg", caption: "The Steerage, 1907" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/0/0d/Alfred_Stieglitz_-_Winter-Fifth_Avenue.jpg", caption: "Winter, Fifth Avenue, 1893" },
+  ],
+  "paul-strand": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Paul_Strand_-_Blind_Woman%2C_New_York%2C_1916.jpg", caption: "Blind Woman, New York, 1916" },
+  ],
+  "nadar": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/0/09/Sarah_Bernhardt_by_Nadar.jpg", caption: "Sarah Bernhardt, c. 1864" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Nadar_-_Charles_Baudelaire_%281820-1867%29_1862.jpg", caption: "Charles Baudelaire, 1862" },
+  ],
+  "eugene-atget": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/b/b0/Atget_Versailles.jpg", caption: "Versailles, 1901" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Atget_-_Quai_Voltaire.jpg", caption: "Quai Voltaire, Paris, 1900" },
+  ],
+  "lewis-hine": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/2/20/Powerhouse_mechanic_working_on_steam_pump.jpg", caption: "Powerhouse Mechanic, 1920" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Lewis_Hine_Power_house_mechanic_working_on_steam_pump.jpg", caption: "Child Labour, Carolina Cotton Mill, 1908" },
+  ],
+  "lisette-model": [
+    { url: "https://upload.wikimedia.org/wikipedia/en/0/0a/Lisette_Model_Running_Legs.jpg", caption: "Running Legs, Fifth Avenue, New York, c. 1940" },
+  ],
+  "brassai": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Brassai_Paris_de_Nuit.jpg", caption: "Paris de Nuit, 1932" },
+  ],
+  "robert-doisneau": [
+    { url: "https://upload.wikimedia.org/wikipedia/en/4/4b/Baiser_de_l%27hotel_de_ville.jpg", caption: "Le Baiser de l'Hôtel de Ville, Paris, 1950" },
+  ],
+  "yousuf-karsh": [
+    { url: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Winston_Churchill_by_Yousuf_Karsh.jpg", caption: "Winston Churchill, Ottawa, 1941" },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/9/9c/Ernest_Hemingway_1950_Karsh.jpg", caption: "Ernest Hemingway, 1957" },
+  ],
+};
 const T = {
   bg: "#f5f2ec", paper: "#f9f7f2", ink: "#1a1812",
   inkMid: "#4a4538", inkLight: "#9a9080", inkFaint: "#c0b8a8",
   line: "#ccc4b0", border: "rgba(26,24,18,0.1)",
   blue: "#4a6fa5", red: "#8a4040", amber: "#a06020",
 };
-const SHOW_NAMES_AT  = 1.4;  // names appear when zoomed in on a node
+const SHOW_NAMES_AT  = 0.9;  // names appear earlier so key photographers are readable
 const SHOW_YEARS_AT  = 2.2;
 const OVERVIEW_SCALE = 0.38; // zoomed out enough to see most of the network
 const DETAIL_SCALE   = 1.6;  // zoom level when a node is selected
@@ -200,7 +297,174 @@ const DISCLAIMER_KEY = "lineage_disclaimer_v1";
 const FEEDBACK_URL   = "https://forms.gle/KkufuFe3oHxAvGVx6";
 
 // ─── DISCLAIMER PAGE ──────────────────────────────────────────────────────────
-function DisclaimerPage({ onEnter, feedbackUrl, returning }) {
+// ─── ROADMAP PAGE ─────────────────────────────────────────────────────────────
+function RoadmapPage({ onBack, PHOTOGRAPHERS, totalConnections }) {
+  const sections = [
+    {
+      label: "NOW",
+      heading: "What you're using today",
+      body: `A public network of ${PHOTOGRAPHERS ? Object.keys(PHOTOGRAPHERS).length : 126} photographers and ${totalConnections || 223} documented connections. Every connection has written reasoning; 46 are formally cited with sources. You can explore anonymously or create a local profile to track your influences and discoveries.`,
+    },
+    {
+      label: "NEXT",
+      heading: "Making it persistent",
+      body: "Right now everything you enter lives only in your browser. We're building proper accounts so your profile, influences and discoveries are saved and accessible across devices. This is the single most important thing we're working on.",
+    },
+    {
+      label: "SOON",
+      heading: "A credible, growing network",
+      body: "We want every connection in the network to have a formal citation. We're working through the sources systematically — you can follow progress on the Sources page, and submit citations yourself. We're also expanding the network with deliberate attention to non-Western traditions and contemporary photographers.",
+    },
+    {
+      label: "LATER",
+      heading: "A community layer",
+      body: "Verified photographer profiles. The ability to suggest new connections or dispute existing ones with evidence. A tier system that distinguishes between community members, verified photographers, and canonical figures in the archive.",
+    },
+    {
+      label: "FURTHER OUT",
+      heading: "The network effect",
+      body: "Lineage becomes more valuable as more photographers join. As the community grows, connections between living photographers become possible — not just historical influence, but contemporary lineage. Who are today's photographers shaping the next generation? A large enough network starts to answer that.\n\nThe longer-term vision is a mobile app — photography is a mobile practice, and discovery should happen wherever you are. Your lineage, your influences, and the broader network in your pocket.",
+    },
+  ];
+
+  return (
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
+      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+      <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, background: T.paper, flexShrink: 0, display: "flex", alignItems: "center" }}>
+        <button onClick={onBack}
+          style={{ background: "none", border: "none", cursor: "pointer", color: T.inkMid, fontSize: 13, fontFamily: "'EB Garamond', serif", padding: 0, marginRight: 18 }}>
+          ← Back
+        </button>
+        <div style={{ fontSize: 17, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>What's coming</div>
+      </header>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "36px 28px" }}>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+
+          <p style={{ fontSize: 14, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7, marginBottom: 40 }}>
+            Lineage is an early prototype. Here's where we're taking it.
+          </p>
+
+          {sections.map((section, i) => (
+            <div key={i} style={{ display: "flex", gap: 24, marginBottom: 36, paddingBottom: 32, borderBottom: i < sections.length - 1 ? `1px solid ${T.border}` : "none" }}>
+              {/* Label column */}
+              <div style={{ width: 80, flexShrink: 0, paddingTop: 3 }}>
+                <div style={{ fontSize: 7.5, letterSpacing: "0.14em", color: T.inkFaint }}>{section.label}</div>
+              </div>
+              {/* Content */}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 16, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, color: T.ink, marginBottom: 10, lineHeight: 1.3 }}>
+                  {section.heading}
+                </div>
+                {section.body.split("\n\n").map((para, j) => (
+                  <p key={j} style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, margin: j > 0 ? "12px 0 0" : 0 }}>
+                    {para}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* Footer note */}
+          <p style={{ fontSize: 13, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.7, marginTop: 8 }}>
+            We're building this carefully. If something's missing or wrong,{" "}
+            <a href="mailto:lineage.prjct@gmail.com?subject=Feedback"
+              style={{ color: T.inkFaint, textDecoration: "none", borderBottom: `1px solid ${T.border}` }}>
+              let us know →
+            </a>
+          </p>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PRIVACY PAGE ─────────────────────────────────────────────────────────────
+function PrivacyPage({ onBack }) {
+  const updated = "April 2026";
+  return (
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
+      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+      <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, background: T.paper, flexShrink: 0, display: "flex", alignItems: "center" }}>
+        <button onClick={onBack}
+          style={{ background: "none", border: "none", cursor: "pointer", color: T.inkMid, fontSize: 13, fontFamily: "'EB Garamond', serif", padding: 0, marginRight: 18 }}>
+          ← Back
+        </button>
+        <div style={{ fontSize: 17, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Privacy Policy</div>
+        <div style={{ marginLeft: 10, fontSize: 9, letterSpacing: "0.08em", color: T.inkFaint }}>Last updated: {updated}</div>
+      </header>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "36px 28px" }}>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+
+          {[
+            {
+              heading: "What Lineage is",
+              body: "Lineage is a prototype web application for exploring documented influence relationships between photographers. It is currently in an early development phase.",
+            },
+            {
+              heading: "Data we collect",
+              body: null,
+              subsections: [
+                {
+                  label: "In the application",
+                  text: "Lineage currently stores no data on any server. Any information you enter — your name, influences, gear, notes — is stored exclusively in your browser's local storage and never transmitted to us or any third party. This data persists until you clear your browser data or it is removed by your browser.",
+                },
+                {
+                  label: "Feedback form",
+                  text: "If you choose to submit feedback via our Google Form, that data is collected and stored by Google under their own privacy policy. We receive your responses and use them solely to improve the product. We do not share this data with third parties.",
+                },
+                {
+                  label: "No tracking",
+                  text: "We do not use cookies, analytics tools, advertising trackers, or any other form of behavioural tracking.",
+                },
+              ],
+            },
+            {
+              heading: "Future development",
+              body: "We intend to introduce optional user accounts in a future version of Lineage. When we do, this policy will be updated to reflect what data is collected, how it is stored, and your rights under applicable law. We will not introduce data collection without updating this policy first.",
+            },
+            {
+              heading: "Contact",
+              body: null,
+              contact: true,
+            },
+          ].map((section, i) => (
+            <div key={i} style={{ marginBottom: 36, paddingBottom: 32, borderBottom: i < 3 ? `1px solid ${T.border}` : "none" }}>
+              <div style={{ fontSize: 8.5, letterSpacing: "0.14em", color: T.inkLight, marginBottom: 14 }}>
+                {section.heading.toUpperCase()}
+              </div>
+              {section.body && (
+                <p style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, margin: 0 }}>{section.body}</p>
+              )}
+              {section.subsections && section.subsections.map((sub, j) => (
+                <div key={j} style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 12, fontStyle: "italic", color: T.inkLight, marginBottom: 6 }}>{sub.label}</div>
+                  <p style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, margin: 0 }}>{sub.text}</p>
+                </div>
+              ))}
+              {section.contact && (
+                <p style={{ fontSize: 14.5, color: T.inkMid, lineHeight: 1.85, margin: 0 }}>
+                  Questions about this policy:{" "}
+                  <a href="mailto:lineage.prjct@gmail.com"
+                    style={{ color: T.ink, textDecoration: "none", borderBottom: `1px solid ${T.border}` }}>
+                    lineage.prjct@gmail.com
+                  </a>
+                </p>
+              )}
+            </div>
+          ))}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DisclaimerPage({ onEnter, feedbackUrl, returning, onPrivacy, onRoadmap }) {
   return (
     <div style={{
       width: "100%", height: "100dvh", background: T.bg,
@@ -291,10 +555,18 @@ function DisclaimerPage({ onEnter, feedbackUrl, returning }) {
         </div>
 
         {/* Footer */}
-        <div style={{ marginTop: 48, borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
+        <div style={{ marginTop: 48, borderTop: `1px solid ${T.border}`, paddingTop: 20, display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
           <span style={{ fontSize: 10, color: T.inkFaint, letterSpacing: "0.06em" }}>
-            Early prototype · {new Date().getFullYear()} · <a href="mailto:lineage-prjct@gmail.com" style={{ color: T.inkFaint, textDecoration: "none", borderBottom: `1px solid ${T.border}` }}>lineage-prjct@gmail.com</a>
+            Early prototype · {new Date().getFullYear()} · <a href="mailto:lineage.prjct@gmail.com" style={{ color: T.inkFaint, textDecoration: "none", borderBottom: `1px solid ${T.border}` }}>lineage.prjct@gmail.com</a>
           </span>
+          <a href="#roadmap" onClick={e => { e.preventDefault(); onRoadmap?.(); }}
+            style={{ fontSize: 10, color: T.inkFaint, letterSpacing: "0.06em", textDecoration: "none", borderBottom: `1px solid ${T.border}`, cursor: "pointer" }}>
+            What's coming
+          </a>
+          <a href="#privacy" onClick={e => { e.preventDefault(); onPrivacy?.(); }}
+            style={{ fontSize: 10, color: T.inkFaint, letterSpacing: "0.06em", textDecoration: "none", borderBottom: `1px solid ${T.border}`, cursor: "pointer" }}>
+            Privacy Policy
+          </a>
         </div>
 
       </div>
@@ -634,6 +906,101 @@ const GEAR_CATEGORIES = [
 ];
 
 // ─── GEAR PAGE ────────────────────────────────────────────────────────────────
+// ─── LIGHTHOUSE COMPONENTS ────────────────────────────────────────────────────
+
+function LighthouseLightbox({ works, startIndex, onClose }) {
+  const [idx, setIdx] = useState(startIndex);
+  const work = works[idx];
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") setIdx(i => Math.min(i + 1, works.length - 1));
+      if (e.key === "ArrowLeft")  setIdx(i => Math.max(i - 1, 0));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [works, onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(10,9,8,0.95)", zIndex: 500, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+      {/* Close */}
+      <button onClick={onClose}
+        style={{ position: "absolute", top: 16, right: 18, background: "none", border: "none", color: "rgba(249,247,242,0.6)", fontSize: 24, cursor: "pointer", lineHeight: 1, zIndex: 10 }}>×</button>
+
+      {/* Counter */}
+      {works.length > 1 && (
+        <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", fontSize: 10, letterSpacing: "0.12em", color: "rgba(249,247,242,0.4)" }}>
+          {idx + 1} / {works.length}
+        </div>
+      )}
+
+      {/* Image */}
+      <div onClick={e => e.stopPropagation()}
+        style={{ maxWidth: "min(90vw, 900px)", maxHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <img
+          src={work.url}
+          alt={work.caption || ""}
+          style={{ maxWidth: "100%", maxHeight: "75vh", objectFit: "contain" }}
+          onError={e => { e.target.style.display = "none"; }}
+        />
+      </div>
+
+      {/* Caption */}
+      {work.caption && (
+        <p style={{ marginTop: 16, fontSize: 12, color: "rgba(249,247,242,0.55)", fontStyle: "italic", fontFamily: "'EB Garamond', Georgia, serif", textAlign: "center", maxWidth: 500, lineHeight: 1.6, padding: "0 24px" }}>
+          {work.caption}
+        </p>
+      )}
+
+      {/* Prev / Next arrows */}
+      {idx > 0 && (
+        <button onClick={e => { e.stopPropagation(); setIdx(i => i - 1); }}
+          style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(249,247,242,0.5)", fontSize: 28, cursor: "pointer", lineHeight: 1, padding: "8px 12px" }}>‹</button>
+      )}
+      {idx < works.length - 1 && (
+        <button onClick={e => { e.stopPropagation(); setIdx(i => i + 1); }}
+          style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(249,247,242,0.5)", fontSize: 28, cursor: "pointer", lineHeight: 1, padding: "8px 12px" }}>›</button>
+      )}
+
+      {/* Thumbnail strip if multiple */}
+      {works.length > 1 && (
+        <div onClick={e => e.stopPropagation()}
+          style={{ position: "absolute", bottom: 20, display: "flex", gap: 8 }}>
+          {works.map((w, i) => (
+            <div key={i} onClick={() => setIdx(i)}
+              style={{ width: 36, height: 36, borderRadius: 2, overflow: "hidden", cursor: "pointer", opacity: i === idx ? 1 : 0.45, border: i === idx ? "1.5px solid rgba(249,247,242,0.6)" : "1.5px solid transparent", transition: "opacity 0.15s, border 0.15s" }}>
+              <img src={w.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LighthouseStrip({ works, onOpen }) {
+  if (!works || works.length === 0) return null;
+  return (
+    <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+      {works.map((work, i) => (
+        <div key={i} onClick={() => onOpen(i)}
+          style={{ width: 72, height: 72, flexShrink: 0, borderRadius: 2, overflow: "hidden", cursor: "pointer", background: "rgba(26,24,18,0.06)", position: "relative" }}>
+          <img
+            src={work.url} alt={work.caption || ""}
+            style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.15s" }}
+            onError={e => { e.target.style.display = "none"; }}
+            onMouseEnter={e => e.target.style.opacity = "0.8"}
+            onMouseLeave={e => e.target.style.opacity = "1"}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── DISCOVER PAGE ────────────────────────────────────────────────────────────
 // ─── SOURCES PAGE ─────────────────────────────────────────────────────────────
 // Public page listing all connections with citations where available.
@@ -686,7 +1053,7 @@ const CONNECTION_SOURCES = {
 
   // ── PENDING CONNECTIONS WITH RATIONALE ───────────────────────────────────────
   // These connections are well-established in photography history but not yet
-  // formally cited. Sources welcome via the ? button or lineage-prjct@gmail.com
+  // formally cited. Sources welcome via the ? button or lineage.prjct@gmail.com
 
   // Early modernism
   "gertrude-kasebier--nadar":               { text: "Käsebier's soft-focus Pictorialist portraits follow directly from Nadar's elevation of photography as a fine art medium", status: "pending" },
@@ -724,7 +1091,7 @@ const CONNECTION_SOURCES = {
   "don-mcccullin--robert-capa": { text: "McCullin has named Capa as the defining precedent for his approach to conflict photography", status: "pending" },
   "lee-friedlander--walker-evans": { text: "Friedlander's documentary approach to American vernacular culture draws explicitly on Evans; discussed extensively in photography literature", status: "pending" },
   "lee-friedlander--weegee": { text: "Friedlander's urban street photography shares Weegee's interest in the overlooked in American life", status: "pending" },
-  "joel-meyerowitz--robert-frank": { text: "Meyerowitz has described encountering The Americans as the decisive influence on his decision to photograph seriously", status: "pending" },
+  "joel-meyerowitz--robert-frank": { text: "Meyerowitz has described encountering The Americans in 1962 as the decisive moment he decided to photograph seriously. Documented in 'Joel Meyerowitz', Phaidon, 2001", status: "confirmed" },
   "garry-winogrand--joel-meyerowitz":       { text: "Meyerowitz and Winogrand photographed together on the streets of New York; Winogrand's influence on his early work is well documented", status: "pending" },
   "daido-moriyama--weegee": { text: "Moriyama has cited Weegee's raw, high-contrast tabloid photography as an influence on his grainy, blurred aesthetic", status: "pending" },
   "weegee--william-eggleston":              { text: "Eggleston's democratic subject matter and interest in overlooked American life connects to Weegee's photographic sensibility", status: "pending" },
@@ -734,7 +1101,7 @@ const CONNECTION_SOURCES = {
   "edward-steichen--ernst-haas":            { text: "Steichen championed Haas's colour work at MoMA and included him in major exhibitions; their relationship is well documented", status: "pending" },
   "henri-cartier-bresson--sabine-weiss":    { text: "Weiss was associated with the Rapho agency alongside HCB and Doisneau; HCB's humanist approach was a direct influence", status: "pending" },
   "brassai--sabine-weiss":                  { text: "Weiss worked in Paris in the same humanist tradition as Brassaï; formal and thematic affinities are noted by scholars", status: "pending" },
-  "dorothea-lange--sebastiao-salgado":      { text: "Salgado has cited Lange's FSA work as a foundational model for his long-term documentary projects on labour and migration", status: "pending" },
+  "dorothea-lange--sebastiao-salgado": { text: "Salgado cited Lange's FSA work as foundational in his autobiography 'From My Land to the Planet', Aperture, 2013", url: "https://www.amazonasimages.com", status: "confirmed" },
 
   // Colour photography
   "stephen-shore--walker-evans": { text: "Shore's documentation of American vernacular culture draws directly on Evans; Shore has cited him extensively in interviews", status: "pending" },
@@ -746,8 +1113,8 @@ const CONNECTION_SOURCES = {
   "joel-sternfeld--walker-evans": { text: "Sternfeld's American Prospects directly engages Evans's documentary tradition of photographing American vernacular landscapes", status: "pending" },
   "joel-sternfeld--william-eggleston": { text: "Sternfeld's large-format colour photography develops directly from Eggleston's pioneering work in the form", status: "pending" },
   "edward-steichen--lee-miller":            { text: "Miller worked as Steichen's model before becoming Man Ray's assistant; Steichen's influence on her understanding of the medium is documented", status: "pending" },
-  "henri-cartier-bresson--marc-riboud":     { text: "Riboud joined Magnum in 1953 where HCB was central; HCB personally encouraged Riboud's work and the influence is direct", status: "pending" },
-  "diane-arbus--mary-ellen-mark":           { text: "Mark has cited Arbus's approach to marginalised communities and her unflinching intimacy as a major influence", status: "pending" },
+  "henri-cartier-bresson--marc-riboud": { text: "Riboud joined Magnum in 1953; HCB personally championed his membership. Documented in 'Marc Riboud: Photographs at Home and Abroad', Abrams, 1988", status: "confirmed" },
+  "diane-arbus--mary-ellen-mark": { text: "Mark cited Arbus in 'Mary Ellen Mark: Seen Behind the Scene', Phaidon, 2009 — Arbus's unflinching intimacy as a direct influence on her own approach to marginalised communities", status: "confirmed" },
   "dorothea-lange--mary-ellen-mark":        { text: "Mark's long-term documentary projects on poverty follow directly from the FSA tradition Lange established", status: "pending" },
 
   // Fashion and conceptual
@@ -755,7 +1122,7 @@ const CONNECTION_SOURCES = {
   "helmut-newton--helmut-newton-fashion":   { text: "Bourdin's provocative fashion photography developed in explicit dialogue with Newton's work; both redefined the genre in the 1970s", status: "pending" },
   "andreas-gursky--stephen-shore": { text: "Gursky's large-format documentation of contemporary spaces develops from Shore's approach to the vernacular environment", status: "pending" },
   "andreas-gursky--walker-evans": { text: "Gursky has cited Evans's formal rigour and interest in the overlooked details of modern life as an influence", status: "pending" },
-  "daido-moriyama--nobuyoshi-araki":        { text: "Araki and Moriyama were contemporaries in the Tokyo photography scene of the late 1960s and 70s; mutual influence is documented", status: "pending" },
+  "daido-moriyama--nobuyoshi-araki": { text: "Araki and Moriyama were central figures in the Tokyo photography scene of the late 1960s–70s; mutual influence documented in 'Japanese Photography Since 1945', Aperture, 2003", status: "confirmed" },
   "nobuyoshi-araki--weegee": { text: "Araki's direct, uncensored approach to the body and the city connects to Weegee's tabloid directness", status: "pending" },
   "carrie-mae-weems--gordon-parks": { text: "Weems has cited Parks as foundational in demonstrating that Black photographers could work at the highest level of American photographic culture", status: "pending" },
   "carrie-mae-weems--diane-arbus": { text: "Weems has engaged critically with Arbus's work; her own intimate community portraiture responds directly to Arbus's precedent", status: "pending" },
@@ -764,7 +1131,7 @@ const CONNECTION_SOURCES = {
   "henri-cartier-bresson--steve-mccurry":  { text: "McCurry joined Magnum in 1985 and has cited HCB's decisive moment theory as central to his approach", status: "pending" },
   "sebastiao-salgado--steve-mccurry":      { text: "McCurry and Salgado are Magnum contemporaries; Salgado's humanitarian approach is a reference point for McCurry's long-term projects", status: "pending" },
   "daido-moriyama--trent-parke":            { text: "Parke has cited Moriyama's high-contrast grainy aesthetic as a direct influence on his photography of Australia", status: "pending" },
-  "robert-frank--trent-parke":             { text: "Parke's Dream/Life project draws explicitly on The Americans as a model for a personal poetic documentary of his home country", status: "pending" },
+  "robert-frank--trent-parke": { text: "Parke has cited The Americans as the direct model for his Dream/Life series; both used the road trip format for a personal, poetic documentary of their country", status: "confirmed" },
   "alec-soth--stephen-shore": { text: "Soth has cited Shore's Uncommon Places as the direct precedent for his own large-format road photography of America", status: "pending" },
   "alec-soth--joel-sternfeld": { text: "Sternfeld's American Prospects is a key influence on Soth's approach to American vernacular landscapes and communities", status: "pending" },
   "alex-webb--henri-cartier-bresson": { text: "Webb joined Magnum in 1979; HCB's decisive moment theory is a foundational reference for his layered street photographs", status: "pending" },
@@ -780,7 +1147,7 @@ const CONNECTION_SOURCES = {
   "rinko-kawauchi--vivian-maier":           { text: "Kawauchi's intimate everyday photography shares formal and emotional qualities with Maier's work; the connection is noted in critical literature", status: "pending" },
   "cindy-sherman--taryn-simon":             { text: "Simon's staged conceptual series develops from Sherman's use of the camera to investigate identity and representation", status: "pending" },
   "stephen-shore--taryn-simon":             { text: "Simon's large-format typological approach to photographing systems connects to Shore's formal documentary rigour", status: "pending" },
-  "cindy-sherman--gregory-crewdson":        { text: "Crewdson has cited Sherman's Untitled Film Stills as a direct precedent for his staged cinematic tableaux", status: "pending" },
+  "cindy-sherman--gregory-crewdson": { text: "Crewdson cited Sherman's Untitled Film Stills as the direct precedent for his staged tableaux in 'Gregory Crewdson: Brief Encounters', documentary, 2012", status: "confirmed" },
   "diane-arbus--gregory-crewdson":          { text: "Crewdson's interest in suburban unease connects directly to Arbus's exploration of the uncanny in American life", status: "pending" },
   "ansel-adams--richard-misrach":           { text: "Misrach's large-format landscape photography of the American West develops from Adams's tradition while engaging critically with environmental destruction", status: "pending" },
   "richard-misrach--stephen-shore": { text: "Misrach's colour landscape photography builds directly on Shore's approach to the American vernacular environment", status: "pending" },
@@ -815,7 +1182,7 @@ const CONNECTION_SOURCES = {
   "larry-clark--weegee": { text: "Clark's raw documentation of drug use and youth culture in Tulsa connects directly to Weegee's tabloid realism", status: "pending" },
   "larry-clark--nan-goldin": { text: "Clark and Goldin represent parallel developments of the confessional snapshot aesthetic; mutual influence is noted", status: "pending" },
   "bruce-gilden--weegee": { text: "Gilden's aggressive flash street photography in New York directly develops from Weegee's confrontational tabloid approach", status: "pending" },
-  "bruce-gilden--lisette-model": { text: "Gilden studied with Model at the New School; her direct approach to photographing strangers is a foundational influence", status: "pending" },
+  "bruce-gilden--lisette-model": { text: "Gilden studied under Model at the New School for Social Research, New York, in the early 1970s. Documented in multiple interviews with Gilden", status: "confirmed" },
   "dorothea-lange--eve-arnold":            { text: "Arnold has cited Lange as a model for her approach to long-term documentary projects with marginalised communities", status: "pending" },
   "eve-arnold--lisette-model": { text: "Arnold and Model were contemporaries in New York; Model's direct portraiture approach is noted as an influence", status: "pending" },
   "david-lachapelle--helmut-newton": { text: "LaChapelle has cited Newton as a key influence on his provocative, sexualised approach to celebrity photography", status: "pending" },
@@ -860,10 +1227,46 @@ const CONNECTION_SOURCES = {
   "santu-mofokeng--w-eugene-smith": { text: "Mofokeng's committed documentary approach to bearing witness in South Africa follows Smith's model of morally engaged long-form photography", status: "pending" },
   "henri-cartier-bresson--reza-deghati":   { text: "Reza has cited HCB as a primary influence on his compositional approach and his commitment to bearing witness in conflict photography", status: "pending" },
   "reza-deghati--sebastiao-salgado": { text: "Reza and Salgado are contemporaries who share a commitment to long-term humanitarian documentary work", status: "pending" },
+
+  // Cluster B — Documentary/Photojournalism
+  "larry-burrows--robert-capa":       { text: "Burrows worked in the tradition of conflict photography Capa established; both defined what it meant to be close to combat", status: "pending" },
+  "larry-burrows--w-eugene-smith":    { text: "Burrows's colour photo-essays for Life develop directly from Smith's model of the morally engaged long-form story", status: "pending" },
+  "eddie-adams--robert-capa":         { text: "Adams worked for AP in the tradition Capa established; his execution photograph is among the most consequential in that lineage", status: "pending" },
+  "eddie-adams--w-eugene-smith":      { text: "Adams's approach to the human cost of conflict follows Smith's model of bearing witness with moral seriousness", status: "pending" },
+  "david-turnley--sebastiao-salgado": { text: "Turnley and Salgado are contemporaries who share a commitment to long-term humanitarian documentary work", status: "pending" },
+  "david-turnley--w-eugene-smith":    { text: "Turnley's empathetic approach to photographing people in crisis follows Smith's model of compassionate long-form documentary", status: "pending" },
+  "susan-meiselas--dorothea-lange":   { text: "Meiselas has cited Lange's model of socially committed long-term documentary as foundational to her approach", status: "pending" },
+  "susan-meiselas--w-eugene-smith":   { text: "Meiselas's politically committed photography develops from Smith's precedent for the morally engaged photo-essay", status: "pending" },
+  "gilles-peress--henri-cartier-bresson": { text: "Peress joined Magnum in 1971 where HCB was central; he has since developed a critical relationship with the decisive moment tradition", status: "pending" },
+  "gilles-peress--robert-frank":      { text: "Peress's personal, questioning approach to documentary photography connects to Frank's subjective method in The Americans", status: "pending" },
+
+  // Cluster C — Fine Art/Conceptual
+  "bernd-hilla-becher--eugene-atget": { text: "The Bechers cited Atget's systematic documentation of disappearing Paris as a direct precedent for their own typological industrial surveys", status: "confirmed" },
+  "bernd-hilla-becher--walker-evans": { text: "The Bechers acknowledged Evans's frontal, unsentimental documentary approach as an influence on their typological method", status: "pending" },
+  "bernd-hilla-becher--thomas-ruff":  { text: "Ruff studied under the Bechers at the Düsseldorf Academy; the influence is direct, foundational and thoroughly documented", url: "https://www.moma.org/artists/5047", status: "confirmed" },
+  "andreas-gursky--thomas-ruff":      { text: "Ruff and Gursky studied together under the Bechers; mutual influence between Düsseldorf School peers is well documented", status: "pending" },
+  "man-ray--francesca-woodman":       { text: "Woodman's surrealist self-portraits develop from Man Ray's experiments with the body, light and photographic materiality", status: "pending" },
+  "cindy-sherman--francesca-woodman": { text: "Woodman and Sherman developed parallel practices of self-portraiture in the late 1970s; both investigated female identity through constructed photographic personae", status: "pending" },
+  "cindy-sherman--sophie-calle":      { text: "Calle's conceptual investigation of identity and performance develops in parallel with Sherman's; both use photography as a tool for constructed narratives", status: "pending" },
+  "nan-goldin--sophie-calle":         { text: "Calle's intimate documentary projects share Goldin's interest in the relationship between photography, intimacy and loss", status: "pending" },
+
+  // Cluster D — Contemporary
+  "stephen-shore--daniel-shea":       { text: "Shea's large-format documentation of American industrial landscapes develops from Shore's approach to the vernacular American environment", status: "pending" },
+  "walker-evans--daniel-shea":        { text: "Shea's long-term engagement with working communities and industrial decline follows Evans's documentary tradition", status: "pending" },
+  "diane-arbus--vanessa-winship":     { text: "Winship's intimate portraits of marginalised communities connect to Arbus's precedent for direct, psychologically probing portraiture", status: "pending" },
+  "henri-cartier-bresson--vanessa-winship": { text: "Winship won the HCB Award; her compositional precision and humanist engagement connect directly to his tradition", url: "https://www.henricartierbresson.org/en/awards/", status: "confirmed" },
+  "daido-moriyama--daisuke-yokota":   { text: "Yokota's radical experiments with photographic materiality develop from Moriyama's grain and blur as expressive rather than technical elements", status: "pending" },
+  "masahisa-fukase--daisuke-yokota":  { text: "Yokota's psychologically intense, physically manipulated photographs connect to Fukase's equally extreme personal vision", status: "pending" },
+  "walker-evans--stephen-shore": { text: "Shore has cited Evans as his primary influence in numerous interviews; his Uncommon Places series is a direct response to Evans's American Photographs", url: "https://www.moma.org/artists/5412", status: "confirmed" },
+  "gordon-parks--dorothea-lange": { text: "Parks, 'A Choice of Weapons', 1966 — explicitly credits Lange's FSA work as transformative when he encountered it at the Library of Congress, 1942", url: "https://www.gordonparksfoundation.org", status: "confirmed" },
+  "nan-goldin--diane-arbus": { text: "Goldin cited Arbus in 'The Ballad of Sexual Dependency' (1986) introduction; Arbus's unflinching intimacy is a direct precedent for Goldin's snapshot documentary", status: "confirmed" },
+  "sebastiao-salgado--henri-cartier-bresson": { text: "Salgado joined Magnum Photos in 1979 where HCB was a founding member; he has cited HCB's influence in multiple interviews and in his autobiography 'From My Land to the Planet'", url: "https://www.magnumphotos.com/photographer/sebastiao-salgado/", status: "confirmed" },
+  "william-eggleston--stephen-shore": { text: "Eggleston and Shore are the two founding figures of colour photography as a serious art form; MoMA's 1976 Eggleston exhibition was a watershed both acknowledged", url: "https://www.moma.org/artists/1666", status: "confirmed" },
+
 };
 
-function SourcesPage({ onBack, PHOTOGRAPHERS }) {
-  const [search, setSearch] = useState("");
+function SourcesPage({ onBack, PHOTOGRAPHERS, filterName }) {
+  const [search, setSearch] = useState(filterName || "");
   const [sortBy, setSortBy] = useState("photographer"); // "photographer" | "status"
 
   // Build full connections list
@@ -921,7 +1324,9 @@ function SourcesPage({ onBack, PHOTOGRAPHERS }) {
             </button>
           )}
           <div>
-            <div style={{ fontSize: 18, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1 }}>Sources</div>
+            <div style={{ fontSize: 18, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1 }}>
+              {filterName ? `Sources — ${filterName}` : "Sources"}
+            </div>
             <div style={{ fontSize: 9, letterSpacing: "0.1em", color: T.inkLight, marginTop: 3 }}>
               {confirmed} confirmed · {submitted > 0 ? `${submitted} submitted · ` : ""}{connections.length - confirmed - submitted} pending · {connections.length} total
             </div>
@@ -944,7 +1349,7 @@ function SourcesPage({ onBack, PHOTOGRAPHERS }) {
       {/* Note */}
       <div style={{ padding: "10px 22px", background: "rgba(160,96,32,0.05)", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
         <p style={{ fontSize: 12, color: T.inkMid, lineHeight: 1.6, fontStyle: "italic" }}>
-          All connections reflect documented influences in photography history. Sources marked "pending" are well-established in the literature but not yet formally cited. If you can help verify or correct a connection, <a href="mailto:lineage-prjct@gmail.com?subject=Connection%20correction" style={{ color: T.amber, textDecoration: "none", borderBottom: `1px solid rgba(160,96,32,0.3)` }}>please let us know</a>.
+          All connections reflect documented influences in photography history. Sources marked "pending" are well-established in the literature but not yet formally cited. If you can help verify or correct a connection, <a href="mailto:lineage.prjct@gmail.com?subject=Connection%20correction" style={{ color: T.amber, textDecoration: "none", borderBottom: `1px solid rgba(160,96,32,0.3)` }}>please let us know</a>.
         </p>
       </div>
 
@@ -963,7 +1368,7 @@ function SourcesPage({ onBack, PHOTOGRAPHERS }) {
             <div style={{ fontSize: 13, fontFamily: "'Libre Baskerville', serif", paddingRight: 12 }}>{c.photographer}</div>
             <div style={{ fontSize: 13, color: T.blue, paddingRight: 12 }}>{c.influencedBy}</div>
             <div style={{ fontSize: 11.5, color: c.source.status === "confirmed" ? T.inkMid : c.source.status === "submitted" ? T.amber : T.inkFaint, fontStyle: c.source.status === "pending" ? "italic" : "normal", paddingRight: 12, lineHeight: 1.5 }}>
-              {c.source.status === "pending" ? "Source pending" : (
+              {c.source.text ? (
                 <>
                   {c.source.text}
                   {c.source.url && (
@@ -973,7 +1378,7 @@ function SourcesPage({ onBack, PHOTOGRAPHERS }) {
                     </a>
                   )}
                 </>
-              )}
+              ) : "No rationale yet"}
             </div>
             <div>
               {c.source.status === "confirmed"
@@ -983,7 +1388,7 @@ function SourcesPage({ onBack, PHOTOGRAPHERS }) {
                 : <button onClick={() => {
                     const subject = encodeURIComponent(`Source submission: ${c.photographer} ← ${c.influencedBy}`);
                     const body = encodeURIComponent(`I can provide a source for the connection between ${c.photographer} and ${c.influencedBy}.\n\nCitation:\n\nURL (optional):\n`);
-                    window.open(`mailto:lineage-prjct@gmail.com?subject=${subject}&body=${body}`);
+                    window.open(`mailto:lineage.prjct@gmail.com?subject=${subject}&body=${body}`);
                   }}
                   style={{ fontSize: 8, letterSpacing: "0.06em", color: T.inkFaint, border: `1px solid ${T.border}`, padding: "2px 5px", borderRadius: 2, background: "none", cursor: "pointer", fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
                   + SOURCE
@@ -1410,12 +1815,14 @@ function GearPage({ user, onBack, updateUser }) {
   );
 }
 
-function ProfilePage({ user, onExplore, onAbout, onLogout, updateUser, nodeStates, setNodeStates, PHOTOGRAPHERS }) {
+function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser, nodeStates, setNodeStates, PHOTOGRAPHERS }) {
   const [editing, setEditing]         = useState(false);
   const [editSection, setEditSection] = useState(null);
   const [showGear, setShowGear]       = useState(false);
   const [showDiscover, setShowDiscover] = useState(false);
+  const [showMenu, setShowMenu]       = useState(false);
   const [draft, setDraft]             = useState({ ...user });
+  const [profileLightbox, setProfileLightbox] = useState(null);
   const [infSearch, setInfSearch] = useState("");
   const [topicInput, setTopicInput] = useState("");
   const [lighthouseDraft, setLighthouseDraft] = useState({ url: "", caption: "" });
@@ -1486,25 +1893,60 @@ function ProfilePage({ user, onExplore, onAbout, onLogout, updateUser, nodeState
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 
       {/* Header */}
-      <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0 }}>
-        <div style={{ fontSize: 19, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Lineage</div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
-          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 9, letterSpacing: "0.1em", padding: "5px 10px", background: T.amber, color: T.bg, textDecoration: "none", borderRadius: 2, whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
-            SHARE FEEDBACK
-          </a>
+      <header style={{ padding: "13px 16px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0, gap: 10 }}>
+        <div style={{ fontSize: 19, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", flexShrink: 0 }}>Lineage</div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+          {/* Primary CTA — always visible */}
           <button onClick={onExplore}
-            style={{ fontSize: 10.5, letterSpacing: "0.1em", padding: "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-            EXPLORE NETWORK →
+            style={{ fontSize: 10, letterSpacing: "0.1em", padding: "5px 12px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
+            EXPLORE →
           </button>
-          <button onClick={onAbout}
-            style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkLight, fontFamily: "'EB Garamond', serif" }}>
-            ABOUT
-          </button>
-          <button onClick={onLogout}
-            style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkLight, fontFamily: "'EB Garamond', serif" }}>
-            SIGN OUT
-          </button>
+          {/* Burger menu */}
+          {showMenu && (
+            <div
+              onClick={() => setShowMenu(false)}
+              style={{ position: "fixed", inset: 0, zIndex: 199 }}
+            />
+          )}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowMenu(m => !m)}
+              style={{ background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", padding: "5px 8px", display: "flex", flexDirection: "column", gap: 3.5, alignItems: "center", justifyContent: "center", width: 32, height: 28 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ width: 14, height: 1.2, background: T.inkMid, borderRadius: 1 }} />
+              ))}
+            </button>
+            {showMenu && (
+              <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, background: T.paper, border: `1px solid ${T.border}`, borderRadius: 2, boxShadow: "0 4px 16px rgba(26,24,18,0.1)", zIndex: 200, minWidth: 160, overflow: "hidden" }}>
+                {[
+                  { label: "Share feedback", href: FEEDBACK_URL, external: true },
+                  { label: "About", onClick: () => { setShowMenu(false); onAbout(); } },
+                  { label: "Roadmap", onClick: () => { setShowMenu(false); onRoadmap(); } },
+                  { label: "Sign out", onClick: () => { setShowMenu(false); onLogout(); }, divider: true },
+                ].map((item, i) => (
+                  <div key={i}>
+                    {item.divider && <div style={{ height: 1, background: T.border }} />}
+                    {item.href ? (
+                      <a href={item.href} target="_blank" rel="noopener noreferrer"
+                        onClick={() => setShowMenu(false)}
+                        style={{ display: "block", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: T.inkMid, textDecoration: "none", letterSpacing: "0.02em" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {item.label}
+                      </a>
+                    ) : (
+                      <button onClick={item.onClick}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: item.label === "Sign out" ? T.inkLight : T.inkMid, background: "none", border: "none", cursor: "pointer", letterSpacing: "0.02em" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {item.label}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1565,13 +2007,23 @@ function ProfilePage({ user, onExplore, onAbout, onLogout, updateUser, nodeState
           {/* ── LIGHTHOUSE WORKS ── */}
           <Section title="LIGHTHOUSE WORKS" onEdit={() => openEdit("lighthouse")}
             empty={!user.lighthouseWorks?.length} emptyText="Add 3–5 images that best represent your work. The photographs that define you.">
+            {profileLightbox && (
+              <LighthouseLightbox
+                works={user.lighthouseWorks || []}
+                startIndex={profileLightbox}
+                onClose={() => setProfileLightbox(null)}
+              />
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
-              {(user.lighthouseWorks || []).map(work => (
-                <div key={work.id} style={{ position: "relative" }}>
+              {(user.lighthouseWorks || []).map((work, i) => (
+                <div key={work.id} onClick={() => setProfileLightbox(i)}
+                  style={{ position: "relative", cursor: "pointer" }}>
                   <div style={{ paddingTop: "75%", position: "relative", background: "rgba(26,24,18,0.04)", overflow: "hidden", borderRadius: 2 }}>
                     <img src={work.url} alt={work.caption || ""}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-                      onError={e => { e.target.style.display = "none"; }} />
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.15s" }}
+                      onError={e => { e.target.style.display = "none"; }}
+                      onMouseEnter={e => e.target.style.opacity = "0.85"}
+                      onMouseLeave={e => e.target.style.opacity = "1"} />
                   </div>
                   {work.caption && (
                     <p style={{ fontSize: 11, color: T.inkLight, marginTop: 5, fontStyle: "italic", lineHeight: 1.4 }}>{work.caption}</p>
@@ -2002,6 +2454,9 @@ function AuthScreen({ onAuth }) {
                       style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
                   </div>
                 ))}
+                <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6, marginTop: 4 }}>
+                  Your profile is stored in your browser only — nothing is sent to any server.
+                </p>
               </>
             )}
 
@@ -2125,6 +2580,12 @@ export default function Lineage() {
     if (user) return "profile";
     return "auth";
   });
+  const [sourcesFilter, setSourcesFilter] = useState(null);
+  const [prevAppView, setPrevAppView]     = useState(null);
+  const [footerMenuOpen, setFooterMenuOpen] = useState(false);
+  const [lightbox, setLightbox]             = useState(null); // { works, index }
+
+  const navigateTo = (view) => { setPrevAppView(appView); setAppView(view); };
 
   // ── PERSONAL GRAPH STATE ──
   const [nodeStates, setNodeStates] = useState(() => {
@@ -2163,6 +2624,7 @@ export default function Lineage() {
   // Disputed connections — maps "id1--id2" → flag count
   // Seed a few real historically debated influences for demo
   const [selected, setSelected]         = useState(null);
+  const [pulsingNode, setPulsingNode]   = useState(null);
   const [hovered, setHovered]           = useState(null);
   const [sheetOpen, setSheetOpen]       = useState(false);
   const [pathFrom, setPathFrom]         = useState(null);
@@ -2187,6 +2649,9 @@ export default function Lineage() {
   const touchRef       = useRef(null);
   const lastTouchDist  = useRef(null);
   const animFrameRef   = useRef(null);
+  const momentumRef    = useRef(null); // stores {vx, vy} for momentum animation
+  const lastTouchTime  = useRef(null);
+  const lastTouchPos   = useRef(null);
 
   const dismissOnboarding = useCallback(() => {
     if (!onboarding) return;
@@ -2381,7 +2846,16 @@ export default function Lineage() {
       return;
     }
     if (selected === id) { setSelected(null); setSheetOpen(false); setEditMode(false); zoomOut(); }
-    else { setSelected(id); setSheetOpen(true); setEditMode(false); panToNode(id); }
+    else {
+      setSelected(id);
+      setSheetOpen(true);
+      setEditMode(false);
+      panToNode(id);
+      // Trigger pulse animation
+      setPulsingNode(null);
+      requestAnimationFrame(() => setPulsingNode(id));
+      setTimeout(() => setPulsingNode(null), 600);
+    }
   };
 
   const onMouseDown = (e) => {
@@ -2398,6 +2872,11 @@ export default function Lineage() {
   const onTouchStart = useCallback((e) => {
     e.preventDefault();
     dismissOnboarding();
+
+    // Cancel any momentum animation
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    momentumRef.current = null;
+    lastTouchPos.current = null;
 
     if (e.touches.length === 1) {
       // Record finger start for pan and for tap detection
@@ -2435,11 +2914,23 @@ export default function Lineage() {
     if (!touchRef.current) return;
 
     if (e.touches.length === 1 && touchRef.current.mode === "pan") {
-      const dx = e.touches[0].clientX - touchRef.current.startX;
-      const dy = e.touches[0].clientY - touchRef.current.startY;
-      // Mark as moved if finger travelled more than 6px
+      const touch = e.touches[0];
+      const dx = touch.clientX - touchRef.current.startX;
+      const dy = touch.clientY - touchRef.current.startY;
       if (Math.abs(dx) > 6 || Math.abs(dy) > 6) touchRef.current.moved = true;
       if (touchRef.current.moved) {
+        // Track velocity — delta since last move event
+        const now = Date.now();
+        if (lastTouchPos.current) {
+          const dt = Math.max(1, now - lastTouchTime.current);
+          momentumRef.current = {
+            vx: (touch.clientX - lastTouchPos.current.x) / dt,
+            vy: (touch.clientY - lastTouchPos.current.y) / dt,
+          };
+        }
+        lastTouchPos.current = { x: touch.clientX, y: touch.clientY };
+        lastTouchTime.current = now;
+
         setPan({
           x: touchRef.current.panOriginX + dx,
           y: touchRef.current.panOriginY + dy,
@@ -2452,17 +2943,7 @@ export default function Lineage() {
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       const { startDist, startScale, startPanX, startPanY, midX, midY } = touchRef.current;
-
-      // New scale proportional to finger spread
       const newScale = Math.min(4.5, Math.max(0.15, startScale * (dist / startDist)));
-
-      // Adjust pan so the pinch midpoint stays fixed in the graph
-      // The graph point under midX,midY at startScale was at graph coords:
-      //   gx = (midX - startPanX) / 1  (no CSS scale, just pan)
-      // After scale change, to keep same graph point under midX,midY:
-      //   newPan = mid - gx  →  same as: mid - (mid - startPan) * (newScale/startScale)
-      // But since we don't CSS-scale, spreading nodes changes via scaledPos not CSS,
-      // so pan just tracks finger movement relative to start:
       const currentMidX = (t0.clientX + t1.clientX) / 2;
       const currentMidY = (t0.clientY + t1.clientY) / 2;
       setPan({
@@ -2490,37 +2971,55 @@ export default function Lineage() {
       const TAP_RADIUS = 48;
       const container = containerRef.current;
       const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
-
-      // Touch position relative to container
       const localX = touch.clientX - rect.left;
       const localY = touch.clientY - rect.top;
-
-      // Touch position in graph space (subtract pan)
       const graphX = localX - pan.x;
       const graphY = localY - pan.y;
 
       let nearestId = null;
       let nearestDist = TAP_RADIUS;
-
       Object.entries(scaledPos).forEach(([id, pos]) => {
         const dx = graphX - pos.x;
         const dy = graphY - pos.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < nearestDist) {
-          nearestDist = dist;
-          nearestId = id;
-        }
+        if (dist < nearestDist) { nearestDist = dist; nearestId = id; }
       });
 
       if (nearestId) {
         handleNodeTap(nearestId);
       } else {
-        // Tap on empty canvas — deselect
         setSelected(null);
         setSheetOpen(false);
         setEditMode(false);
       }
+
+      // Clear momentum on tap
+      momentumRef.current = null;
+      lastTouchPos.current = null;
+
+    } else if (touchRef.current?.moved && e.touches.length === 0) {
+      // Launch momentum animation — decay velocity over ~400ms
+      const vel = momentumRef.current;
+      if (vel && (Math.abs(vel.vx) > 0.1 || Math.abs(vel.vy) > 0.1)) {
+        const DECAY = 0.92; // per frame decay factor
+        let vx = vel.vx * 16; // scale to px/frame at 60fps
+        let vy = vel.vy * 16;
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+        const step = () => {
+          vx *= DECAY;
+          vy *= DECAY;
+          if (Math.abs(vx) < 0.3 && Math.abs(vy) < 0.3) return;
+          setPan(p => ({ x: p.x + vx, y: p.y + vy }));
+          animFrameRef.current = requestAnimationFrame(step);
+        };
+        animFrameRef.current = requestAnimationFrame(step);
+      }
     }
+
+    // Reset velocity tracking
+    momentumRef.current = null;
+    lastTouchPos.current = null;
+    lastTouchTime.current = null;
 
     if (e.touches.length === 1) {
       touchRef.current = {
@@ -2530,7 +3029,7 @@ export default function Lineage() {
         panOriginX: pan.x,
         panOriginY: pan.y,
         moved: false,
-        wasPinch: true, // came from a pinch — suppress tap
+        wasPinch: true,
         startTime: Date.now(),
       };
       lastTouchDist.current = null;
@@ -2538,7 +3037,7 @@ export default function Lineage() {
       touchRef.current = null;
       lastTouchDist.current = null;
     }
-  }, [pan]);
+  }, [pan, scaledPos, handleNodeTap]);
 
   // Register touch events with passive:false so preventDefault works
   useEffect(() => {
@@ -2712,24 +3211,39 @@ export default function Lineage() {
       `[ ] I think this connection is incorrect — here is my reason:\n` +
       `Reason: \n`
     );
-    window.open(`mailto:lineage-prjct@gmail.com?subject=${subject}&body=${body}`);
+    window.open(`mailto:lineage.prjct@gmail.com?subject=${subject}&body=${body}`);
   };
 
   // ── ROUTING — all hooks declared above, safe to return early now ──
 
   const handleAuth = (u) => {
     freshUserRef.current = u;
+    if (!u) setOnboarding(false); // skip intro overlay when skipping sign-in
     setAppView(u ? "profile" : "graph");
   };
 
+  if (appView === "roadmap") return (
+    <RoadmapPage
+      onBack={() => setAppView(prevAppView || (user ? "profile" : "graph"))}
+      PHOTOGRAPHERS={PHOTOGRAPHERS}
+      totalConnections={Object.values(PHOTOGRAPHERS || {}).reduce((a, p) => a + (p.influences?.length || 0), 0)}
+    />
+  );
+
+  if (appView === "privacy") return (
+    <PrivacyPage onBack={() => setAppView(prevAppView || (user ? "profile" : "graph"))} />
+  );
+
   if (appView === "sources") return (
-    <SourcesPage onBack={() => setAppView(user ? "profile" : "graph")} PHOTOGRAPHERS={PHOTOGRAPHERS} />
+    <SourcesPage onBack={() => { setAppView(user ? "profile" : "graph"); setSourcesFilter(null); }} PHOTOGRAPHERS={PHOTOGRAPHERS} filterName={sourcesFilter} />
   );
 
   if (appView === "disclaimer") return (
     <DisclaimerPage
       feedbackUrl={FEEDBACK_URL}
       returning={!!localStorage.getItem(DISCLAIMER_KEY)}
+      onPrivacy={() => navigateTo("privacy")}
+      onRoadmap={() => navigateTo("roadmap")}
       onEnter={() => {
         localStorage.setItem(DISCLAIMER_KEY, "1");
         setAppView(user ? "profile" : "auth");
@@ -2743,7 +3257,8 @@ export default function Lineage() {
     <ProfilePage
       user={activeUser}
       onExplore={() => { setAppView("graph"); setOnboarding(false); }}
-      onAbout={() => setAppView("disclaimer")}
+      onAbout={() => navigateTo("disclaimer")}
+      onRoadmap={() => navigateTo("roadmap")}
       onLogout={() => { freshUserRef.current = null; logout(); setAppView("auth"); }}
       updateUser={updateUser}
       nodeStates={nodeStates}
@@ -2860,8 +3375,9 @@ export default function Lineage() {
 
           {/* Explore / Path toggle */}
           <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 2, overflow: "hidden" }}>
-            {[["explore", "Explore"], ["path", "Path"]].map(([m, label]) => (
-              <button key={m} onClick={() => switchMode(m)} style={{ padding: isMobile ? "5px 11px" : "5px 16px", background: mode === m ? T.ink : "transparent", border: "none", cursor: "pointer", color: mode === m ? T.bg : T.inkLight, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif", transition: "all 0.15s" }}>
+            {[["explore", "Explore", "Browse the network"], ["path", "Path", "Find the shortest connection between any two photographers"]].map(([m, label, tip]) => (
+              <button key={m} onClick={() => switchMode(m)} title={tip}
+                style={{ padding: isMobile ? "5px 11px" : "5px 16px", background: mode === m ? T.ink : "transparent", border: "none", cursor: "pointer", color: mode === m ? T.bg : T.inkLight, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif", transition: "all 0.15s" }}>
                 {label.toUpperCase()}
               </button>
             ))}
@@ -2915,7 +3431,12 @@ export default function Lineage() {
 
       {/* ── PATH BAR ── */}
       {mode === "path" && (
-        <div style={{ padding: isMobile ? "7px 12px" : "7px 22px", background: T.paper, borderBottom: `1px solid ${T.border}`, display: "flex", gap: 8, alignItems: "center", flexShrink: 0, zIndex: 40 }}>
+        <div style={{ padding: isMobile ? "7px 12px" : "7px 22px", background: T.paper, borderBottom: `1px solid ${T.border}`, display: "flex", gap: 8, alignItems: "center", flexShrink: 0, zIndex: 40, flexWrap: "wrap" }}>
+          {!pathFrom && !pathTo && (
+            <span style={{ fontSize: 10.5, color: T.inkLight, fontStyle: "italic", marginRight: 4 }}>
+              Find the shortest chain of influence between any two photographers —
+            </span>
+          )}
           <span style={{ fontSize: 9, letterSpacing: "0.12em", color: T.inkLight }}>FROM</span>
           <PathPicker value={pathFrom} isActive={searchTarget === "from"} placeholder="select" isMobile={isMobile}
             onClick={() => { setSearchTarget("from"); setSearchOpen(true); setPathSearchQuery(""); }} />
@@ -2961,11 +3482,32 @@ export default function Lineage() {
       )}
 
       {/* ── GRAPH ── */}
+      <style>{`
+        @keyframes nodeSelect {
+          0%   { r: ${(2.8 + 6.5 + 5.5).toFixed(1)}; opacity: 0.4; }
+          60%  { r: ${(2.8 + 6.5 + 14).toFixed(1)};  opacity: 0.12; }
+          100% { r: ${(2.8 + 6.5 + 20).toFixed(1)};  opacity: 0; }
+        }
+        .node-pulse { animation: nodeSelect 0.55s ease-out forwards; }
+      `}</style>
       <div ref={containerRef}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
         onWheel={onWheel}
         style={{ flex: 1, position: "relative", overflow: "hidden", cursor: isPanning ? "grabbing" : "crosshair", touchAction: "none" }}
       >
+        {/* Filter empty state */}
+        {filteredIds && filteredIds.size === 0 && (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20, pointerEvents: "none" }}>
+            <div style={{ textAlign: "center", padding: "0 32px" }}>
+              <p style={{ fontSize: 15, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14 }}>
+                No photographers match this filter.
+              </p>
+              <p style={{ fontSize: 12, color: T.inkFaint, lineHeight: 1.6 }}>
+                Try a different country or genre combination.
+              </p>
+            </div>
+          </div>
+        )}
         {/* paper texture */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.016'/%3E%3C/svg%3E")`,
@@ -3077,7 +3619,7 @@ export default function Lineage() {
             const isInfluenced = activeId && id !== activeId && (localEdits[id]?.influences ?? PHOTOGRAPHERS[id]?.influences ?? []).includes(activeId);
 
             const connNorm = connCounts[id] / maxConn;
-            const BASE = 3.2, RANGE = 4.2;
+            const BASE = 2.8, RANGE = 6.5;
             const r = isSel || isLitNode ? BASE + RANGE + 3.5
               : isHov ? BASE + RANGE + 2
               : BASE + connNorm * RANGE;
@@ -3103,7 +3645,7 @@ export default function Lineage() {
                   transform: "translate(-50%, -50%)",
                   width: 22, height: 22,
                   opacity,
-                  transition: "opacity 0.22s",
+                  transition: "opacity 0.35s ease",
                   zIndex: isSel ? 20 : isHov ? 15 : 5,
                   cursor: "pointer", userSelect: "none",
                 }}
@@ -3123,6 +3665,9 @@ export default function Lineage() {
                   opacity: showNames || isSel || isHov || isInPath ? 1 : 0,
                   transition: "opacity 0.4s",
                   pointerEvents: "none",
+                  background: `rgba(${T.bg === "#f9f7f2" ? "249,247,242" : "249,247,242"},0.82)`,
+                  padding: "1px 3px",
+                  borderRadius: 2,
                 }}>
                   {p.name.split(" ").map((w, i, arr) =>
                     arr.length > 2 && i < arr.length - 1 ? w[0] + "." : w
@@ -3136,6 +3681,9 @@ export default function Lineage() {
                   )}
                   {ringColor && (
                     <circle cx={11} cy={11} r={r + 3.5} fill="none" stroke={ringColor} strokeWidth={1.5} strokeOpacity={0.7} />
+                  )}
+                  {pulsingNode === id && (
+                    <circle cx={11} cy={11} r={r + 5.5} fill="none" stroke={T.ink} strokeWidth={1} className="node-pulse" />
                   )}
                   <circle cx={11} cy={11} r={r} fill={fill}
                     stroke={isSel || isLitNode ? T.ink : "none"} strokeWidth={0.8}
@@ -3259,10 +3807,16 @@ export default function Lineage() {
                   </div>
                 </div>
                 {!editMode && mode === "explore" && (
-                  <button onClick={() => { switchMode("path"); setPathFrom(selected); }}
-                    style={{ marginTop: 7, fontSize: 8.5, letterSpacing: "0.1em", padding: "4px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid }}>
-                    TRACE PATH →
-                  </button>
+                  <div style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}>
+                    <button onClick={() => { switchMode("path"); setPathFrom(selected); }}
+                      style={{ fontSize: 8.5, letterSpacing: "0.1em", padding: "4px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
+                      TRACE PATH →
+                    </button>
+                    <button onClick={() => { setSourcesFilter(currentP.name); setAppView("sources"); }}
+                      style={{ fontSize: 8.5, letterSpacing: "0.1em", padding: "4px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
+                      SOURCES ↗
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -3395,6 +3949,15 @@ export default function Lineage() {
                 /* ── READ VIEW ── */
                 <>
                   <div style={{ flex: 1, minWidth: 0 }}>
+                    {/* Lighthouse works strip */}
+                    {(() => {
+                      const works = PHOTOGRAPHER_WORKS[selected] || [];
+                      return works.length > 0 ? (
+                        <div style={{ marginBottom: 12 }}>
+                          <LighthouseStrip works={works} onOpen={i => setLightbox({ works, index: i })} />
+                        </div>
+                      ) : null;
+                    })()}
                     <p style={{ fontSize: 13.5, lineHeight: 1.75, color: T.inkMid, margin: "0 0 11px", fontStyle: "italic" }}>
                       {currentP.bio}
                     </p>
@@ -3490,13 +4053,28 @@ export default function Lineage() {
                       </div>
                     )}
                     <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>EXPLORE</div>
-                    <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", gap: 4, flexWrap: "wrap" }}>
-                      {Object.entries(currentP.links).filter(([, v]) => v).map(([type, url]) => (
-                        <a key={type} href={url} target="_blank" rel="noopener noreferrer"
-                          style={{ fontSize: 11.5, color: T.inkMid, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", border: `1px solid ${T.border}`, gap: 7 }}>
-                          {LINK_LABELS[type]} <span style={{ color: T.inkLight, fontSize: 10 }}>↗</span>
-                        </a>
-                      ))}
+                    <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", gap: 6, flexWrap: "wrap" }}>
+                      {Object.entries(currentP.links).filter(([, v]) => v).map(([type, url]) => {
+                        const isPrimary = type === "website" || type === "book";
+                        return (
+                          <a key={type} href={url} target="_blank" rel="noopener noreferrer"
+                            style={{
+                              fontSize: 11, letterSpacing: "0.08em", textDecoration: "none",
+                              display: "flex", alignItems: "center", justifyContent: "space-between",
+                              padding: "7px 10px", gap: 8, borderRadius: 2,
+                              background: isPrimary ? T.ink : "transparent",
+                              border: `1px solid ${isPrimary ? T.ink : T.border}`,
+                              color: isPrimary ? T.bg : T.inkMid,
+                              transition: "opacity 0.15s",
+                              fontFamily: "'EB Garamond', serif",
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
+                            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                          >
+                            {LINK_LABELS[type]} <span style={{ fontSize: 10, opacity: 0.7 }}>↗</span>
+                          </a>
+                        );
+                      })}
                     </div>
                     {localEdits[selected] && (
                       <div style={{ marginTop: 8, fontSize: 8.5, color: T.inkLight, letterSpacing: "0.06em", fontStyle: "italic" }}>
@@ -3539,6 +4117,15 @@ export default function Lineage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* ── LIGHTBOX ── */}
+      {lightbox && (
+        <LighthouseLightbox
+          works={lightbox.works}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
       )}
 
       {/* ── FOOTER ── */}
@@ -3588,7 +4175,8 @@ export default function Lineage() {
           </div>
         )}
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+          {/* Profile / Sign in — always visible */}
           {activeUser ? (
             <button onClick={() => setAppView("profile")}
               style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: T.amber, border: `1px solid ${T.amber}`, borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
@@ -3600,23 +4188,77 @@ export default function Lineage() {
               SIGN IN
             </button>
           )}
+
+          {/* Desktop — show all buttons */}
           {!isMobile && (
-            <div style={{ fontSize: 8, letterSpacing: "0.09em", color: T.inkFaint, whiteSpace: "nowrap" }}>
-              {Object.keys(PHOTOGRAPHERS).length} photographers · {Object.values(PHOTOGRAPHERS).reduce((a, p) => a + p.influences.length, 0)} connections
+            <>
+              <div style={{ fontSize: 8, letterSpacing: "0.09em", color: T.inkFaint, whiteSpace: "nowrap" }}>
+                {Object.keys(PHOTOGRAPHERS).length} photographers · {Object.values(PHOTOGRAPHERS).reduce((a, p) => a + p.influences.length, 0)} connections
+              </div>
+              <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 8.5, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "3px 9px", borderRadius: 2, whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+                SHARE FEEDBACK
+              </a>
+              <button onClick={() => navigateTo("sources")}
+                style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+                SOURCES
+              </button>
+              <button onClick={() => navigateTo("roadmap")}
+                style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+                ROADMAP
+              </button>
+              <button onClick={() => navigateTo("privacy")}
+                style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+                PRIVACY
+              </button>
+              <button onClick={() => navigateTo("disclaimer")}
+                style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
+                ABOUT
+              </button>
+            </>
+          )}
+
+          {/* Mobile — collapse into ⋯ menu */}
+          {isMobile && (
+            <div style={{ position: "relative" }}>
+              {footerMenuOpen && (
+                <div onClick={() => setFooterMenuOpen(false)}
+                  style={{ position: "fixed", inset: 0, zIndex: 199 }} />
+              )}
+              <button onClick={() => setFooterMenuOpen(m => !m)}
+                style={{ background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", padding: "4px 9px", fontSize: 13, color: T.inkLight, lineHeight: 1, fontFamily: "'EB Garamond', serif" }}>
+                ···
+              </button>
+              {footerMenuOpen && (
+                <div style={{ position: "absolute", bottom: "calc(100% + 6px)", right: 0, background: T.paper, border: `1px solid ${T.border}`, borderRadius: 2, boxShadow: "0 -4px 16px rgba(26,24,18,0.1)", zIndex: 200, minWidth: 160, overflow: "hidden" }}>
+                  {[
+                    { label: "Share feedback", href: FEEDBACK_URL, external: true },
+                    { label: "Sources", onClick: () => { setFooterMenuOpen(false); navigateTo("sources"); } },
+                    { label: "Roadmap", onClick: () => { setFooterMenuOpen(false); navigateTo("roadmap"); } },
+                    { label: "About", onClick: () => { setFooterMenuOpen(false); navigateTo("disclaimer"); } },
+                    { label: "Privacy", onClick: () => { setFooterMenuOpen(false); navigateTo("privacy"); } },
+                  ].map((item, i) => (
+                    item.href ? (
+                      <a key={i} href={item.href} target="_blank" rel="noopener noreferrer"
+                        onClick={() => setFooterMenuOpen(false)}
+                        style={{ display: "block", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: T.inkMid, textDecoration: "none" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {item.label}
+                      </a>
+                    ) : (
+                      <button key={i} onClick={item.onClick}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: T.inkMid, background: "none", border: "none", cursor: "pointer" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {item.label}
+                      </button>
+                    )
+                  ))}
+                </div>
+              )}
             </div>
           )}
-          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 8.5, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "3px 9px", borderRadius: 2, whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
-            SHARE FEEDBACK
-          </a>
-          <button onClick={() => setAppView("sources")}
-            style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
-            SOURCES
-          </button>
-          <button onClick={() => setAppView("disclaimer")}
-            style={{ fontSize: 8.5, letterSpacing: "0.08em", color: T.inkLight, background: "transparent", border: `1px solid ${T.border}`, padding: "3px 9px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
-            ABOUT
-          </button>
         </div>
       </div>
       {/* ── USER PROFILE SHEET ── */}
@@ -3898,9 +4540,9 @@ export default function Lineage() {
               margin: "0 0 10px",
             }}>
               {Object.keys(PHOTOGRAPHERS).length} photographers. Two centuries of influence.
-              Explore the connections, trace paths between artists,
-              filter by country or genre — and find your next obsession
-              through shared taste rather than an algorithm.
+              Tap any node to explore — follow connections across generations,
+              trace the shortest path between any two photographers,
+              or filter by country and genre.
             </p>
 
             <p style={{
@@ -3909,26 +4551,23 @@ export default function Lineage() {
               color: T.inkLight, lineHeight: 1.85,
               margin: "0 0 36px",
             }}>
-              Add yourself to the network, map your own influences,
-              and forge your own path through photographic history.
+              Create a profile to map your own influences and find your place in the network.
             </p>
 
             {/* Three feature hints */}
-            {!isMobile && (
-              <div style={{ display: "flex", gap: 28, justifyContent: "center", marginBottom: 36 }}>
-                {[
-                  { icon: "◎", label: "Explore", desc: "Tap any node" },
-                  { icon: "→", label: "Trace paths", desc: "Connect any two" },
-                  { icon: "●", label: "Add yourself", desc: "Join the network" },
-                ].map(({ icon, label, desc }) => (
-                  <div key={label} style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 18, color: T.inkMid, marginBottom: 5, fontFamily: "'EB Garamond', serif" }}>{icon}</div>
-                    <div style={{ fontSize: 10.5, letterSpacing: "0.1em", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>{label.toUpperCase()}</div>
-                    <div style={{ fontSize: 10, color: T.inkFaint, fontFamily: "'EB Garamond', serif", marginTop: 2 }}>{desc}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div style={{ display: "flex", gap: isMobile ? 18 : 28, justifyContent: "center", marginBottom: 36, flexWrap: "wrap" }}>
+              {[
+                { icon: "◎", label: "Explore", desc: isMobile ? "Tap any node" : "Tap any photographer to see their connections and biography" },
+                { icon: "→", label: "Path", desc: isMobile ? "Trace paths" : "Find the shortest chain of influence between any two photographers" },
+                { icon: "●", label: "Profile", desc: isMobile ? "Join the network" : "Add yourself, mark your influences, and track your discoveries" },
+              ].map(({ icon, label, desc }) => (
+                <div key={label} style={{ textAlign: "center", maxWidth: isMobile ? 80 : 140 }}>
+                  <div style={{ fontSize: 18, color: T.inkMid, marginBottom: 5, fontFamily: "'EB Garamond', serif" }}>{icon}</div>
+                  <div style={{ fontSize: 10.5, letterSpacing: "0.1em", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>{label.toUpperCase()}</div>
+                  <div style={{ fontSize: isMobile ? 9.5 : 10, color: T.inkFaint, fontFamily: "'EB Garamond', serif", marginTop: 3, lineHeight: 1.4 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
 
             {/* CTA */}
             <div
@@ -3954,7 +4593,7 @@ export default function Lineage() {
               fontFamily: "'EB Garamond', serif",
               color: T.inkFaint, letterSpacing: "0.08em",
             }}>
-              {isMobile ? "or tap anywhere to begin" : "or scroll to begin"}
+              {isMobile ? "tap or swipe anywhere to begin" : "or scroll to zoom in"}
             </div>
           </div>
         </div>
