@@ -831,6 +831,13 @@ function PhotographerPortrait({ id, name, size = 72 }) {
 
   const initials = name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("");
 
+  // Reset state when photographer changes
+  useEffect(() => {
+    setImgSrc(PORTRAITS[id] || null);
+    setLoaded(false);
+    setErrored(false);
+  }, [id]);
+
   // Fetch from Wikipedia API if not in the hardcoded lookup
   useEffect(() => {
     if (PORTRAITS[id]) return;
@@ -3114,10 +3121,15 @@ export default function Lineage() {
         .slice(0, 6)
     : [];
 
-  // Path search filtered list
-  const filtered = Object.entries(PHOTOGRAPHERS)
-    .filter(([, p]) => p.name.toLowerCase().includes(pathSearchQuery.toLowerCase()))
-    .sort((a, b) => a[1].born - b[1].born);
+  // Path search filtered list — includes the logged-in user at the top
+  const filtered = [
+    ...(userProfile && (!pathSearchQuery || userProfile.name.toLowerCase().includes(pathSearchQuery.toLowerCase()))
+      ? [["__user__", { name: userProfile.name, born: userProfile.born, style: "You", isUser: true }]]
+      : []),
+    ...Object.entries(PHOTOGRAPHERS)
+      .filter(([, p]) => p.name.toLowerCase().includes(pathSearchQuery.toLowerCase()))
+      .sort((a, b) => a[1].born - b[1].born),
+  ];
 
   // Era tick marks for x-axis context
   // Toggle node state: null → discovered → to-explore → null
@@ -3443,11 +3455,11 @@ export default function Lineage() {
             </span>
           )}
           <span style={{ fontSize: 9, letterSpacing: "0.12em", color: T.inkLight }}>FROM</span>
-          <PathPicker value={pathFrom} isActive={searchTarget === "from"} placeholder="select" isMobile={isMobile}
+          <PathPicker value={pathFrom} isActive={searchTarget === "from"} placeholder="select" isMobile={isMobile} userProfile={userProfile}
             onClick={() => { setSearchTarget("from"); setSearchOpen(true); setPathSearchQuery(""); }} />
           <span style={{ color: T.inkFaint, fontSize: 13 }}>—</span>
           <span style={{ fontSize: 9, letterSpacing: "0.12em", color: T.inkLight }}>TO</span>
-          <PathPicker value={pathTo} isActive={searchTarget === "to"} placeholder="select" isMobile={isMobile}
+          <PathPicker value={pathTo} isActive={searchTarget === "to"} placeholder="select" isMobile={isMobile} userProfile={userProfile}
             onClick={() => { setSearchTarget("to"); setSearchOpen(true); setPathSearchQuery(""); }} />
           {(pathFrom || pathTo) && (
             <button onClick={() => { setPathFrom(null); setPathTo(null); setPathResult(null); }}
@@ -3530,10 +3542,10 @@ export default function Lineage() {
                 const from = scaledPos[id], to = scaledPos[infId];
                 const eKey = edgeKey(id, infId);
                 const isPathEdge = pathEdges.includes(eKey);
-                const pathIdx = pathResult
-                  ? Math.min(pathResult.indexOf(id), pathResult.indexOf(infId))
-                  : -1;
-                const isLit      = isPathEdge && pathIdx < pathStep;
+                const pathIdxA = pathResult ? pathResult.indexOf(id) : -1;
+                const pathIdxB = pathResult ? pathResult.indexOf(infId) : -1;
+                const pathIdx = (pathIdxA >= 0 && pathIdxB >= 0) ? Math.min(pathIdxA, pathIdxB) : -1;
+                const isLit      = isPathEdge && pathIdx >= 0 && pathIdx < pathStep;
                 const isHL       = !!(activeId && (id === activeId || infId === activeId));
                 const disputed   = isDisputed(id, infId);
                 const edgeInFilter = !filteredIds || (filteredIds.has(id) && filteredIds.has(infId));
@@ -3601,7 +3613,8 @@ export default function Lineage() {
             const isSel     = selected === id;
             const isHov     = hovered === id;
             const isInPath  = pathSet.has(id);
-            const isLitNode = pathResult && pathResult.indexOf(id) <= pathStep;
+            const pathIdx   = pathResult ? pathResult.indexOf(id) : -1;
+            const isLitNode = pathResult && pathIdx >= 0 && pathIdx <= pathStep;
             const inHL      = highlighted.size > 0 && highlighted.has(id);
             const exploreActive = mode === "explore" && highlighted.size > 0;
 
@@ -3625,8 +3638,9 @@ export default function Lineage() {
 
             const connNorm = connCounts[id] / maxConn;
             const BASE = 2.8, RANGE = 6.5;
-            const r = isSel || isLitNode ? BASE + RANGE + 3.5
-              : isHov ? BASE + RANGE + 2
+            const r = isLitNode ? BASE + RANGE + 3.5
+              : (isSel && mode !== "path") ? BASE + RANGE + 3.5
+              : (isHov && mode !== "path") ? BASE + RANGE + 2
               : BASE + connNorm * RANGE;
 
             const nodeState = nodeStates[id] || null;
@@ -4116,8 +4130,8 @@ export default function Lineage() {
                   setSearchOpen(false); setSearchTarget(null); setPathSearchQuery("");
                 }}
                 style={{ padding: "10px 16px", cursor: "pointer", borderBottom: `1px solid ${T.border}`, background: ((searchTarget === "from" ? pathFrom : pathTo) === id) ? "rgba(26,24,18,0.04)" : "transparent", display: "flex", gap: 10, alignItems: "baseline" }}>
-                <div style={{ fontSize: 14.5, fontFamily: "'Libre Baskerville', serif" }}>{p.name}</div>
-                <div style={{ fontSize: 9.5, color: T.inkLight, letterSpacing: "0.04em" }}>{p.born} · {p.style}</div>
+                <div style={{ fontSize: 14.5, fontFamily: "'Libre Baskerville', serif", color: p.isUser ? T.amber : T.ink }}>{p.name}</div>
+                <div style={{ fontSize: 9.5, color: T.inkLight, letterSpacing: "0.04em" }}>{p.isUser ? "your profile" : `${p.born} · ${p.style}`}</div>
               </div>
             ))}
           </div>
@@ -4608,14 +4622,17 @@ export default function Lineage() {
   );
 }
 
-function PathPicker({ value, isActive, placeholder, onClick, isMobile }) {
+function PathPicker({ value, isActive, placeholder, onClick, isMobile, userProfile }) {
+  const label = value === "__user__"
+    ? (userProfile?.name || "You")
+    : PHOTOGRAPHERS[value]?.name;
   return (
     <button onClick={onClick} style={{
       padding: "4px 9px",
       background: isActive ? "rgba(26,24,18,0.05)" : "transparent",
       border: `1px solid ${isActive ? "rgba(26,24,18,0.28)" : T.border}`,
       borderRadius: 2, cursor: "pointer",
-      color: value ? T.ink : T.inkLight,
+      color: value ? (value === "__user__" ? T.amber : T.ink) : T.inkLight,
       fontSize: isMobile ? 10.5 : 11.5,
       fontFamily: "'EB Garamond', serif",
       letterSpacing: "0.03em",
@@ -4623,7 +4640,7 @@ function PathPicker({ value, isActive, placeholder, onClick, isMobile }) {
       textAlign: "left", transition: "all 0.15s",
       whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
     }}>
-      {value ? PHOTOGRAPHERS[value]?.name : placeholder}
+      {label || placeholder}
     </button>
   );
 }
