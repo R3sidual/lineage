@@ -1,4 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+// ─── SUPABASE CLIENT ──────────────────────────────────────────────────────────
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 // Each entry has: country (country of birth, clean string) and genre (primary photographic tradition)
@@ -260,29 +267,67 @@ const DETAIL_SCALE   = 1.6;  // zoom level when a node is selected
 const PAD = 0.04; // tighter padding so nodes use full width
 // Disputed connections are set editorially via CONNECTION_SOURCES status: "disputed"
 
-// ─── DATA HOOK ───────────────────────────────────────────────────────────────
-// Single source of truth for photographer data.
-// Currently returns the hardcoded dataset synchronously.
-//
-// TO CONNECT A BACKEND: replace the body of this hook with:
-//
-//   const [data, setData] = useState({});
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   useEffect(() => {
-//     fetch('/api/photographers')
-//       .then(r => r.json())
-//       .then(setData)
-//       .catch(setError)
-//       .finally(() => setLoading(false));
-//   }, []);
-//   return { data, loading, error };
-//
-// The rest of the app reads from `photographers` and never touches
-// the PHOTOGRAPHERS constant directly — so this is the only change needed.
-//
+// ─── DATA HOOK ────────────────────────────────────────────────────────────────
+// Fetches photographers and connections from Supabase.
+// Returns data in the same shape the rest of the app expects.
 function usePhotographers() {
-  return { data: PHOTOGRAPHERS, loading: false, error: null };
+  const [data, setData]       = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetch() {
+      try {
+        // Fetch photographers and connections in parallel
+        const [{ data: photographers, error: pErr }, { data: connections, error: cErr }] =
+          await Promise.all([
+            supabase.from("photographers").select("*").order("born"),
+            supabase.from("connections").select("*"),
+          ]);
+
+        if (pErr) throw pErr;
+        if (cErr) throw cErr;
+        if (cancelled) return;
+
+        // Build the same shape as the old PHOTOGRAPHERS constant:
+        // { [slug]: { name, born, nationality, country, bio, tags, links, influences: [slug, ...] } }
+        const byId = {};
+        photographers.forEach(p => {
+          byId[p.id] = {
+            ...p,
+            influences: [], // filled below
+          };
+        });
+
+        connections.forEach(c => {
+          if (byId[c.from_id]) {
+            byId[c.from_id].influences.push(c.to_id);
+          }
+        });
+
+        setData(byId);
+      } catch (err) {
+        if (!cancelled) setError(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetch();
+
+    // Subscribe to realtime changes so graph updates immediately when admin adds data
+    const sub = supabase
+      .channel("db-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "photographers" }, fetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "connections" }, fetch)
+      .subscribe();
+
+    return () => { cancelled = true; sub.unsubscribe(); };
+  }, []);
+
+  return { data, loading, error };
 }
 
 // ─── AUTH HOOK ────────────────────────────────────────────────────────────────
@@ -575,59 +620,78 @@ function DisclaimerPage({ onEnter, feedbackUrl, returning, onPrivacy, onRoadmap 
 }
 
 function useCurrentUser() {
-  const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : null;
-    } catch { return null; }
-  });
+  const [user, setUser]       = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const persist = (u) => {
-    setUser(u);
-    if (u) localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    else localStorage.removeItem(STORAGE_KEY);
+  const fetchProfile = async (authUser) => {
+    if (!authUser) { setProfile(null); return; }
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", authUser.id)
+      .single();
+    setProfile(data || null);
   };
 
-  const signup = ({ name, email, password, country, genre, born, bio, influences }) => {
-    // Dummy signup — in production this calls supabase.auth.signUp()
-    const newUser = {
-      id: `user_${Date.now()}`,
-      email,
-      name,
-      country,
-      genre,
-      born,
-      bio: bio || "",
-      influences: influences || [],
-      tier: 3,
-      createdAt: new Date().toISOString(),
-    };
-    persist(newUser);
-    return newUser;
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      fetchProfile(session?.user || null).finally(() => setLoading(false));
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      fetchProfile(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signup = async (email, password, name) => {
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      options: { data: { name } },
+    });
+    if (error) throw error;
+    return data.user;
   };
 
-  const login = ({ email, password }) => {
-    // Dummy login — checks localStorage for a matching email
-    // In production this calls supabase.auth.signInWithPassword()
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const u = JSON.parse(saved);
-        if (u.email === email) { persist(u); return { user: u, error: null }; }
-      }
-      return { user: null, error: "No account found with that email." };
-    } catch { return { user: null, error: "Something went wrong." }; }
+  const login = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data.user;
   };
 
-  const logout = () => persist(null);
-
-  const updateUser = (updates) => {
-    const updated = { ...user, ...updates };
-    persist(updated);
-    return updated;
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
   };
 
-  return { user, signup, login, logout, updateUser };
+  const updateUser = async (updates) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("users")
+      .update(updates)
+      .eq("id", user.id)
+      .select()
+      .single();
+    if (error) throw error;
+    setProfile(data);
+    return data;
+  };
+
+  const merged = user && profile ? {
+    id: user.id,
+    email: user.email,
+    name: profile.name || user.user_metadata?.name,
+    is_admin: profile.is_admin || false,
+    access_level: profile.access_level || "view",
+    ...profile,
+  } : null;
+
+  return { user: merged, signup, login, logout, updateUser, loading };
 }
 
 // ─── CONNECTION COUNT ─────────────────────────────────────────────────────────
@@ -640,13 +704,28 @@ function buildConnCounts(data) {
   return c;
 }
 
-// ─── 2D FORCE LAYOUT — CENTRALITY BASED ─────────────────────────────────────
-// Nodes are positioned by graph topology, not birth year.
-// Highly connected photographers sit near the centre.
-// Uses: edge attraction + node repulsion + centre gravity + boundary.
+// ─── GENRE METADATA — centroids arranged in a ring ───────────────────────────
+const GENRE_META = {
+  "Street":       { color: "#3d5a72" },
+  "Documentary":  { color: "#5a6e3a" },
+  "Portrait":     { color: "#7a4f3a" },
+  "Fine Art":     { color: "#4a4a72" },
+  "War":          { color: "#6e3a3a" },
+  "Fashion":      { color: "#5a4a6e" },
+  "Conceptual":   { color: "#3a6068" },
+  "Experimental": { color: "#6e5a3a" },
+  "Landscape":    { color: "#3a6048" },
+};
+
+// ─── GENRE-GRAVITY FORCE LAYOUT ──────────────────────────────────────────────
+// Standard force layout (repulsion + edge attraction + centre gravity)
+// plus a gentle pull toward each genre's centroid arranged in a ring.
+// GENRE_STRENGTH = 0.42, RING_RATIO = 0.40 (40% of canvas).
+// Highly-connected cross-genre nodes resist the pull — they stay where
+// their connections demand, creating visible bridges between clusters.
 function computeForceLayout(dims, data) {
   const ids = Object.keys(data);
-  const W = dims.w * 3.0; // wider virtual canvas — more room as network grows
+  const W = dims.w * 3.0;
   const H = dims.h;
   const cx = W / 2, cy = H / 2;
 
@@ -660,31 +739,49 @@ function computeForceLayout(dims, data) {
     });
   });
 
-  // Seed: place nodes in a circle with jitter to break symmetry
+  // Connection counts for resistance scaling
+  const connC = {};
+  ids.forEach(id => { connC[id] = adj[id].size; });
+  const maxConn = Math.max(...Object.values(connC), 1);
+
+  // Genre centroids — arranged in a ring at 40% of canvas
+  const genres = Object.keys(GENRE_META);
+  const ringR = Math.min(W, H) * 0.40;
+  const genreCentroids = {};
+  genres.forEach((g, i) => {
+    const angle = (i / genres.length) * 2 * Math.PI - Math.PI / 2;
+    genreCentroids[g] = {
+      x: cx + Math.cos(angle) * ringR,
+      y: cy + Math.sin(angle) * ringR,
+    };
+  });
+
+  // Seed: place nodes near their genre centroid with jitter
   const pos = {};
-  ids.forEach((id, i) => {
-    const angle = (i / ids.length) * 2 * Math.PI;
-    const r = Math.min(W, H) * 0.32;
-    const jitter = (Math.sin(id.charCodeAt(0) * 17 + id.length * 31) - 0.5) * r * 0.3;
+  ids.forEach((id) => {
+    const genre = data[id].genre;
+    const cent = genreCentroids[genre] || { x: cx, y: cy };
+    const seed = id.charCodeAt(0) * 31 + id.length * 17;
+    const jitter = 70;
     pos[id] = {
-      x: cx + Math.cos(angle) * (r + jitter),
-      y: cy + Math.sin(angle) * (r + jitter),
+      x: cent.x + (((seed * 7919) % 1000) / 1000 - 0.5) * jitter * 2,
+      y: cent.y + (((seed * 6271) % 1000) / 1000 - 0.5) * jitter * 2,
       vx: 0, vy: 0,
     };
   });
 
-  const REPULSION    = Math.min(W, H) * 0.09; // min distance between nodes
-  const EDGE_ATTRACT = 0.012;  // how strongly connected nodes pull together
-  const GRAVITY      = 0.04;   // pull toward centre — keeps graph compact
-  const BOUNDARY_PAD = Math.min(W, H) * 0.06;
-  const BOUNDARY_STR = 0.6;
-  const DAMPING      = 0.78;
-  const ITERATIONS   = 280;
+  const REPULSION    = Math.min(W, H) * 0.092;
+  const EDGE_ATTRACT = 0.013;
+  const GRAVITY      = 0.038;
+  const GENRE_STR    = 0.42;
+  const BOUNDARY_PAD = Math.min(W, H) * 0.05;
+  const BOUNDARY_STR = 0.65;
+  const DAMPING      = 0.77;
+  const ITERATIONS   = 360;
 
   for (let iter = 0; iter < ITERATIONS; iter++) {
     const alpha = 1 - iter / ITERATIONS;
 
-    // Reset forces
     ids.forEach(id => { pos[id].fx = 0; pos[id].fy = 0; });
 
     // Node–node repulsion
@@ -701,7 +798,7 @@ function computeForceLayout(dims, data) {
       }
     }
 
-    // Edge attraction — connected nodes pull toward each other
+    // Edge attraction
     ids.forEach(id => {
       adj[id].forEach(nbId => {
         if (!pos[nbId]) return;
@@ -712,13 +809,25 @@ function computeForceLayout(dims, data) {
       });
     });
 
-    // Centre gravity — pulls all nodes gently toward centre
-    // Stronger for less-connected nodes so hubs naturally dominate centre
+    // Centre gravity — weaker for high-degree hubs
     ids.forEach(id => {
       const degree = adj[id].size;
-      const gravScale = Math.max(0.2, 1 - degree / 12);
+      const gravScale = Math.max(0.15, 1 - degree / 12);
       pos[id].fx += (cx - pos[id].x) * GRAVITY * gravScale * alpha;
       pos[id].fy += (cy - pos[id].y) * GRAVITY * gravScale * alpha;
+    });
+
+    // Genre gravity — gentle pull toward genre centroid
+    // Highly-connected cross-genre nodes resist (they bridge clusters)
+    ids.forEach(id => {
+      const genre = data[id].genre;
+      const cent = genreCentroids[genre];
+      if (!cent) return;
+      const degree = adj[id].size;
+      const resist = Math.max(0.2, 1 - degree / (maxConn * 1.1));
+      const str = GENRE_STR * resist * alpha;
+      pos[id].fx += (cent.x - pos[id].x) * str;
+      pos[id].fy += (cent.y - pos[id].y) * str;
     });
 
     // Boundary repulsion
@@ -2384,25 +2493,39 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
 }
 function AuthScreen({ onAuth }) {
   const { signup, login } = useCurrentUser();
-  const [mode, setMode] = useState("login"); // "login" | "signup"
-  const [step, setStep] = useState(1); // signup: 1=credentials, 2=identity, 3=influences
+  const [mode, setMode] = useState("login");
+  const [step, setStep] = useState(1);
   const [error, setError] = useState(null);
-  const [infSearch, setInfSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   const [draft, setDraft] = useState({
-    name: "", email: "", password: "", country: "", genre: "Street", born: "", bio: "", influences: [],
+    name: "", email: "", password: "", country: "", genre: "Street", born: "", bio: "",
   });
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError(null);
-    const result = login({ email: draft.email, password: draft.password });
-    if (result.error) setError(result.error);
-    else onAuth(result.user);
+    setLoading(true);
+    try {
+      const user = await login(draft.email, draft.password);
+      onAuth(user);
+    } catch (err) {
+      setError(err.message || "Sign in failed. Check your email and password.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (!draft.name || !draft.email || !draft.password) { setError("Please fill in all fields."); return; }
-    const user = signup(draft);
-    onAuth(user);
+    setError(null);
+    setLoading(true);
+    try {
+      const user = await signup(draft.email, draft.password, draft.name);
+      onAuth(user);
+    } catch (err) {
+      setError(err.message || "Sign up failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -2450,119 +2573,30 @@ function AuthScreen({ onAuth }) {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {/* Step indicator */}
-            <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
-              {[1,2,3].map(n => (
-                <div key={n} style={{ height: 2, flex: 1, borderRadius: 1, background: step >= n ? T.ink : T.border, transition: "background 0.2s" }} />
-              ))}
-            </div>
-
-            {step === 1 && (
-              <>
-                {[{ label: "FULL NAME", key: "name", type: "text" }, { label: "EMAIL", key: "email", type: "email" }, { label: "PASSWORD", key: "password", type: "password" }].map(({ label, key, type }) => (
-                  <div key={key}>
-                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
-                    <input type={type} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
-                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-                  </div>
-                ))}
-                <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6, marginTop: 4 }}>
-                  Your profile is stored in your browser only — nothing is sent to any server.
-                </p>
-              </>
-            )}
-
-            {step === 2 && (
-              <>
-                {[{ label: "BIRTH YEAR", key: "born", placeholder: "e.g. 1988" }, { label: "COUNTRY OF BIRTH", key: "country", placeholder: "e.g. Germany" }].map(({ label, key, placeholder }) => (
-                  <div key={key}>
-                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
-                    <input value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))} placeholder={placeholder}
-                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-                  </div>
-                ))}
-                <div>
-                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>GENRE</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"].map(g => (
-                      <button key={g} onClick={() => setDraft(d => ({ ...d, genre: g }))}
-                        style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.genre === g ? T.ink : T.border}`, borderRadius: 2, background: draft.genre === g ? T.ink : "transparent", color: draft.genre === g ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif", transition: "all 0.12s" }}>
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO <span style={{ color: T.inkFaint }}>(optional)</span></div>
-                  <textarea value={draft.bio} onChange={e => setDraft(d => ({ ...d, bio: e.target.value }))} placeholder="A few words about your work…" rows={2}
-                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
-                </div>
-              </>
-            )}
-
-            {step === 3 && (
-              <div>
-                <p style={{ fontSize: 13, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, marginBottom: 12 }}>Which photographers shaped your vision?</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-                  {(draft.influences || []).map(infId => (
-                    <div key={infId} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 10px", border: `1px solid rgba(74,111,165,0.3)`, borderRadius: 2, background: "rgba(74,111,165,0.05)" }}>
-                      <span style={{ fontSize: 11.5, color: T.blue, fontFamily: "'EB Garamond', serif" }}>{PHOTOGRAPHERS[infId]?.name}</span>
-                      <button onClick={() => setDraft(d => ({ ...d, influences: d.influences.filter(i => i !== infId) }))}
-                        style={{ background: "none", border: "none", color: "rgba(74,111,165,0.5)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
-                    </div>
-                  ))}
-                  {draft.influences.length === 0 && <span style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic" }}>None yet — you can always add these later</span>}
-                </div>
-                <div style={{ position: "relative" }}>
-                  <input autoFocus value={infSearch} onChange={e => setInfSearch(e.target.value)} placeholder="Search photographers…"
-                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-                  {infSearch.trim().length > 0 && (() => {
-                    const cur = new Set(draft.influences);
-                    const matches = Object.entries(PHOTOGRAPHERS).filter(([id, p]) => !cur.has(id) && p.name.toLowerCase().includes(infSearch.toLowerCase())).slice(0, 5);
-                    return matches.length > 0 ? (
-                      <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, boxShadow: "0 6px 20px rgba(26,24,18,0.09)", zIndex: 10 }}>
-                        {matches.map(([id, p], i) => (
-                          <div key={id} onClick={() => { setDraft(d => ({ ...d, influences: [...d.influences, id] })); setInfSearch(""); }}
-                            style={{ padding: "9px 14px", cursor: "pointer", borderBottom: i < matches.length-1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 8, alignItems: "baseline" }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(74,111,165,0.05)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                            <span style={{ fontSize: 14, fontFamily: "'Libre Baskerville', serif", color: T.ink }}>{p.name}</span>
-                            <span style={{ fontSize: 9, color: T.inkLight }}>{p.born} · {p.genre}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null;
-                  })()}
-                </div>
+            {[
+              { label: "FULL NAME", key: "name", type: "text" },
+              { label: "EMAIL", key: "email", type: "email" },
+              { label: "PASSWORD", key: "password", type: "password" },
+            ].map(({ label, key, type }) => (
+              <div key={key}>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+                <input type={type} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+                  onKeyDown={e => e.key === "Enter" && handleSignup()}
+                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
               </div>
-            )}
+            ))}
+            <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6 }}>
+              Your data is stored securely. No data is shared with third parties.
+            </p>
 
             {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
 
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-              {step > 1 && (
-                <button onClick={() => setStep(s => s - 1)}
-                  style={{ padding: "9px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
-                  ← BACK
-                </button>
-              )}
-              {step < 3 ? (
-                <button onClick={() => {
-                  if (step === 1 && (!draft.name || !draft.email || !draft.password)) { setError("Please fill in all fields."); return; }
-                  setError(null); setStep(s => s + 1);
-                }}
-                  style={{ flex: 1, padding: "9px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.12em", fontFamily: "'EB Garamond', serif" }}>
-                  NEXT →
-                </button>
-              ) : (
-                <button onClick={handleSignup}
-                  style={{ flex: 1, padding: "9px", background: T.amber, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.12em", fontFamily: "'EB Garamond', serif" }}>
-                  JOIN LINEAGE
-                </button>
-              )}
-            </div>
+            <button onClick={handleSignup} disabled={loading}
+              style={{ padding: "10px", background: T.amber, border: "none", borderRadius: 2, cursor: loading ? "default" : "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.12em", fontFamily: "'EB Garamond', serif", opacity: loading ? 0.7 : 1 }}>
+              {loading ? "JOINING…" : "JOIN LINEAGE"}
+            </button>
 
-            <div style={{ textAlign: "center", fontSize: 12, color: T.inkLight, marginTop: 4 }}>
+            <div style={{ textAlign: "center", fontSize: 12, color: T.inkLight }}>
               Already have an account?{" "}
               <span onClick={() => { setMode("login"); setError(null); }} style={{ color: T.ink, cursor: "pointer", borderBottom: `1px solid ${T.border}` }}>Sign in</span>
             </div>
@@ -2579,6 +2613,237 @@ function AuthScreen({ onAuth }) {
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
+// ─── ADMIN: ADD PHOTOGRAPHER ──────────────────────────────────────────────────
+const PHOTOGRAPHER_TAGS = ["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"];
+
+function AddPhotographerModal({ onClose, onSaved }) {
+  const [draft, setDraft] = useState({ name: "", born: "", nationality: "", country: "", bio: "", tags: [], links: {} });
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState(null);
+
+  const set = (key, val) => setDraft(d => ({ ...d, [key]: val }));
+  const toggleTag = (tag) => setDraft(d => ({
+    ...d, tags: d.tags.includes(tag) ? d.tags.filter(t => t !== tag) : [...d.tags, tag],
+  }));
+
+  const save = async () => {
+    if (!draft.name.trim()) { setError("Name is required."); return; }
+    setSaving(true); setError(null);
+    try {
+      const { data, error: err } = await supabase
+        .from("photographers")
+        .insert({
+          name:        draft.name.trim(),
+          born:        draft.born ? parseInt(draft.born) : null,
+          nationality: draft.nationality.trim() || null,
+          country:     draft.country.trim() || null,
+          bio:         draft.bio.trim() || null,
+          tags:        draft.tags,
+          links:       draft.links,
+        })
+        .select()
+        .single();
+      if (err) throw err;
+      onSaved(data);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,24,18,0.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ width: "100%", maxWidth: 580, background: T.paper, borderRadius: "4px 4px 0 0", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "16px 22px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
+          <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Add Photographer</div>
+          <button onClick={onClose} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 22, cursor: "pointer", color: T.inkLight, lineHeight: 1 }}>×</button>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
+          {[
+            { label: "NAME *", key: "name", placeholder: "e.g. Henri Cartier-Bresson" },
+            { label: "BORN", key: "born", placeholder: "e.g. 1908" },
+            { label: "NATIONALITY", key: "nationality", placeholder: "e.g. French" },
+            { label: "COUNTRY", key: "country", placeholder: "e.g. France" },
+          ].map(({ label, key, placeholder }) => (
+            <div key={key}>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+              <input value={draft[key]} onChange={e => set(key, e.target.value)} placeholder={placeholder}
+                style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+            </div>
+          ))}
+
+          <div>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>TAGS</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {PHOTOGRAPHER_TAGS.map(tag => (
+                <button key={tag} onClick={() => toggleTag(tag)}
+                  style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.tags.includes(tag) ? T.ink : T.border}`, borderRadius: 2, background: draft.tags.includes(tag) ? T.ink : "transparent", color: draft.tags.includes(tag) ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO</div>
+            <textarea value={draft.bio} onChange={e => set("bio", e.target.value)} rows={3} placeholder="A short biography…"
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>WEBSITE <span style={{ color: T.inkFaint }}>(optional)</span></div>
+            <input value={draft.links.website || ""} onChange={e => setDraft(d => ({ ...d, links: { ...d.links, website: e.target.value } }))} placeholder="https://…"
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+          </div>
+
+          {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
+        </div>
+        <div style={{ padding: "12px 22px", borderTop: `1px solid ${T.border}`, display: "flex", gap: 8 }}>
+          <button onClick={onClose}
+            style={{ padding: "8px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
+            CANCEL
+          </button>
+          <button onClick={save} disabled={saving}
+            style={{ flex: 1, padding: "8px", background: T.ink, border: "none", borderRadius: 2, cursor: saving ? "default" : "pointer", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif", opacity: saving ? 0.7 : 1 }}>
+            {saving ? "SAVING…" : "ADD PHOTOGRAPHER"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ADMIN: ADD CONNECTION ────────────────────────────────────────────────────
+function AddConnectionModal({ photographers, onClose, onSaved }) {
+  const [fromId, setFromId]     = useState("");
+  const [toId, setToId]         = useState("");
+  const [sourceText, setSourceText] = useState("");
+  const [sourceUrl, setSourceUrl]   = useState("");
+  const [fromSearch, setFromSearch] = useState("");
+  const [toSearch, setToSearch]     = useState("");
+  const [saving, setSaving]     = useState(false);
+  const [error, setError]       = useState(null);
+
+  const pList = Object.values(photographers).sort((a, b) => a.name.localeCompare(b.name));
+
+  const fromPhotographer = photographers[fromId];
+  const toPhotographer   = photographers[toId];
+
+  const save = async () => {
+    if (!fromId || !toId)      { setError("Please select both photographers."); return; }
+    if (fromId === toId)       { setError("A photographer cannot influence themselves."); return; }
+    if (!sourceText.trim())    { setError("A source is required for every connection."); return; }
+    setSaving(true); setError(null);
+    try {
+      const { data, error: err } = await supabase
+        .from("connections")
+        .insert({
+          from_id:     fromId,
+          to_id:       toId,
+          source_text: sourceText.trim(),
+          source_url:  sourceUrl.trim() || null,
+          status:      "confirmed",
+        })
+        .select()
+        .single();
+      if (err) throw err;
+      onSaved(data);
+      onClose();
+    } catch (err) {
+      setError(err.message.includes("unique") ? "This connection already exists." : err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const SearchField = ({ label, value, search, setSearch, setId, excludeId }) => {
+    const matches = pList
+      .filter(p => p.id !== excludeId && p.name.toLowerCase().includes(search.toLowerCase()))
+      .slice(0, 6);
+    return (
+      <div>
+        <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+        {value ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${T.border}` }}>
+            <span style={{ fontSize: 14, fontFamily: "'Libre Baskerville', serif", flex: 1 }}>{value.name}</span>
+            <button onClick={() => { setId(""); setSearch(""); }}
+              style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 16, lineHeight: 1 }}>×</button>
+          </div>
+        ) : (
+          <div style={{ position: "relative" }}>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search photographers…" autoFocus
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+            {search && matches.length > 0 && (
+              <div style={{ position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, boxShadow: "0 4px 16px rgba(26,24,18,0.1)", zIndex: 10, maxHeight: 200, overflowY: "auto" }}>
+                {matches.map((p, i) => (
+                  <div key={p.id} onClick={() => { setId(p.id); setSearch(""); }}
+                    style={{ padding: "9px 14px", cursor: "pointer", borderBottom: i < matches.length - 1 ? `1px solid ${T.border}` : "none" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <span style={{ fontSize: 13.5, fontFamily: "'Libre Baskerville', serif" }}>{p.name}</span>
+                    {p.born && <span style={{ fontSize: 9, color: T.inkLight, marginLeft: 8 }}>{p.born}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,24,18,0.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ width: "100%", maxWidth: 580, background: T.paper, borderRadius: "4px 4px 0 0", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "16px 22px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
+          <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Add Connection</div>
+          <button onClick={onClose} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 22, cursor: "pointer", color: T.inkLight, lineHeight: 1 }}>×</button>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 22px", display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Direction indicator */}
+          {fromPhotographer && toPhotographer && (
+            <div style={{ padding: "10px 14px", background: "rgba(74,111,165,0.06)", border: `1px solid rgba(74,111,165,0.15)`, borderRadius: 2, fontSize: 13, color: T.inkMid, fontStyle: "italic", lineHeight: 1.5 }}>
+              <strong style={{ fontStyle: "normal", color: T.ink }}>{fromPhotographer.name}</strong> was influenced by <strong style={{ fontStyle: "normal", color: T.ink }}>{toPhotographer.name}</strong>
+            </div>
+          )}
+
+          <SearchField label="PHOTOGRAPHER (influenced)" value={fromPhotographer} search={fromSearch} setSearch={setFromSearch} setId={setFromId} excludeId={toId} />
+          <SearchField label="INFLUENCED BY" value={toPhotographer} search={toSearch} setSearch={setToSearch} setId={setToId} excludeId={fromId} />
+
+          <div>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>SOURCE <span style={{ color: T.red }}>*</span></div>
+            <input value={sourceText} onChange={e => setSourceText(e.target.value)} placeholder="e.g. HCB, The Mind's Eye, 1999 — p.14"
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>SOURCE URL <span style={{ color: T.inkFaint }}>(optional)</span></div>
+            <input value={sourceUrl} onChange={e => setSourceUrl(e.target.value)} placeholder="https://…"
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+          </div>
+
+          {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
+        </div>
+        <div style={{ padding: "12px 22px", borderTop: `1px solid ${T.border}`, display: "flex", gap: 8 }}>
+          <button onClick={onClose}
+            style={{ padding: "8px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
+            CANCEL
+          </button>
+          <button onClick={save} disabled={saving}
+            style={{ flex: 1, padding: "8px", background: T.ink, border: "none", borderRadius: 2, cursor: saving ? "default" : "pointer", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif", opacity: saving ? 0.7 : 1 }}>
+            {saving ? "SAVING…" : "ADD CONNECTION"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Lineage() {
   // ── DATA ──
   const { data: PHOTOGRAPHERS, loading: dataLoading } = usePhotographers();
@@ -2594,8 +2859,12 @@ export default function Lineage() {
   });
   const [sourcesFilter, setSourcesFilter] = useState(null);
   const [prevAppView, setPrevAppView]     = useState(null);
-  const [footerMenuOpen, setFooterMenuOpen] = useState(false);
-  const [lightbox, setLightbox]             = useState(null); // { works, index }
+  const [footerMenuOpen, setFooterMenuOpen]   = useState(false);
+  const [lightbox, setLightbox]               = useState(null);
+  const [showAddPhotographer, setShowAddPhotographer] = useState(false);
+  const [showAddConnection, setShowAddConnection]     = useState(false);
+
+  const isAdmin = activeUser?.is_admin || false;
 
   const navigateTo = (view) => { setPrevAppView(appView); setAppView(view); };
 
@@ -2638,6 +2907,8 @@ export default function Lineage() {
   const [selected, setSelected]         = useState(null);
   const [pulsingNode, setPulsingNode]   = useState(null);
   const [hovered, setHovered]           = useState(null);
+  const [ripples, setRipples]           = useState([]);
+  const rippleKeyRef                    = useRef(0);
   const [sheetOpen, setSheetOpen]       = useState(false);
   const [pathFrom, setPathFrom]         = useState(null);
   const [pathTo, setPathTo]             = useState(null);
@@ -3399,6 +3670,20 @@ export default function Lineage() {
               </button>
             ))}
           </div>
+
+          {/* Admin controls */}
+          {isAdmin && (
+            <>
+              <button onClick={() => setShowAddPhotographer(true)}
+                style={{ fontSize: 10, letterSpacing: "0.08em", padding: "5px 10px", background: T.amber, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
+                + PHOTOGRAPHER
+              </button>
+              <button onClick={() => setShowAddConnection(true)}
+                style={{ fontSize: 10, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.amber}`, borderRadius: 2, cursor: "pointer", color: T.amber, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
+                + CONNECTION
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -3501,11 +3786,18 @@ export default function Lineage() {
       {/* ── GRAPH ── */}
       <style>{`
         @keyframes nodeSelect {
-          0%   { r: ${(2.8 + 6.5 + 5.5).toFixed(1)}; opacity: 0.4; }
-          60%  { r: ${(2.8 + 6.5 + 14).toFixed(1)};  opacity: 0.12; }
-          100% { r: ${(2.8 + 6.5 + 20).toFixed(1)};  opacity: 0; }
+          0%   { r: ${(3.5 + 13.5 + 5.5).toFixed(1)}; opacity: 0.4; }
+          60%  { r: ${(3.5 + 13.5 + 14).toFixed(1)};  opacity: 0.12; }
+          100% { r: ${(3.5 + 13.5 + 20).toFixed(1)};  opacity: 0; }
         }
+        @keyframes rippleOut  { 0% { r:4; stroke-opacity:.55; } 100% { r:90;  stroke-opacity:0; } }
+        @keyframes rippleOut2 { 0% { r:4; stroke-opacity:.3;  } 100% { r:140; stroke-opacity:0; } }
+        @keyframes rippleOut3 { 0% { r:4; stroke-opacity:.15; } 100% { r:180; stroke-opacity:0; } }
+        @keyframes edgePulse  { 0% { stroke-opacity:0; } 20% { stroke-opacity:.35; } 100% { stroke-opacity:0; } }
         .node-pulse { animation: nodeSelect 0.55s ease-out forwards; }
+        .rp1 { animation: rippleOut  1.1s cubic-bezier(.1,0,.6,1) forwards; }
+        .rp2 { animation: rippleOut2 1.5s cubic-bezier(.1,0,.5,1) forwards; animation-delay:.12s; }
+        .rp3 { animation: rippleOut3 1.9s cubic-bezier(.1,0,.4,1) forwards; animation-delay:.28s; }
       `}</style>
       <div ref={containerRef}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
@@ -3530,8 +3822,71 @@ export default function Lineage() {
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.016'/%3E%3C/svg%3E")`,
         }} />
 
+        {/* ── RIPPLE LAYER ── */}
+        {ripples.map(ripple => (
+          <svg key={ripple.key} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 8, overflow: "visible" }}>
+            <circle cx={ripple.x} cy={ripple.y} r={0} fill="none" stroke={T.inkMid} strokeWidth={1.2} className="rp1" />
+            <circle cx={ripple.x} cy={ripple.y} r={0} fill="none" stroke={T.inkFaint} strokeWidth={0.7} className="rp2" />
+            <circle cx={ripple.x} cy={ripple.y} r={0} fill="none" stroke={T.inkFaint} strokeWidth={0.4} className="rp3" />
+            {ripple.waves.map((degreeNodes, d) =>
+              degreeNodes.map(nbId => {
+                const nbPos = scaledPos[nbId];
+                if (!nbPos) return null;
+                return (
+                  <line key={nbId}
+                    x1={ripple.x} y1={ripple.y}
+                    x2={nbPos.x + pan.x} y2={nbPos.y + pan.y}
+                    stroke={T.inkFaint}
+                    strokeWidth={Math.max(0.3, 0.8 - d * 0.18)}
+                    strokeOpacity={0}
+                    style={{ animation: `edgePulse ${0.5 + d * 0.1}s ease-out ${(d + 1) * 0.18}s forwards` }}
+                  />
+                );
+              })
+            )}
+          </svg>
+        ))}
+
         {/* Transformable world — pan only, zoom handled by scaledPos spread */}
         <div style={{ position: "absolute", inset: 0, transform: `translate(${pan.x}px, ${pan.y}px)`, transformOrigin: "center center" }}>
+
+          {/* ── GENRE CLUSTER LABELS ── floating at cluster centroids, fades on hover */}
+          {mode === "explore" && (() => {
+            // Compute actual centroid of each genre from scaledPos
+            const groups = {};
+            Object.entries(PHOTOGRAPHERS).forEach(([id, p]) => {
+              if (!scaledPos[id]) return;
+              if (!groups[p.genre]) groups[p.genre] = [];
+              groups[p.genre].push(scaledPos[id]);
+            });
+            return Object.entries(groups).map(([genre, pts]) => {
+              const gcx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+              const gcy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+              // Place label above cluster centroid
+              const maxR = Math.max(...pts.map(p => Math.sqrt((p.x - gcx) ** 2 + (p.y - gcy) ** 2)));
+              const labelY = gcy - maxR - 10;
+              const meta = GENRE_META[genre];
+              return (
+                <div key={genre} style={{
+                  position: "absolute",
+                  left: gcx, top: labelY,
+                  transform: "translateX(-50%)",
+                  pointerEvents: "none",
+                  zIndex: 2,
+                  fontSize: 8,
+                  letterSpacing: "0.14em",
+                  color: meta?.color || T.inkLight,
+                  opacity: activeId ? 0.15 : (showNames ? 0.6 : 0.45),
+                  transition: "opacity 0.35s",
+                  whiteSpace: "nowrap",
+                  fontFamily: "'EB Garamond', serif",
+                }}>
+                  {genre.toUpperCase()}
+                </div>
+              );
+            });
+          })()}
+
           <svg style={{ position: "absolute", inset: 0, width: dims.w * 3, height: dims.h, overflow: "visible", zIndex: 1 }}>
 
             {/* Edges — use localEdits influences if present */}
@@ -3556,6 +3911,11 @@ export default function Lineage() {
                 const connSource = CONNECTION_SOURCES[eKey2] || CONNECTION_SOURCES[eKey3] || null;
                 const isPending = !connSource || connSource.status !== "confirmed";
 
+                // At rest: show faint edges for high-connectivity pairs
+                const atRestOpacity = (!activeId && !filteredIds)
+                  ? ((connCounts[id] + connCounts[infId]) > 9 ? 0.1 : (connCounts[id] + connCounts[infId]) > 5 ? 0.05 : 0)
+                  : 0;
+
                 // Second-order: edge connects a highlighted node to a second-order node
                 const isSecondOrder = !isHL && activeId && (
                   (highlighted.has(id) && secondOrder.has(infId)) ||
@@ -3579,7 +3939,7 @@ export default function Lineage() {
                       : isHL ? 0.65
                       : isSecondOrder ? 0.18
                       : disputed ? 0.25
-                      : 0
+                      : atRestOpacity
                     }
                     strokeDasharray={
                       disputed ? "4 4"
@@ -3637,7 +3997,7 @@ export default function Lineage() {
             const isInfluenced = activeId && id !== activeId && (localEdits[id]?.influences ?? PHOTOGRAPHERS[id]?.influences ?? []).includes(activeId);
 
             const connNorm = connCounts[id] / maxConn;
-            const BASE = 2.8, RANGE = 6.5;
+            const BASE = 3.5, RANGE = 13.5;
             const r = isLitNode ? BASE + RANGE + 3.5
               : (isSel && mode !== "path") ? BASE + RANGE + 3.5
               : (isHov && mode !== "path") ? BASE + RANGE + 2
@@ -3655,7 +4015,33 @@ export default function Lineage() {
 
             return (
               <div key={id} className="node"
-                onMouseEnter={() => !isMobile && setHovered(id)}
+                onMouseEnter={() => {
+                  if (isMobile) return;
+                  setHovered(id);
+                  // Fire ripple from this node
+                  const srcPos = scaledPos[id];
+                  if (!srcPos) return;
+                  const key = rippleKeyRef.current++;
+                  // BFS waves
+                  const visited = new Set([id]);
+                  const waves = [];
+                  let frontier = [id];
+                  for (let d = 0; d < 4 && frontier.length > 0; d++) {
+                    const next = [];
+                    frontier.forEach(fid => {
+                      const fp = PHOTOGRAPHERS[fid];
+                      if (!fp) return;
+                      [...fp.influences, ...Object.keys(PHOTOGRAPHERS).filter(k => PHOTOGRAPHERS[k].influences.includes(fid))]
+                        .forEach(nbId => {
+                          if (!visited.has(nbId) && PHOTOGRAPHERS[nbId]) { visited.add(nbId); next.push(nbId); }
+                        });
+                    });
+                    if (next.length) waves.push(next);
+                    frontier = next;
+                  }
+                  setRipples(prev => [...prev.slice(-3), { key, sourceId: id, x: srcPos.x + pan.x, y: srcPos.y + pan.y, waves }]);
+                  setTimeout(() => setRipples(prev => prev.filter(r => r.key !== key)), 2400);
+                }}
                 onMouseLeave={() => !isMobile && setHovered(null)}
                 onClick={() => handleNodeTap(id)}
                 style={{
@@ -3681,7 +4067,7 @@ export default function Lineage() {
                   letterSpacing: "0.025em",
                   textAlign: "center", lineHeight: 1.2,
                   whiteSpace: "nowrap",
-                  opacity: showNames || isSel || isHov || isInPath ? 1 : 0,
+                  opacity: showNames || isSel || isHov || isInPath || connNorm > 0.5 ? 1 : 0,
                   transition: "opacity 0.4s",
                   pointerEvents: "none",
                   background: `rgba(${T.bg === "#f9f7f2" ? "249,247,242" : "249,247,242"},0.82)`,
@@ -4145,6 +4531,14 @@ export default function Lineage() {
           startIndex={lightbox.index}
           onClose={() => setLightbox(null)}
         />
+      )}
+
+      {/* ── ADMIN MODALS ── */}
+      {showAddPhotographer && (
+        <AddPhotographerModal onClose={() => setShowAddPhotographer(false)} onSaved={() => {}} />
+      )}
+      {showAddConnection && (
+        <AddConnectionModal photographers={PHOTOGRAPHERS} onClose={() => setShowAddConnection(false)} onSaved={() => {}} />
       )}
 
       {/* ── FOOTER ── */}
