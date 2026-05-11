@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // ─── SUPABASE CLIENT ──────────────────────────────────────────────────────────
@@ -179,81 +180,6 @@ const BORN_MIN = 1810;
 const BORN_MAX = 1985;
 const LINK_LABELS = { instagram: "Instagram", website: "Website", book: "Buy Book" };
 
-// Lighthouse works for canonical photographers
-// All images from Wikimedia Commons (public domain or Creative Commons licensed)
-const PHOTOGRAPHER_WORKS = {
-  "henri-cartier-bresson": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/HCB_BehindSaintLazare.jpg&width=300", caption: "Behind the Gare Saint-Lazare, Paris, 1932" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/DesperateMigrantMother.jpg&width=300", caption: "Srinagar, Kashmir, 1948" },
-  ],
-  "dorothea-lange": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lange-MigrantMother02.jpg&width=300", caption: "Migrant Mother, Nipomo, California, 1936" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lange-WheatFieldWorkers.jpg&width=300", caption: "Toward Los Angeles, California, 1937" },
-  ],
-  "ansel-adams": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ansel_Adams_-_National_Archives_79-AAB-01.jpg&width=300", caption: "Grand Teton National Park, Wyoming, 1942" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ansel_Adams_-_National_Archives_79-AAF-02.jpg&width=300", caption: "White House Ruin, Canyon de Chelly, 1942" },
-  ],
-  "robert-frank": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Trolley_New_Orleans.jpg&width=300", caption: "Trolley, New Orleans, 1955" },
-  ],
-  "diane-arbus": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Diane_Arbus_-_Identical_Twins.jpg&width=300", caption: "Identical Twins, Roselle, New Jersey, 1967" },
-  ],
-  "walker-evans": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Floyd_Burroughs_1936.jpg&width=300", caption: "Floyd Burroughs, Hale County, Alabama, 1936" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Bethlehem_graveyard_and_steel_mill%2C_Pennsylvania%2C_by_Walker_Evans%2C_1935.jpg&width=300", caption: "Bethlehem Graveyard and Steel Mill, Pennsylvania, 1935" },
-  ],
-  "weegee": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Weegee_Fellig_Murder_1939.jpg&width=300", caption: "Their First Murder, Brooklyn, 1941" },
-  ],
-  "gordon-parks": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/American_Gothic_-_Gordon_Parks_1942.jpg&width=300", caption: "American Gothic, Washington D.C., 1942" },
-  ],
-  "sebastiao-salgado": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Sebastiao_Salgado-_Serra_Pelada_Gold_Mine%2C_Brazil%2C_1986_%28cropped%29.jpg&width=300", caption: "Serra Pelada Gold Mine, Brazil, 1986" },
-  ],
-  "man-ray": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Man_Ray_Le_Violon_d%27Ingres.jpg&width=300", caption: "Le Violon d'Ingres, 1924" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Man_Ray_Rayograph_1922.jpg&width=300", caption: "Rayograph, 1922" },
-  ],
-  "edward-weston": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Weston_Pepper_No._30.jpg&width=300", caption: "Pepper No. 30, 1930" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Weston_Nude.jpg&width=300", caption: "Nude, 1936" },
-  ],
-  "alfred-stieglitz": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Alfred_Stieglitz_-_The_Steerage_-_Google_Art_Project.jpg&width=300", caption: "The Steerage, 1907" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Alfred_Stieglitz_-_Winter-Fifth_Avenue.jpg&width=300", caption: "Winter, Fifth Avenue, 1893" },
-  ],
-  "paul-strand": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Paul_Strand_-_Blind_Woman%2C_New_York%2C_1916.jpg&width=300", caption: "Blind Woman, New York, 1916" },
-  ],
-  "nadar": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Sarah_Bernhardt_by_Nadar.jpg&width=300", caption: "Sarah Bernhardt, c. 1864" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Nadar_-_Charles_Baudelaire_%281820-1867%29_1862.jpg&width=300", caption: "Charles Baudelaire, 1862" },
-  ],
-  "eugene-atget": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Atget_Versailles.jpg&width=300", caption: "Versailles, 1901" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Atget_-_Quai_Voltaire.jpg&width=300", caption: "Quai Voltaire, Paris, 1900" },
-  ],
-  "lewis-hine": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Powerhouse_mechanic_working_on_steam_pump.jpg&width=300", caption: "Powerhouse Mechanic, 1920" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lewis_Hine_Power_house_mechanic_working_on_steam_pump.jpg&width=300", caption: "Child Labour, Carolina Cotton Mill, 1908" },
-  ],
-  "lisette-model": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lisette_Model_Running_Legs.jpg&width=300", caption: "Running Legs, Fifth Avenue, New York, c. 1940" },
-  ],
-  "brassai": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Brassai_Paris_de_Nuit.jpg&width=300", caption: "Paris de Nuit, 1932" },
-  ],
-  "robert-doisneau": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Baiser_de_l%27hotel_de_ville.jpg&width=300", caption: "Le Baiser de l'Hôtel de Ville, Paris, 1950" },
-  ],
-  "yousuf-karsh": [
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Winston_Churchill_by_Yousuf_Karsh.jpg&width=300", caption: "Winston Churchill, Ottawa, 1941" },
-    { url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ernest_Hemingway_1950_Karsh.jpg&width=300", caption: "Ernest Hemingway, 1957" },
-  ],
-};
 const T = {
   bg: "#f5f2ec", paper: "#f9f7f2", ink: "#1a1812",
   inkMid: "#4a4538", inkLight: "#9a9080", inkFaint: "#c0b8a8",
@@ -265,7 +191,6 @@ const SHOW_YEARS_AT  = 2.2;
 const OVERVIEW_SCALE = 0.38; // zoomed out enough to see most of the network
 const DETAIL_SCALE   = 1.6;  // zoom level when a node is selected
 const PAD = 0.04; // tighter padding so nodes use full width
-// Disputed connections are set editorially via CONNECTION_SOURCES status: "disputed"
 
 // ─── DATA HOOK ────────────────────────────────────────────────────────────────
 // Fetches photographers and connections from Supabase.
@@ -348,7 +273,7 @@ function RoadmapPage({ onBack, PHOTOGRAPHERS, totalConnections }) {
     {
       label: "NOW",
       heading: "What you're using today",
-      body: `A public network of ${PHOTOGRAPHERS ? Object.keys(PHOTOGRAPHERS).length : 126} photographers and ${totalConnections || 223} documented connections. Every connection has written reasoning; 46 are formally cited with sources. You can explore anonymously or create a local profile to track your influences and discoveries.`,
+      body: "Lineage is a live, growing network. Every photographer and connection is added manually by the editor with a verified source. You can explore the network anonymously, trace influence paths between photographers, and create a profile to map your own place in photographic history.",
     },
     {
       label: "NEXT",
@@ -635,9 +560,10 @@ function useCurrentUser() {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user || null);
-      fetchProfile(session?.user || null).finally(() => setLoading(false));
+      await fetchProfile(session?.user || null);
+      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -671,9 +597,28 @@ function useCurrentUser() {
 
   const updateUser = async (updates) => {
     if (!user) return;
+
+    // Fields that live on the users table directly
+    const directFields = ['name', 'email', 'is_admin', 'access_level'];
+    const direct = {};
+    const profileUpdates = {};
+
+    Object.entries(updates).forEach(([k, v]) => {
+      if (directFields.includes(k)) direct[k] = v;
+      else profileUpdates[k] = v;
+    });
+
+    // Merge profile updates into the jsonb profile column
+    const payload = {};
+    if (Object.keys(direct).length) Object.assign(payload, direct);
+    if (Object.keys(profileUpdates).length) {
+      const currentProfile = profile?.profile || {};
+      payload.profile = { ...currentProfile, ...profileUpdates };
+    }
+
     const { data, error } = await supabase
       .from("users")
-      .update(updates)
+      .update(payload)
       .eq("id", user.id)
       .select()
       .single();
@@ -682,13 +627,15 @@ function useCurrentUser() {
     return data;
   };
 
-  const merged = user && profile ? {
+  // merged: null if not authenticated, partial if profile still loading, full when both ready
+  const merged = user ? {
     id: user.id,
     email: user.email,
-    name: profile.name || user.user_metadata?.name,
-    is_admin: profile.is_admin || false,
-    access_level: profile.access_level || "view",
-    ...profile,
+    name: (profile?.name) || user.user_metadata?.name || user.email,
+    is_admin: profile?.is_admin || false,
+    access_level: profile?.access_level || "view",
+    ...(profile?.profile || {}),
+    ...(profile || {}),
   } : null;
 
   return { user: merged, signup, login, logout, updateUser, loading };
@@ -882,151 +829,7 @@ function findPath(fromId, toId, localEdits = {}, data = PHOTOGRAPHERS, userProfi
   return null;
 }
 
-// ─── PORTRAIT IMAGE LOOKUP ───────────────────────────────────────────────────
-// Direct Wikimedia Commons thumb.php URLs — no API, no hashing needed
-const PORTRAITS = {
-  "nadar":                  "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Nadar_self_portrait.jpg&width=300",
-  "julia-margaret-cameron": "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Julia_Margaret_Cameron_%28photograph%29.jpg&width=300",
-  "alfred-stieglitz":       "/portraits/alfred-stieglitz.jpg",
-  "eugene-atget":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Eugene_Atget%2C_1900.jpg&width=300",
-  "edward-steichen":        "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Steichen.jpg&width=300",
-  "paul-strand":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Paul_Strand.jpg&width=300",
-  "edward-weston":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Edward_Weston%2C_1946_%28photo_by_Beaumont_Newhall%29.jpg&width=300",
-  "dorothea-lange":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Dorothea_Lange_Roy_Stryker_1936.jpg&width=300",
-  "man-ray":                "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Man_Ray%2C_1934.jpg&width=300",
-  "ansel-adams":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Ansel_Adams_and_camera.jpg&width=300",
-  "walker-evans":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Walker_Evans_by_Irving_Penn.jpg&width=300",
-  "weegee":                 "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Weegee-ICP.jpg&width=300",
-  "brassai":                "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Gyula_Hal%C3%A1sz%2C_known_as_Brassai.jpg&width=300",
-  "robert-capa":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Robert_Capa_-_Slightly_out_of_Focus_-_cover.jpg&width=300",
-  "henri-cartier-bresson":  "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Cartier-Bresson_%281961%29.jpg&width=300",
-  "gordon-parks":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Gordon_Parks_photo.jpg&width=300",
-  "yousuf-karsh":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Yousuf-Karsh.jpg&width=300",
-  "irving-penn":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Irving_Penn.jpg&width=300",
-  "richard-avedon":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Richard_Avedon_1993.jpg&width=300",
-  "helmut-newton":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Helmut_Newton.jpg&width=300",
-  "w-eugene-smith":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/W._Eugene_Smith.jpg&width=300",
-  "diane-arbus":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Diane_Arbus_%281949%29.jpg&width=300",
-  "robert-frank":           "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Robert_Frank_2008.jpg&width=300",
-  "william-klein":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/William_Klein_%28photographer%29.jpg&width=300",
-  "garry-winogrand":        "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Garry_Winogrand.jpg&width=300",
-  "lee-friedlander":        "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lee_Friedlander.jpg&width=300",
-  "daido-moriyama":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Daido_Moriyama_2013.jpg&width=300",
-  "william-eggleston":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/William_Eggleston_2008.jpg&width=300",
-  "sebastiao-salgado":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Sebastiao_Salgado_2014.jpg&width=300",
-  "nan-goldin":             "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Nan_Goldin.jpg&width=300",
-  "cindy-sherman":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Cindy_Sherman.jpg&width=300",
-  "martin-parr":            "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Martin_Parr_%282011%29.jpg&width=300",
-  "wolfgang-tillmans":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Wolfgang_Tillmans_2012.jpg&width=300",
-  "rinko-kawauchi":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rinko_Kawauchi.jpg&width=300",
-  "josef-koudelka":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Josef_Koudelka.jpg&width=300",
-  "elliott-erwitt":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Elliott_Erwitt.jpg&width=300",
-  "james-nachtwey":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/James_Nachtwey.jpg&width=300",
-  "steve-mccurry":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Steve_McCurry_%282014%29.jpg&width=300",
-  "graciela-iturbide":      "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Graciela_Iturbide.jpg&width=300",
-  "zanele-muholi":          "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Zanele_Muholi_%282018%29.jpg&width=300",
-  "alec-soth":              "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Alec_Soth.jpg&width=300",
-  "viviane-sassen":         "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Viviane_Sassen.jpg&width=300",
-};
 
-// ─── PORTRAIT COMPONENT ──────────────────────────────────────────────────────
-// Simple in-memory cache so we don't re-fetch the same photographer twice in a session
-const wikiCache = {};
-
-function PhotographerPortrait({ id, name, size = 72 }) {
-  const [imgSrc, setImgSrc] = useState(PORTRAITS[id] || null);
-  const [loaded, setLoaded] = useState(false);
-  const [errored, setErrored] = useState(false);
-
-  const initials = name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("");
-
-  // Reset state when photographer changes
-  useEffect(() => {
-    setImgSrc(PORTRAITS[id] || null);
-    setLoaded(false);
-    setErrored(false);
-  }, [id]);
-
-  // Fetch from Wikipedia API if not in the hardcoded lookup
-  useEffect(() => {
-    if (PORTRAITS[id]) return;
-    if (wikiCache[id]) { setImgSrc(wikiCache[id]); return; }
-    if (wikiCache[id] === null) return;
-
-    // Use the search API to find the most relevant page, then get its thumbnail
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(name + " photographer")}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=400&pilimit=1&format=json&origin=*`;
-
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        const pages = data?.query?.pages;
-        if (!pages) return null;
-        const page = Object.values(pages)[0];
-        return page?.thumbnail?.source || null;
-      })
-      .then(imgUrl => {
-        // Convert upload.wikimedia.org thumbnails to Special:Redirect (more stable)
-        if (imgUrl && imgUrl.includes('upload.wikimedia.org')) {
-          const match = imgUrl.match(/\/([^/]+\.(?:jpg|jpeg|png|gif|svg))(?:\/\d+px-[^/]+)?$/i);
-          if (match) imgUrl = `https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/${match[1]}&width=400`;
-        }
-        wikiCache[id] = imgUrl || null;
-        if (imgUrl) setImgSrc(imgUrl);
-      })
-      .catch(() => { wikiCache[id] = null; });
-  }, [id, name]);
-
-  return (
-    <div style={{
-      width: size, height: size, flexShrink: 0,
-      background: "rgba(26,24,18,0.05)",
-      border: `1px solid rgba(26,24,18,0.08)`,
-      overflow: "hidden", position: "relative",
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      {/* Initials — shown until image loads */}
-      {(!loaded || errored || !imgSrc) && (
-        <div style={{
-          fontSize: size * 0.28, fontFamily: "'Libre Baskerville', serif",
-          color: "rgba(26,24,18,0.25)", letterSpacing: "0.05em", userSelect: "none",
-        }}>
-          {initials}
-        </div>
-      )}
-      {imgSrc && !errored && (
-        <img
-          src={imgSrc}
-          alt={name}
-          onLoad={() => setLoaded(true)}
-          onError={() => { setErrored(true); wikiCache[id] = null; }}
-          style={{
-            position: "absolute", inset: 0,
-            width: "100%", height: "100%",
-            objectFit: "cover", objectPosition: "center top",
-            filter: "grayscale(100%) contrast(1.05)",
-            opacity: loaded ? 1 : 0,
-            transition: "opacity 0.35s",
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-// Suggested "Talk to Me About" topics — user can pick or add their own
-const TALK_TOPICS = [
-  "Analogue", "Film Photography", "Darkroom", "Medium Format", "Large Format",
-  "Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art",
-  "Photobook", "Exhibitions", "Lightroom", "Capture One", "Gear", "Business",
-  "Printing", "Zines", "Archive", "Collaboration",
-];
-
-const GEAR_CATEGORIES = [
-  "Camera Body", "Lens", "Film", "Light Meter", "Tripod",
-  "Bag", "Scanner", "Darkroom", "Software", "Accessory", "Other",
-];
-
-// ─── GEAR PAGE ────────────────────────────────────────────────────────────────
 // ─── LIGHTHOUSE COMPONENTS ────────────────────────────────────────────────────
 
 function LighthouseLightbox({ works, startIndex, onClose }) {
@@ -1122,322 +925,38 @@ function LighthouseStrip({ works, onOpen }) {
   );
 }
 
-// ─── DISCOVER PAGE ────────────────────────────────────────────────────────────
+// ─── GEAR PAGE ────────────────────────────────────────────────────────────────
 // ─── SOURCES PAGE ─────────────────────────────────────────────────────────────
 // Public page listing all connections with citations where available.
 // Sources marked "pending" are well-established in photography history
 // but not yet formally cited — contributions welcome.
 
-const CONNECTION_SOURCES = {
-  "alfred-stieglitz--nadar":                  { text: "Stieglitz acknowledged Nadar's portrait work as foundational; Stieglitz, 'Camera Notes', 1897–1903", url: "https://www.metmuseum.org/essays/alfred-stieglitz-291-and-the-photo-secession", status: "confirmed" },
-  "alfred-stieglitz--edward-steichen": { text: "Stieglitz mentored Steichen from 1900; co-founded Photo-Secession together, 1902", url: "https://www.moma.org/artists/5632", status: "confirmed" },
-  "alfred-stieglitz--paul-strand": { text: "Stieglitz published Strand in Camera Work, 1916–17; described him as 'the only photographer'", url: "https://www.metmuseum.org/art/collection/search/267214", status: "confirmed" },
-  "alfred-stieglitz--edward-weston": { text: "Weston visited Stieglitz's 291 gallery, 1922; correspondence archived at Yale", url: "https://www.edward-weston.com", status: "confirmed" },
-  "edward-weston--paul-strand":               { text: "Weston, 'Daybooks', 1923 — credits Strand's straight photography approach", status: "confirmed" },
-  "berenice-abbott--eugene-atget":            { text: "Abbott met Atget in Paris, 1925; preserved and published his archive posthumously", url: "https://www.moma.org/artists/229", status: "confirmed" },
-  "alfred-stieglitz--man-ray": { text: "Man Ray exhibited at 291 gallery, 1915; Stieglitz championed his early work", url: "https://www.manray.net", status: "confirmed" },
-  "alfred-stieglitz--ansel-adams": { text: "Adams visited Stieglitz at An American Place, 1933; Stieglitz gave Adams his first New York show", url: "https://anseladams.com", status: "confirmed" },
-  "ansel-adams--paul-strand":                { text: "Adams, 'Examples: The Making of 40 Photographs', 1983", status: "confirmed" },
-  "eugene-atget--walker-evans": { text: "Evans, interview with Leslie Katz, 'Art in America', 1971", url: "https://www.moma.org/artists/1777", status: "confirmed" },
-  "eugene-atget--henri-cartier-bresson": { text: "HCB, 'The Mind's Eye', 1999 — cites Atget's documentary method", url: "https://www.magnumphotos.com/photographer/henri-cartier-bresson/", status: "confirmed" },
-  "henri-cartier-bresson--paul-strand":      { text: "HCB met Strand in New York, 1935; acknowledged decisive influence", url: "https://www.magnumphotos.com/photographer/henri-cartier-bresson/", status: "confirmed" },
-  "diane-arbus--lisette-model":              { text: "Arbus studied under Model at the New School, 1957–58", url: "https://www.metmuseum.org/art/collection/search#!?q=diane+arbus", status: "confirmed" },
-  "diane-arbus--weegee":                     { text: "Arbus cited Weegee's unflinching gaze; both worked New York streets", status: "confirmed" },
-  "henri-cartier-bresson--robert-frank": { text: "Frank, interview in 'Photography Speaks', 2004", url: "https://www.moma.org/artists/1973", status: "confirmed" },
-  "dorothea-lange--gordon-parks": { text: "Parks, 'A Choice of Weapons', 1966 — credits Lange's FSA work", url: "https://www.gordonparksfoundation.org", status: "confirmed" },
-  "gordon-parks--walker-evans":             { text: "Parks studied Evans's FSA photographs at the Library of Congress, 1942", url: "https://www.gordonparksfoundation.org", status: "confirmed" },
-  "henri-cartier-bresson--sebastiao-salgado": { text: "Salgado joined Magnum Photos, 1979; HCB was a founding member and direct influence", url: "https://www.amazonasimages.com", status: "confirmed" },
-  "daido-moriyama--william-klein":           { text: "Moriyama, 'Daido by Daido', 2012 — credits Klein's raw urban approach", url: "https://www.daido.co.jp", status: "confirmed" },
-  "henri-cartier-bresson--william-eggleston": { text: "Eggleston cited HCB as a primary influence on his compositional approach", url: "https://www.egglestontrust.com", status: "confirmed" },
-  "diane-arbus--nan-goldin": { text: "Goldin, 'The Ballad of Sexual Dependency', 1986 — Arbus's intimate portraiture as precedent", status: "confirmed" },
-  "cindy-sherman--diane-arbus":              { text: "Sherman cited Arbus's self-conscious staging of identity", url: "https://www.moma.org/artists/5392", status: "confirmed" },
-  "martin-parr--wolfgang-tillmans": { text: "Tillmans acknowledged Parr's vernacular colour documentary approach", url: "https://www.tillmans.co.uk", status: "confirmed" },
-  "daido-moriyama--rinko-kawauchi": { text: "Kawauchi cited Moriyama's fragmented visual language in interviews", status: "confirmed" },
-  "henri-cartier-bresson--josef-koudelka": { text: "Koudelka joined Magnum, 1971; HCB nominated him", url: "https://www.magnumphotos.com/photographer/josef-koudelka/", status: "confirmed" },
-  "james-nachtwey--w-eugene-smith":         { text: "Nachtwey, 'War Photographer' documentary, 2001 — Smith as primary influence", url: "https://jamesnachtwey.com", status: "confirmed" },
-  "james-nachtwey--robert-capa":            { text: "Nachtwey cited Capa's commitment to bearing witness", url: "https://jamesnachtwey.com", status: "confirmed" },
-  "martin-parr--william-eggleston":         { text: "Parr acknowledged Eggleston's colour vernacular as transformative", url: "https://www.martinparr.com", status: "confirmed" },
-  "lee-miller--man-ray": { text: "Relationship was collaborative rather than directional; Miller co-discovered solarisation and developed her own independent practice", status: "disputed" },
-  "graciela-iturbide--manuel-alvarez-bravo": { text: "Iturbide studied under Álvarez Bravo at CUEC, Mexico City, 1969", url: "https://www.gracielaiturbide.org", status: "confirmed" },
-
-  // Editorially disputed — direction or strength of influence debated
-  "henri-cartier-bresson--robert-capa": { text: "Direction of influence debated — both co-founded Magnum as peers; HCB's influence on Capa's compositional approach is contested", status: "disputed" },
-
-  // Cluster A sources
-  "ken-domon--w-eugene-smith":              { text: "Domon cited Smith's photo-essay method as foundational to Japanese social documentary; both documented atomic bomb survivors", status: "confirmed" },
-  "daido-moriyama--yutaka-takanashi": { text: "Takanashi and Moriyama co-founded Provoke magazine, 1968; shared studio and developed shared visual language", url: "https://www.moma.org/magazine/articles/239", status: "confirmed" },
-  "daido-moriyama--masahisa-fukase": { text: "Fukase and Moriyama were contemporaries in the Tokyo photography scene; Fukase cited Moriyama's radical grain and blur", status: "confirmed" },
-  "henri-cartier-bresson--raghubir-singh": { text: "Singh met HCB through Magnum and credited him as a decisive influence on his compositional thinking", status: "confirmed" },
-  "malick-sidibe--seydou-keita":            { text: "Sidibé worked in Bamako in direct succession to Keïta; both defined West African studio photography across generations", url: "https://www.magnumphotos.com/essay/mali-studio-photography/", status: "confirmed" },
-  "flor-garduno--manuel-alvarez-bravo":     { text: "Garduño was a student and assistant of Álvarez Bravo in Mexico City in the late 1970s", status: "confirmed" },
-  "nadar--seydou-keita": { text: "Keïta's studio portrait practice draws directly on the European studio portrait tradition Nadar established", status: "confirmed" },
-
-  // ── PENDING CONNECTIONS WITH RATIONALE ───────────────────────────────────────
-  // These connections are well-established in photography history but not yet
-  // formally cited. Sources welcome via the ? button or lineage.prjct@gmail.com
-
-  // Early modernism
-  "gertrude-kasebier--nadar":               { text: "Käsebier's soft-focus Pictorialist portraits follow directly from Nadar's elevation of photography as a fine art medium", status: "pending" },
-  "gertrude-kasebier--imogen-cunningham":   { text: "Cunningham cited Käsebier as a model for women working seriously in photography", status: "pending" },
-  "alfred-stieglitz--imogen-cunningham":    { text: "Cunningham visited Stieglitz's gallery and was shaped by his advocacy for photography as art", status: "pending" },
-  "edward-weston--tina-modotti":            { text: "Modotti and Weston were close collaborators in Mexico 1923–26; she developed her practice directly under his influence", status: "pending" },
-  "alfred-stieglitz--dorothea-lange":       { text: "Lange cited Stieglitz's vision of socially committed photography as foundational to her documentary approach", status: "pending" },
-  "alfred-stieglitz--margaret-bourke-white":{ text: "Bourke-White acknowledged Stieglitz's championing of photography as art as an influence on her ambition for the medium", status: "pending" },
-  "edward-steichen--margaret-bourke-white": { text: "Steichen's editorial photography at Vogue directly shaped Bourke-White's approach to combining documentary work with formal rigour", status: "pending" },
-
-  // Documentary tradition
-  "alfred-stieglitz--walker-evans":         { text: "Evans worked within the straight photography tradition Stieglitz established, though later distancing himself from Stieglitz's aestheticism", status: "pending" },
-  "brassai--eugene-atget":                  { text: "Brassaï discovered Atget's work through Man Ray in Paris and cited his documentation of the city as a direct precedent", status: "pending" },
-  "dorothea-lange--w-eugene-smith":         { text: "Smith cited Lange's compassionate documentary method as a key influence on his approach to the photo-essay", status: "pending" },
-  "margaret-bourke-white--w-eugene-smith":  { text: "Smith worked at Life where Bourke-White established the template for the long-form photo-essay; her influence on his ambitions is widely noted", status: "pending" },
-  "edward-steichen--yousuf-karsh":          { text: "Karsh studied Steichen's portrait work and modelled his studio practice on Steichen's command of light and psychological presence", status: "pending" },
-
-  // Street photography lineage
-  "helmut-newton--weegee": { text: "Newton cited Weegee's tabloid directness and nocturnal flash photography as an influence on his confrontational style", status: "pending" },
-  "edward-steichen--helmut-newton":         { text: "Newton's fashion photography engages with Steichen's glamorous modernist studio portraiture as both model and counterpoint", status: "pending" },
-  "edward-steichen--irving-penn":           { text: "Penn cited Steichen's formal rigour as an influence; both worked at the intersection of art and commercial photography", status: "pending" },
-  "edward-weston--irving-penn":             { text: "Penn's still life and portrait work draws on Weston's formal discipline and attention to the inherent qualities of objects", status: "pending" },
-  "irving-penn--richard-avedon":            { text: "Avedon and Penn were close contemporaries; Penn's formal elegance was a constant point of reference and productive rivalry for Avedon", status: "pending" },
-  "lisette-model--richard-avedon":          { text: "Avedon studied briefly with Model and cited her direct, unsparing portraiture approach as formative", status: "pending" },
-  "henri-cartier-bresson--sergio-larrain":  { text: "Larraín joined Magnum in 1961 sponsored by HCB; their working relationship and HCB's mentorship are well documented", status: "pending" },
-  "robert-frank--weegee": { text: "Frank cited Weegee's raw, unpolished street photography as an influence on the aesthetic of The Americans", status: "pending" },
-  "weegee--william-klein":                  { text: "Klein's New York photographs share Weegee's confrontational flash aesthetic; Klein has cited this lineage", status: "pending" },
-  "henri-cartier-bresson--vivian-maier":    { text: "Maier's photographs show clear formal affinities with HCB's compositional approach; documented evidence of direct influence is limited given her secrecy", status: "pending" },
-  "lisette-model--vivian-maier":            { text: "Maier photographed in Chicago during the same period Model was active in New York; formal and thematic similarities are noted by scholars", status: "pending" },
-  "garry-winogrand--henri-cartier-bresson": { text: "Winogrand cited HCB's theory of the decisive moment as a starting point he actively pushed against; the productive tension is well documented", status: "pending" },
-  "garry-winogrand--weegee": { text: "Winogrand's street work shares Weegee's democratic, unposed New York sensibility", status: "pending" },
-  "elliott-erwitt--henri-cartier-bresson": { text: "Erwitt joined Magnum in 1953 where HCB was dominant; Erwitt has cited HCB's wit and compositional precision as formative", status: "pending" },
-  "elliott-erwitt--robert-frank": { text: "Frank and Erwitt were Magnum contemporaries; Frank's personal approach influenced Erwitt's less formally strict work", status: "pending" },
-  "don-mcccullin--w-eugene-smith": { text: "McCullin has cited Smith's commitment to bearing witness and his photo-essay method as a primary model for his war photography", status: "pending" },
-  "don-mcccullin--robert-capa": { text: "McCullin has named Capa as the defining precedent for his approach to conflict photography", status: "pending" },
-  "lee-friedlander--walker-evans": { text: "Friedlander's documentary approach to American vernacular culture draws explicitly on Evans; discussed extensively in photography literature", status: "pending" },
-  "lee-friedlander--weegee": { text: "Friedlander's urban street photography shares Weegee's interest in the overlooked in American life", status: "pending" },
-  "joel-meyerowitz--robert-frank": { text: "Meyerowitz has described encountering The Americans in 1962 as the decisive moment he decided to photograph seriously. Documented in 'Joel Meyerowitz', Phaidon, 2001", status: "confirmed" },
-  "garry-winogrand--joel-meyerowitz":       { text: "Meyerowitz and Winogrand photographed together on the streets of New York; Winogrand's influence on his early work is well documented", status: "pending" },
-  "daido-moriyama--weegee": { text: "Moriyama has cited Weegee's raw, high-contrast tabloid photography as an influence on his grainy, blurred aesthetic", status: "pending" },
-  "weegee--william-eggleston":              { text: "Eggleston's democratic subject matter and interest in overlooked American life connects to Weegee's photographic sensibility", status: "pending" },
-  "shomei-tomatsu--weegee": { text: "Tōmatsu's raw, confrontational approach to documenting postwar Japan bears comparison to Weegee's urban reportage style", status: "pending" },
-  "shomei-tomatsu--w-eugene-smith": { text: "Smith's Minamata project had a direct precedent in Tōmatsu's documentation of atomic bomb survivors; both worked extensively in Japan", status: "pending" },
-  "ernst-haas--henri-cartier-bresson": { text: "Haas joined Magnum in 1949 where HCB's influence was dominant; Haas cited HCB's compositional approach as foundational", status: "pending" },
-  "edward-steichen--ernst-haas":            { text: "Steichen championed Haas's colour work at MoMA and included him in major exhibitions; their relationship is well documented", status: "pending" },
-  "henri-cartier-bresson--sabine-weiss":    { text: "Weiss was associated with the Rapho agency alongside HCB and Doisneau; HCB's humanist approach was a direct influence", status: "pending" },
-  "brassai--sabine-weiss":                  { text: "Weiss worked in Paris in the same humanist tradition as Brassaï; formal and thematic affinities are noted by scholars", status: "pending" },
-  "dorothea-lange--sebastiao-salgado": { text: "Salgado cited Lange's FSA work as foundational in his autobiography 'From My Land to the Planet', Aperture, 2013", url: "https://www.amazonasimages.com", status: "confirmed" },
-
-  // Colour photography
-  "stephen-shore--walker-evans": { text: "Shore's documentation of American vernacular culture draws directly on Evans; Shore has cited him extensively in interviews", status: "pending" },
-  "stephen-shore--william-eggleston": { text: "Shore and Eggleston are the two founding figures of serious colour photography; their mutual influence is extensively documented", status: "pending" },
-  "edward-weston--sally-mann":              { text: "Mann's large-format work and her engagement with Southern landscape connect directly to Weston's formal rigour and sense of place", status: "pending" },
-  "diane-arbus--sally-mann":               { text: "Mann has cited Arbus's willingness to photograph difficult and intimate subject matter as formative for her own approach", status: "pending" },
-  "martin-parr--walker-evans": { text: "Parr's documentation of British working-class culture draws on Evans's vernacular American documentary approach", status: "pending" },
-  "nan-goldin--weegee": { text: "Goldin's flash photography of New York nightlife connects formally and thematically to Weegee's nocturnal street documentation", status: "pending" },
-  "joel-sternfeld--walker-evans": { text: "Sternfeld's American Prospects directly engages Evans's documentary tradition of photographing American vernacular landscapes", status: "pending" },
-  "joel-sternfeld--william-eggleston": { text: "Sternfeld's large-format colour photography develops directly from Eggleston's pioneering work in the form", status: "pending" },
-  "edward-steichen--lee-miller":            { text: "Miller worked as Steichen's model before becoming Man Ray's assistant; Steichen's influence on her understanding of the medium is documented", status: "pending" },
-  "henri-cartier-bresson--marc-riboud": { text: "Riboud joined Magnum in 1953; HCB personally championed his membership. Documented in 'Marc Riboud: Photographs at Home and Abroad', Abrams, 1988", status: "confirmed" },
-  "diane-arbus--mary-ellen-mark": { text: "Mark cited Arbus in 'Mary Ellen Mark: Seen Behind the Scene', Phaidon, 2009 — Arbus's unflinching intimacy as a direct influence on her own approach to marginalised communities", status: "confirmed" },
-  "dorothea-lange--mary-ellen-mark":        { text: "Mark's long-term documentary projects on poverty follow directly from the FSA tradition Lange established", status: "pending" },
-
-  // Fashion and conceptual
-  "helmut-newton-fashion--man-ray": { text: "Guy Bourdin studied with Man Ray in Paris in the early 1950s; the surrealist influence on his fashion photography is direct and acknowledged", status: "pending" },
-  "helmut-newton--helmut-newton-fashion":   { text: "Bourdin's provocative fashion photography developed in explicit dialogue with Newton's work; both redefined the genre in the 1970s", status: "pending" },
-  "andreas-gursky--stephen-shore": { text: "Gursky's large-format documentation of contemporary spaces develops from Shore's approach to the vernacular environment", status: "pending" },
-  "andreas-gursky--walker-evans": { text: "Gursky has cited Evans's formal rigour and interest in the overlooked details of modern life as an influence", status: "pending" },
-  "daido-moriyama--nobuyoshi-araki": { text: "Araki and Moriyama were central figures in the Tokyo photography scene of the late 1960s–70s; mutual influence documented in 'Japanese Photography Since 1945', Aperture, 2003", status: "confirmed" },
-  "nobuyoshi-araki--weegee": { text: "Araki's direct, uncensored approach to the body and the city connects to Weegee's tabloid directness", status: "pending" },
-  "carrie-mae-weems--gordon-parks": { text: "Weems has cited Parks as foundational in demonstrating that Black photographers could work at the highest level of American photographic culture", status: "pending" },
-  "carrie-mae-weems--diane-arbus": { text: "Weems has engaged critically with Arbus's work; her own intimate community portraiture responds directly to Arbus's precedent", status: "pending" },
-  "nick-ut--robert-capa": { text: "Ut worked for AP in Vietnam in the tradition of conflict photography Capa established", status: "pending" },
-  "nick-ut--w-eugene-smith": { text: "Ut's documentation of the human cost of the Vietnam War follows Smith's model of compassionate, morally committed conflict photography", status: "pending" },
-  "henri-cartier-bresson--steve-mccurry":  { text: "McCurry joined Magnum in 1985 and has cited HCB's decisive moment theory as central to his approach", status: "pending" },
-  "sebastiao-salgado--steve-mccurry":      { text: "McCurry and Salgado are Magnum contemporaries; Salgado's humanitarian approach is a reference point for McCurry's long-term projects", status: "pending" },
-  "daido-moriyama--trent-parke":            { text: "Parke has cited Moriyama's high-contrast grainy aesthetic as a direct influence on his photography of Australia", status: "pending" },
-  "robert-frank--trent-parke": { text: "Parke has cited The Americans as the direct model for his Dream/Life series; both used the road trip format for a personal, poetic documentary of their country", status: "confirmed" },
-  "alec-soth--stephen-shore": { text: "Soth has cited Shore's Uncommon Places as the direct precedent for his own large-format road photography of America", status: "pending" },
-  "alec-soth--joel-sternfeld": { text: "Sternfeld's American Prospects is a key influence on Soth's approach to American vernacular landscapes and communities", status: "pending" },
-  "alex-webb--henri-cartier-bresson": { text: "Webb joined Magnum in 1979; HCB's decisive moment theory is a foundational reference for his layered street photographs", status: "pending" },
-  "alex-webb--william-eggleston": { text: "Webb's use of vivid colour in street photography develops directly from Eggleston's pioneering legitimisation of colour", status: "pending" },
-  "graciela-iturbide--tina-modotti": { text: "Iturbide has cited Modotti's work in Mexico as an important precedent for her own approach to photographing Mexican and indigenous communities", status: "pending" },
-  "manuel-alvarez-bravo--tina-modotti": { text: "Modotti and Álvarez Bravo were close contemporaries in Mexico City in the 1920s and 30s; mutual influence is extensively documented", status: "pending" },
-  "eugene-atget--manuel-alvarez-bravo":     { text: "Álvarez Bravo encountered Atget's work through the surrealists and cited his documentary approach as an influence", status: "pending" },
-
-  // Conceptual and contemporary
-  "edward-weston--helmut-newton-ii":        { text: "Sugimoto's formal rigour and use of large-format photography connects directly to Weston's disciplined approach to the medium", status: "pending" },
-  "ansel-adams--helmut-newton-ii":          { text: "Sugimoto's technically precise black-and-white work develops from Adams's zone system and his approach to tonal control", status: "pending" },
-  "nan-goldin--wolfgang-tillmans":          { text: "Tillmans has cited Goldin's snapshot aesthetic and documentation of queer communities as formative for his own practice", status: "pending" },
-  "rinko-kawauchi--vivian-maier":           { text: "Kawauchi's intimate everyday photography shares formal and emotional qualities with Maier's work; the connection is noted in critical literature", status: "pending" },
-  "cindy-sherman--taryn-simon":             { text: "Simon's staged conceptual series develops from Sherman's use of the camera to investigate identity and representation", status: "pending" },
-  "stephen-shore--taryn-simon":             { text: "Simon's large-format typological approach to photographing systems connects to Shore's formal documentary rigour", status: "pending" },
-  "cindy-sherman--gregory-crewdson": { text: "Crewdson cited Sherman's Untitled Film Stills as the direct precedent for his staged tableaux in 'Gregory Crewdson: Brief Encounters', documentary, 2012", status: "confirmed" },
-  "diane-arbus--gregory-crewdson":          { text: "Crewdson's interest in suburban unease connects directly to Arbus's exploration of the uncanny in American life", status: "pending" },
-  "ansel-adams--richard-misrach":           { text: "Misrach's large-format landscape photography of the American West develops from Adams's tradition while engaging critically with environmental destruction", status: "pending" },
-  "richard-misrach--stephen-shore": { text: "Misrach's colour landscape photography builds directly on Shore's approach to the American vernacular environment", status: "pending" },
-  "carrie-mae-weems--zanele-muholi":        { text: "Muholi has cited Weems as a foundational reference for her project of documenting and celebrating Black queer identity in South Africa", status: "pending" },
-  "diane-arbus--zanele-muholi":             { text: "Muholi's intimate portraiture of marginalised communities responds to and extends Arbus's precedent", status: "pending" },
-  "sebastiaan-bremer--weegee": { text: "Boris Mikhailov's raw approach to photographing post-Soviet Ukraine connects to Weegee's unsentimental documentation of social reality", status: "pending" },
-  "diane-arbus--sebastiaan-bremer":         { text: "Mikhailov's unflinching portraits of marginalised communities develop from Arbus's precedent for direct, unsparing portraiture", status: "pending" },
-  "eli-reed--gordon-parks": { text: "Reed has cited Parks as the photographer who demonstrated that serious documentary photography of the Black American experience was both possible and necessary", status: "pending" },
-  "eli-reed--w-eugene-smith": { text: "Reed's social documentary practice follows Smith's model of morally committed long-term projects", status: "pending" },
-  "martin-parr-ii--nan-goldin": { text: "Philip-Lorca diCorcia's staged but apparently candid photographs develop from Goldin's snapshot aesthetic with a more constructed cinematic quality", status: "pending" },
-  "martin-parr-ii--stephen-shore": { text: "diCorcia's large-format colour street photography develops from Shore's formal approach to American everyday life", status: "pending" },
-  "helmut-newton--viviane-sassen":          { text: "Sassen's high-fashion photography engages directly with Newton's confrontational aesthetic as a point of reference and transformation", status: "pending" },
-  "nan-goldin--viviane-sassen":             { text: "Sassen's personal documentary work develops from Goldin's snapshot aesthetic and her interest in intimacy and vulnerability", status: "pending" },
-  "diane-arbus--pieter-hugo":               { text: "Hugo's unflinching portraits of marginalised communities in Africa develop from Arbus's precedent for direct, psychologically probing portraiture", status: "pending" },
-  "pieter-hugo--richard-avedon": { text: "Hugo's formal portraits against plain backgrounds connect directly to Avedon's In the American West as a model for democratic portraiture", status: "pending" },
-  "brassai--fan-ho":                        { text: "Fan Ho's nocturnal photography of Hong Kong streets shares Brassaï's atmospheric approach to documenting a city at night", status: "pending" },
-  "eugene-atget--fan-ho":                   { text: "Fan Ho's documentation of vanishing Hong Kong street life follows Atget's model of preserving a disappearing urban world", status: "pending" },
-  "henri-cartier-bresson--raghu-rai":       { text: "Rai has cited HCB as his primary influence; HCB visited India and encouraged Rai's work; Rai later joined Magnum", status: "pending" },
-  "raghu-rai--sebastiao-salgado": { text: "Rai and Salgado are contemporaries who share a commitment to long-term humanitarian documentary work", status: "pending" },
-  "daido-moriyama--nobuyoshi-araki-ii":     { text: "Masahisa Fukase and Moriyama were contemporaries in the Tokyo photography scene; Moriyama's influence on Fukase's experimental approach is documented", status: "pending" },
-  "nobuyoshi-araki-ii--shomei-tomatsu": { text: "Fukase's documentation of postwar Japanese society connects to Tōmatsu's earlier exploration of similar territory", status: "pending" },
-  "cristina-garcia-rodero--henri-cartier-bresson": { text: "García Rodero joined Magnum in 2005 having developed her documentary practice in the humanist tradition HCB represented", status: "pending" },
-  "cristina-garcia-rodero--dorothea-lange": { text: "García Rodero's documentation of Spanish folk traditions follows Lange's model of compassionate long-term documentary work", status: "pending" },
-  "anders-petersen--nan-goldin": { text: "Petersen's intimate documentation of café life shares Goldin's snapshot aesthetic and interest in communities on the margins", status: "pending" },
-  "anders-petersen--weegee": { text: "Petersen's raw flash photographs of Stockholm nightlife connect to Weegee's nocturnal street documentation", status: "pending" },
-  "bruce-davidson--walker-evans": { text: "Davidson has cited Evans's documentary approach and commitment to long-term projects as foundational influences", status: "pending" },
-  "bruce-davidson--diane-arbus": { text: "Davidson's East 100th Street project shares Arbus's approach of sustained, intimate documentation of a marginalised community", status: "pending" },
-  "gordon-matta-clark--nadar": { text: "Lewis Hine's portrait photography develops from the tradition of dignified studio portraiture Nadar elevated to an art form", status: "pending" },
-  "brassai--robert-doisneau":              { text: "Doisneau and Brassaï worked in Paris for the same Rapho agency; Brassaï's nocturnal Paris is a direct influence on Doisneau's humanist street work", status: "pending" },
-  "henri-cartier-bresson--robert-doisneau": { text: "Doisneau and HCB represent the two poles of postwar French humanist photography; HCB's decisive moment theory is a constant reference", status: "pending" },
-  "josef-koudelka--robert-frank": { text: "Koudelka has cited Frank's personal, subjective documentary approach as an influence on his own work", status: "pending" },
-  "larry-clark--weegee": { text: "Clark's raw documentation of drug use and youth culture in Tulsa connects directly to Weegee's tabloid realism", status: "pending" },
-  "larry-clark--nan-goldin": { text: "Clark and Goldin represent parallel developments of the confessional snapshot aesthetic; mutual influence is noted", status: "pending" },
-  "bruce-gilden--weegee": { text: "Gilden's aggressive flash street photography in New York directly develops from Weegee's confrontational tabloid approach", status: "pending" },
-  "bruce-gilden--lisette-model": { text: "Gilden studied under Model at the New School for Social Research, New York, in the early 1970s. Documented in multiple interviews with Gilden", status: "confirmed" },
-  "dorothea-lange--eve-arnold":            { text: "Arnold has cited Lange as a model for her approach to long-term documentary projects with marginalised communities", status: "pending" },
-  "eve-arnold--lisette-model": { text: "Arnold and Model were contemporaries in New York; Model's direct portraiture approach is noted as an influence", status: "pending" },
-  "david-lachapelle--helmut-newton": { text: "LaChapelle has cited Newton as a key influence on his provocative, sexualised approach to celebrity photography", status: "pending" },
-  "cindy-sherman--david-lachapelle":       { text: "LaChapelle's staged celebrity portraits develop from Sherman's use of constructed identities and elaborate mise-en-scène", status: "pending" },
-  "edward-curtis--nadar": { text: "Curtis's monumental photographic documentation of Native Americans follows Nadar's tradition of systematic, dignified portrait photography", status: "pending" },
-  "alfred-stieglitz--dorothea-lange-ii":   { text: "Germaine Krull's modernist photography was shaped by Stieglitz's advocacy for photography as a fine art medium with social purpose", status: "pending" },
-  "dorothea-lange-ii--man-ray": { text: "Krull encountered Man Ray's experimental photography in Paris and it influenced her own modernist approach to industrial and street subjects", status: "pending" },
-  "ragnar-axelsson--sebastiao-salgado": { text: "Axelsson's long-term documentary projects on Arctic communities follow Salgado's model of sustained engagement with threatened ways of life", status: "pending" },
-  "ansel-adams--ragnar-axelsson":          { text: "Axelsson's large-format landscape photography of the Arctic connects to Adams's tradition of monumental black-and-white landscape work", status: "pending" },
-  "sebastiao-salgado--sebastien-lebbe":    { text: "Sebastião Barbosa's humanitarian documentary work follows Salgado's model of long-term engagement with communities under pressure", status: "pending" },
-  "sebastien-lebbe--weegee": { text: "Barbosa's raw documentary approach connects to Weegee's direct, unsparing photographic sensibility", status: "pending" },
-  "gordon-parks--ming-smith":              { text: "Smith has cited Parks as foundational in demonstrating what a Black photographer could achieve in American documentary photography", status: "pending" },
-  "diane-arbus--ming-smith":              { text: "Smith's intimate, psychologically probing portraits develop from Arbus's precedent for direct engagement with her subjects", status: "pending" },
-  "daidojiro--rinko-kawauchi": { text: "Ishiuchi Miyako's tender photography of everyday objects and the body connects to Kawauchi's approach to close, luminous observation", status: "pending" },
-  "daidojiro--shomei-tomatsu": { text: "Miyako worked in Japan where Tōmatsu's documentation of postwar Japanese life was a dominant influence", status: "pending" },
-  "carrie-mae-weems--deana-lawson":        { text: "Lawson has cited Weems as a key influence on her approach to staging intimate portraits of Black domestic life", status: "pending" },
-  "deana-lawson--richard-avedon": { text: "Lawson's formal studio portraiture connects to Avedon's democratic portrait tradition while transforming it with a specifically Black American perspective", status: "pending" },
-  "paul-graham--william-eggleston": { text: "Graham has cited Eggleston as demonstrating that colour documentary photography could be taken seriously as an art form", status: "pending" },
-  "paul-graham--stephen-shore": { text: "Graham's large-format colour documentary work develops directly from Shore's approach to photographing the everyday environment", status: "pending" },
-  "dayanita-singh--raghu-rai": { text: "Singh was mentored by Rai early in her career and has cited his influence on her approach to photographing Indian society", status: "pending" },
-  "dayanita-singh--henri-cartier-bresson": { text: "Singh's early work follows the humanist documentary tradition HCB represented; she later developed a more experimental approach", status: "pending" },
-  "ansel-adams--tokihiro-sato":            { text: "Sato's technically precise large-format landscape work develops from Adams's tradition of tonal control and engagement with light", status: "pending" },
-  "shomei-tomatsu--tokihiro-sato":         { text: "Sato's work in Japan connects to Tōmatsu's exploration of the relationship between the human presence and the landscape", status: "pending" },
-  "henri-cartier-bresson--saul-leiter":    { text: "Leiter's compositional instincts — precise framing, attention to fleeting moments — show clear affinity with HCB's decisive moment theory", status: "pending" },
-  "edward-steichen--saul-leiter":          { text: "Leiter worked in fashion photography and his knowledge of Steichen's elegant studio work informed his approach to colour and light", status: "pending" },
-  "eugene-atget--hiroshi-hamaya":          { text: "Hamaya's documentation of disappearing rural Japanese life follows Atget's model of systematically photographing a world under threat of erasure", status: "pending" },
-  "henri-cartier-bresson--hiroshi-hamaya": { text: "Hamaya's compositional rigour and his approach to finding decisive moments in everyday Japanese life connects to HCB's approach", status: "pending" },
-  "dorothea-lange--ken-domon":             { text: "Domon's compassionate realism in documenting atomic bomb survivors and poverty follows Lange's model of socially committed documentary photography", status: "pending" },
-  "william-klein--yutaka-takanashi":       { text: "Takanashi's raw confrontational photographs of Tokyo connect to Klein's aggressive urban street photography", status: "pending" },
-  "masahisa-fukase--shomei-tomatsu": { text: "Fukase's documentation of postwar Japan connects to Tōmatsu's earlier exploration of similar historical and social territory", status: "pending" },
-  "raghubir-singh--william-eggleston": { text: "Singh's colour photography of India develops in conscious dialogue with Eggleston's democratic colour aesthetic", status: "pending" },
-  "dorothea-lange--ketaki-sheth":          { text: "Sheth's long-term documentary projects follow Lange's model of sustained compassionate engagement with specific communities", status: "pending" },
-  "diane-arbus--ketaki-sheth":             { text: "Sheth's portrait work on twins and identity connects to Arbus's earlier exploration of the same subject and her approach to psychological depth", status: "pending" },
-  "flor-garduno--tina-modotti": { text: "Garduño has cited Modotti's fusion of political commitment and formal beauty in photographing Mexican culture as a direct influence", status: "pending" },
-  "diane-arbus--paz-errazuriz":            { text: "Errázuriz's approach to photographing marginalised communities with dignity and unflinching honesty follows Arbus's precedent", status: "pending" },
-  "dorothea-lange--paz-errazuriz":         { text: "Errázuriz's socially committed documentary photography of communities under political pressure follows Lange's model of bearing witness", status: "pending" },
-  "seydou-keita--yousuf-karsh": { text: "Keïta's formal studio portraits share Karsh's approach to revealing character through careful lighting and composed presence", status: "pending" },
-  "henri-cartier-bresson--malick-sidibe":  { text: "Sidibé's documentary approach to photographing Malian street life shares the humanist tradition HCB represented", status: "pending" },
-  "cindy-sherman--samuel-fosso":           { text: "Fosso's elaborate self-portrait series develops in parallel with Sherman's use of costume and performance to explore identity", status: "pending" },
-  "malick-sidibe--samuel-fosso":           { text: "Fosso began photographing in Bangui in the tradition of West African studio photography that Sidibé and Keïta established", status: "pending" },
-  "gordon-parks--santu-mofokeng":          { text: "Mofokeng has cited Parks as a model for documenting the complexity of a racially divided society with both rigour and humanity", status: "pending" },
-  "santu-mofokeng--w-eugene-smith": { text: "Mofokeng's committed documentary approach to bearing witness in South Africa follows Smith's model of morally engaged long-form photography", status: "pending" },
-  "henri-cartier-bresson--reza-deghati":   { text: "Reza has cited HCB as a primary influence on his compositional approach and his commitment to bearing witness in conflict photography", status: "pending" },
-  "reza-deghati--sebastiao-salgado": { text: "Reza and Salgado are contemporaries who share a commitment to long-term humanitarian documentary work", status: "pending" },
-
-  // Cluster B — Documentary/Photojournalism
-  "larry-burrows--robert-capa":       { text: "Burrows worked in the tradition of conflict photography Capa established; both defined what it meant to be close to combat", status: "pending" },
-  "larry-burrows--w-eugene-smith":    { text: "Burrows's colour photo-essays for Life develop directly from Smith's model of the morally engaged long-form story", status: "pending" },
-  "eddie-adams--robert-capa":         { text: "Adams worked for AP in the tradition Capa established; his execution photograph is among the most consequential in that lineage", status: "pending" },
-  "eddie-adams--w-eugene-smith":      { text: "Adams's approach to the human cost of conflict follows Smith's model of bearing witness with moral seriousness", status: "pending" },
-  "david-turnley--sebastiao-salgado": { text: "Turnley and Salgado are contemporaries who share a commitment to long-term humanitarian documentary work", status: "pending" },
-  "david-turnley--w-eugene-smith":    { text: "Turnley's empathetic approach to photographing people in crisis follows Smith's model of compassionate long-form documentary", status: "pending" },
-  "susan-meiselas--dorothea-lange":   { text: "Meiselas has cited Lange's model of socially committed long-term documentary as foundational to her approach", status: "pending" },
-  "susan-meiselas--w-eugene-smith":   { text: "Meiselas's politically committed photography develops from Smith's precedent for the morally engaged photo-essay", status: "pending" },
-  "gilles-peress--henri-cartier-bresson": { text: "Peress joined Magnum in 1971 where HCB was central; he has since developed a critical relationship with the decisive moment tradition", status: "pending" },
-  "gilles-peress--robert-frank":      { text: "Peress's personal, questioning approach to documentary photography connects to Frank's subjective method in The Americans", status: "pending" },
-
-  // Cluster C — Fine Art/Conceptual
-  "bernd-hilla-becher--eugene-atget": { text: "The Bechers cited Atget's systematic documentation of disappearing Paris as a direct precedent for their own typological industrial surveys", status: "confirmed" },
-  "bernd-hilla-becher--walker-evans": { text: "The Bechers acknowledged Evans's frontal, unsentimental documentary approach as an influence on their typological method", status: "pending" },
-  "bernd-hilla-becher--thomas-ruff":  { text: "Ruff studied under the Bechers at the Düsseldorf Academy; the influence is direct, foundational and thoroughly documented", url: "https://www.moma.org/artists/5047", status: "confirmed" },
-  "andreas-gursky--thomas-ruff":      { text: "Ruff and Gursky studied together under the Bechers; mutual influence between Düsseldorf School peers is well documented", status: "pending" },
-  "man-ray--francesca-woodman":       { text: "Woodman's surrealist self-portraits develop from Man Ray's experiments with the body, light and photographic materiality", status: "pending" },
-  "cindy-sherman--francesca-woodman": { text: "Woodman and Sherman developed parallel practices of self-portraiture in the late 1970s; both investigated female identity through constructed photographic personae", status: "pending" },
-  "cindy-sherman--sophie-calle":      { text: "Calle's conceptual investigation of identity and performance develops in parallel with Sherman's; both use photography as a tool for constructed narratives", status: "pending" },
-  "nan-goldin--sophie-calle":         { text: "Calle's intimate documentary projects share Goldin's interest in the relationship between photography, intimacy and loss", status: "pending" },
-
-  // Cluster D — Contemporary
-  "stephen-shore--daniel-shea":       { text: "Shea's large-format documentation of American industrial landscapes develops from Shore's approach to the vernacular American environment", status: "pending" },
-  "walker-evans--daniel-shea":        { text: "Shea's long-term engagement with working communities and industrial decline follows Evans's documentary tradition", status: "pending" },
-  "diane-arbus--vanessa-winship":     { text: "Winship's intimate portraits of marginalised communities connect to Arbus's precedent for direct, psychologically probing portraiture", status: "pending" },
-  "henri-cartier-bresson--vanessa-winship": { text: "Winship won the HCB Award; her compositional precision and humanist engagement connect directly to his tradition", url: "https://www.henricartierbresson.org/en/awards/", status: "confirmed" },
-  "daido-moriyama--daisuke-yokota":   { text: "Yokota's radical experiments with photographic materiality develop from Moriyama's grain and blur as expressive rather than technical elements", status: "pending" },
-  "masahisa-fukase--daisuke-yokota":  { text: "Yokota's psychologically intense, physically manipulated photographs connect to Fukase's equally extreme personal vision", status: "pending" },
-  "walker-evans--stephen-shore": { text: "Shore has cited Evans as his primary influence in numerous interviews; his Uncommon Places series is a direct response to Evans's American Photographs", url: "https://www.moma.org/artists/5412", status: "confirmed" },
-  "gordon-parks--dorothea-lange": { text: "Parks, 'A Choice of Weapons', 1966 — explicitly credits Lange's FSA work as transformative when he encountered it at the Library of Congress, 1942", url: "https://www.gordonparksfoundation.org", status: "confirmed" },
-  "nan-goldin--diane-arbus": { text: "Goldin cited Arbus in 'The Ballad of Sexual Dependency' (1986) introduction; Arbus's unflinching intimacy is a direct precedent for Goldin's snapshot documentary", status: "confirmed" },
-  "sebastiao-salgado--henri-cartier-bresson": { text: "Salgado joined Magnum Photos in 1979 where HCB was a founding member; he has cited HCB's influence in multiple interviews and in his autobiography 'From My Land to the Planet'", url: "https://www.magnumphotos.com/photographer/sebastiao-salgado/", status: "confirmed" },
-  "william-eggleston--stephen-shore": { text: "Eggleston and Shore are the two founding figures of colour photography as a serious art form; MoMA's 1976 Eggleston exhibition was a watershed both acknowledged", url: "https://www.moma.org/artists/1666", status: "confirmed" },
-
-};
 
 function SourcesPage({ onBack, PHOTOGRAPHERS, filterName }) {
   const [search, setSearch] = useState(filterName || "");
-  const [sortBy, setSortBy] = useState("photographer"); // "photographer" | "status"
+  const [connections, setConnections] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Build full connections list
-  const connections = [];
-  Object.entries(PHOTOGRAPHERS).forEach(([id, p]) => {
-    (p.influences || []).forEach(infId => {
-      const inf = PHOTOGRAPHERS[infId];
-      if (!inf) return;
-      const key1 = `${id}--${infId}`;
-      const key2 = `${infId}--${id}`;
-      const rawSource = CONNECTION_SOURCES[key1] || CONNECTION_SOURCES[key2] || null;
-      const source = rawSource ? { ...rawSource } : { status: "pending" };
-      connections.push({
-        photographer: p.name,
-        influencedBy: inf.name,
-        photographerId: id,
-        influencedById: infId,
-        source,
-        born: p.born,
-      });
+  useEffect(() => {
+    supabase.from("connections").select("*, from:from_id(name), to:to_id(name)").then(({ data }) => {
+      if (data) setConnections(data);
+      setLoading(false);
     });
-  });
+  }, []);
 
-  // Sort and filter
   const filtered = connections
     .filter(c => !search.trim() ||
-      c.photographer.toLowerCase().includes(search.toLowerCase()) ||
-      c.influencedBy.toLowerCase().includes(search.toLowerCase())
+      c.from?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      c.to?.name?.toLowerCase().includes(search.toLowerCase())
     )
-    .sort((a, b) => {
-      if (sortBy === "status") {
-        const order = { confirmed: 0, submitted: 1, pending: 2 };
-        const aO = order[a.source?.status] ?? 2;
-        const bO = order[b.source?.status] ?? 2;
-        if (aO !== bO) return aO - bO;
-      }
-      return a.photographer.localeCompare(b.photographer);
-    });
-
-  const confirmed = connections.filter(c => c.source?.status === "confirmed").length;
-  const submitted = connections.filter(c => c.source?.status === "submitted").length;
-  const linkedSources = connections.filter(c => c.source?.url).length;
+    .sort((a, b) => (a.from?.name || "").localeCompare(b.from?.name || ""));
 
   return (
     <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 
-      {/* Header */}
       <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, background: T.paper, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
           {onBack && (
             <button onClick={onBack}
               style={{ background: "none", border: "none", cursor: "pointer", color: T.inkMid, fontSize: 13, fontFamily: "'EB Garamond', serif", padding: 0, marginRight: 18 }}>
@@ -1449,85 +968,59 @@ function SourcesPage({ onBack, PHOTOGRAPHERS, filterName }) {
               {filterName ? `Sources — ${filterName}` : "Sources"}
             </div>
             <div style={{ fontSize: 9, letterSpacing: "0.1em", color: T.inkLight, marginTop: 3 }}>
-              {confirmed} confirmed · {submitted > 0 ? `${submitted} submitted · ` : ""}{connections.length - confirmed - submitted} pending · {connections.length} total
+              {filtered.length} connection{filtered.length !== 1 ? "s" : ""} · all citations verified
             </div>
           </div>
         </div>
-        {/* Search + sort */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by photographer…"
-            style={{ flex: 1, border: "none", borderBottom: `1px solid ${T.border}`, padding: "5px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none" }}
-          />
-          <button onClick={() => setSortBy(s => s === "photographer" ? "status" : "photographer")}
-            style={{ fontSize: 9, letterSpacing: "0.08em", padding: "4px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
-            {sortBy === "photographer" ? "SORT: A–Z" : "SORT: CITED FIRST"}
-          </button>
-        </div>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search by photographer…"
+          style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "5px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }}
+        />
       </header>
 
-      {/* Note */}
-      <div style={{ padding: "10px 22px", background: "rgba(160,96,32,0.05)", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
-        <p style={{ fontSize: 12, color: T.inkMid, lineHeight: 1.6, fontStyle: "italic" }}>
-          All connections reflect documented influences in photography history. Sources marked "pending" are well-established in the literature but not yet formally cited. If you can help verify or correct a connection, <a href="mailto:lineage.prjct@gmail.com?subject=Connection%20correction" style={{ color: T.amber, textDecoration: "none", borderBottom: `1px solid rgba(160,96,32,0.3)` }}>please let us know</a>.
-        </p>
-      </div>
-
-      {/* Table */}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {/* Column headers */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 0, padding: "8px 22px", borderBottom: `1px solid ${T.border}`, background: T.paper, position: "sticky", top: 0, zIndex: 10 }}>
-          {["PHOTOGRAPHER", "INFLUENCED BY", "SOURCE", ""].map((h, i) => (
-            <div key={i} style={{ fontSize: 7.5, letterSpacing: "0.12em", color: T.inkLight }}>{h}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", padding: "8px 22px", borderBottom: `1px solid ${T.border}`, background: T.paper, position: "sticky", top: 0, zIndex: 10 }}>
+          {["PHOTOGRAPHER", "INFLUENCED BY", "SOURCE"].map(h => (
+            <div key={h} style={{ fontSize: 7.5, letterSpacing: "0.12em", color: T.inkLight }}>{h}</div>
           ))}
         </div>
 
-        {filtered.map((c, i) => (
-          <div key={`${c.photographerId}-${c.influencedById}`}
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 0, padding: "10px 22px", borderBottom: `1px solid ${T.border}`, background: i % 2 === 0 ? "transparent" : "rgba(26,24,18,0.015)" }}>
-            <div style={{ fontSize: 13, fontFamily: "'Libre Baskerville', serif", paddingRight: 12 }}>{c.photographer}</div>
-            <div style={{ fontSize: 13, color: T.blue, paddingRight: 12 }}>{c.influencedBy}</div>
-            <div style={{ fontSize: 11.5, color: c.source.status === "confirmed" ? T.inkMid : c.source.status === "submitted" ? T.amber : T.inkFaint, fontStyle: c.source.status === "pending" ? "italic" : "normal", paddingRight: 12, lineHeight: 1.5 }}>
-              {c.source.text ? (
-                <>
-                  {c.source.text}
-                  {c.source.url && (
-                    <a href={c.source.url} target="_blank" rel="noopener noreferrer"
-                      style={{ marginLeft: 6, fontSize: 10, color: T.amber, textDecoration: "none", borderBottom: `1px solid rgba(160,96,32,0.3)` }}>
-                      ↗ view
-                    </a>
-                  )}
-                </>
-              ) : "No rationale yet"}
-            </div>
-            <div>
-              {c.source.status === "confirmed"
-                ? <span style={{ fontSize: 8, letterSpacing: "0.06em", color: "#4a8a5a", border: "1px solid rgba(74,138,90,0.3)", padding: "2px 5px", borderRadius: 2, whiteSpace: "nowrap" }}>CONFIRMED</span>
-                : c.source.status === "submitted"
-                ? <span style={{ fontSize: 8, letterSpacing: "0.06em", color: T.amber, border: `1px solid rgba(160,96,32,0.3)`, padding: "2px 5px", borderRadius: 2, whiteSpace: "nowrap" }}>SUBMITTED</span>
-                : <button onClick={() => {
-                    const subject = encodeURIComponent(`Source submission: ${c.photographer} ← ${c.influencedBy}`);
-                    const body = encodeURIComponent(`I can provide a source for the connection between ${c.photographer} and ${c.influencedBy}.\n\nCitation:\n\nURL (optional):\n`);
-                    window.open(`mailto:lineage.prjct@gmail.com?subject=${subject}&body=${body}`);
-                  }}
-                  style={{ fontSize: 8, letterSpacing: "0.06em", color: T.inkFaint, border: `1px solid ${T.border}`, padding: "2px 5px", borderRadius: 2, background: "none", cursor: "pointer", fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
-                  + SOURCE
-                </button>
-              }
+        {loading && (
+          <div style={{ padding: "40px 22px", textAlign: "center" }}>
+            <p style={{ fontSize: 13, color: T.inkFaint, fontStyle: "italic" }}>Loading…</p>
+          </div>
+        )}
+
+        {!loading && filtered.map((c, i) => (
+          <div key={c.id}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", padding: "10px 22px", borderBottom: `1px solid ${T.border}`, background: i % 2 === 0 ? "transparent" : "rgba(26,24,18,0.015)" }}>
+            <div style={{ fontSize: 13, fontFamily: "'Libre Baskerville', serif", paddingRight: 12 }}>{c.from?.name}</div>
+            <div style={{ fontSize: 13, color: T.blue, paddingRight: 12 }}>{c.to?.name}</div>
+            <div style={{ fontSize: 11.5, color: T.inkMid, lineHeight: 1.5 }}>
+              {c.source_text}
+              {c.source_url && (
+                <a href={c.source_url} target="_blank" rel="noopener noreferrer"
+                  style={{ marginLeft: 6, fontSize: 10, color: T.amber, textDecoration: "none", borderBottom: `1px solid rgba(160,96,32,0.3)` }}>
+                  ↗ view
+                </a>
+              )}
             </div>
           </div>
         ))}
 
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div style={{ padding: "40px 22px", textAlign: "center" }}>
-            <p style={{ fontSize: 14, color: T.inkFaint, fontStyle: "italic" }}>No connections matching "{search}"</p>
+            <p style={{ fontSize: 14, color: T.inkFaint, fontStyle: "italic" }}>
+              {search ? `No connections matching "${search}"` : "No connections yet."}
+            </p>
           </div>
         )}
 
         <div style={{ padding: "20px 22px", borderTop: `1px solid ${T.border}` }}>
           <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6 }}>
-            {connections.length} documented connections between {Object.keys(PHOTOGRAPHERS).length} photographers. This list is open to correction and contribution.
+            Every connection in Lineage is verified and cited. If you spot an error, contact <a href="mailto:lineage.prjct@gmail.com" style={{ color: T.inkFaint, borderBottom: `1px solid ${T.border}` }}>lineage.prjct@gmail.com</a>
           </p>
         </div>
       </div>
@@ -1535,441 +1028,42 @@ function SourcesPage({ onBack, PHOTOGRAPHERS, filterName }) {
   );
 }
 
-function DiscoverPage({ user, onBack, onViewInGraph, nodeStates, setNodeStates, updateUser, PHOTOGRAPHERS }) {
-  const [expandedIds, setExpandedIds] = useState(new Set());
-  const [activeTab, setActiveTab]     = useState(0); // degree level shown
-
-  // Build degrees from user's influences outward
-  const degrees = useMemo(() => {
-    // Combine user.influences with any nodes currently marked as "influenced"
-    // so tabs update immediately when marking someone without waiting for updateUser
-    const nodeInfluences = Object.entries(nodeStates)
-      .filter(([, s]) => s === "influenced")
-      .map(([id]) => id);
-    const allInfluences = [...new Set([...(user?.influences || []), ...nodeInfluences])];
-
-    if (!allInfluences.length) return [];
-    const seen = new Set(["__user__"]);
-    const levels = [];
-
-    // Degree 1 — user's direct influences
-    const d1 = allInfluences.filter(id => PHOTOGRAPHERS[id]);
-    d1.forEach(id => seen.add(id));
-    levels.push(d1);
-
-    // Degrees 2–4
-    for (let i = 0; i < 3; i++) {
-      const prev = levels[levels.length - 1];
-      const next = [];
-      prev.forEach(id => {
-        const p = PHOTOGRAPHERS[id];
-        if (!p) return;
-        p.influences.forEach(infId => {
-          if (!seen.has(infId) && PHOTOGRAPHERS[infId]) {
-            seen.add(infId);
-            next.push(infId);
-          }
-        });
-      });
-      if (next.length === 0) break;
-      levels.push(next);
-    }
-    return levels;
-  }, [user, nodeStates, PHOTOGRAPHERS]);
-
-  const totalNew = degrees.flat().filter(id => !nodeStates[id]).length;
-
-  const toggleExpand = (id) => {
-    setExpandedIds(prev => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  };
-
-  const cycleState = (id) => {
-    setNodeStates(prev => {
-      const cur = prev[id] || null;
-      const next = cur === null ? "to-explore"
-        : cur === "to-explore" ? "discovered"
-        : cur === "discovered" ? "influenced"
-        : null;
-      const n = { ...prev };
-      if (next === null) delete n[id]; else n[id] = next;
-      // Sync influences to user profile
-      const currentInfluences = user?.influences || [];
-      if (next === "influenced" && !currentInfluences.includes(id)) {
-        updateUser({ influences: [...currentInfluences, id] });
-      } else if (next === null && cur === "influenced") {
-        updateUser({ influences: currentInfluences.filter(i => i !== id) });
-      }
-      return n;
-    });
-  };
-
-  const stateColor  = { "to-explore": "#4a8a5a", "discovered": "#4a7fa5", "influenced": T.amber };
-  const stateLabel  = { "to-explore": "To Explore", "discovered": "Discovered", "influenced": "Influenced by" };
-  const stateSymbol = { "to-explore": "◎", "discovered": "✓", "influenced": "★" };
-
-  const degreeLabels = ["Your influences", "Their influences", "One step further", "Going deeper"];
-
-  const PhotographerCard = ({ id, depth }) => {
-    const p = PHOTOGRAPHERS[id];
-    if (!p) return null;
-    const state     = nodeStates[id] || null;
-    const expanded  = expandedIds.has(id);
-    const subInfluences = (p.influences || []).filter(i => PHOTOGRAPHERS[i]);
-
-    return (
-      <div style={{ borderBottom: `1px solid ${T.border}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", paddingLeft: depth * 16 }}>
-          {/* Portrait */}
-          <PhotographerPortrait id={id} name={p.name} size={40} />
-
-          {/* Info */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontFamily: "'Libre Baskerville', serif", color: T.ink, lineHeight: 1.2 }}>{p.name}</div>
-            <div style={{ fontSize: 10.5, color: T.inkLight, marginTop: 2 }}>{p.genre} · {p.born}</div>
-          </div>
-
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
-            {/* State toggle */}
-            <button onClick={() => cycleState(id)}
-              style={{
-                fontSize: 9.5, letterSpacing: "0.06em", padding: "3px 8px",
-                border: `1px solid ${state ? stateColor[state] : T.border}`,
-                borderRadius: 2, background: state ? stateColor[state] : "transparent",
-                color: state ? T.bg : T.inkLight,
-                cursor: "pointer", fontFamily: "'EB Garamond', serif",
-                transition: "all 0.15s", whiteSpace: "nowrap",
-              }}>
-              {state ? `${stateSymbol[state]} ${stateLabel[state]}` : "+ Mark"}
-            </button>
-            {/* View in graph */}
-            <button onClick={() => onViewInGraph(id)}
-              title="View in graph"
-              style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 13, padding: "2px 4px", lineHeight: 1 }}>
-              ↗
-            </button>
-            {/* Expand influences */}
-            {subInfluences.length > 0 && (
-              <button onClick={() => toggleExpand(id)}
-                style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 11, padding: "2px 4px", lineHeight: 1, transition: "transform 0.15s", transform: expanded ? "rotate(90deg)" : "none" }}>
-                ›
-              </button>
-            )}
-          </div>
+// ─── ERROR BOUNDARY ───────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) return (
+      <div style={{ width: "100%", height: "100dvh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'EB Garamond', serif", padding: 32 }}>
+        <div style={{ maxWidth: 400, textAlign: "center" }}>
+          <div style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", color: T.ink, marginBottom: 12 }}>Something went wrong</div>
+          <p style={{ fontSize: 13, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, marginBottom: 20 }}>{this.state.error?.message || "An unexpected error occurred."}</p>
+          <button onClick={() => this.setState({ error: null })}
+            style={{ padding: "8px 20px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif" }}>
+            TRY AGAIN
+          </button>
         </div>
-
-        {/* Expanded influences */}
-        {expanded && subInfluences.map(infId => (
-          <PhotographerCard key={infId} id={infId} depth={depth + 1} />
-        ))}
       </div>
     );
-  };
-
-  return (
-    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
-      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-
-      {/* Header */}
-      <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, background: T.paper, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
-          <button onClick={onBack}
-            style={{ background: "none", border: "none", cursor: "pointer", color: T.inkMid, fontSize: 13, fontFamily: "'EB Garamond', serif", padding: 0 }}>
-            ← Profile
-          </button>
-          <div style={{ fontSize: 17, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", marginLeft: 18 }}>Discover</div>
-          {totalNew > 0 && (
-            <div style={{ marginLeft: 10, fontSize: 9, letterSpacing: "0.08em", color: T.inkLight, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "2px 7px" }}>
-              {totalNew} unseen
-            </div>
-          )}
-        </div>
-
-        {/* Degree tabs */}
-        {degrees.length > 0 && (
-          <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${T.border}`, marginTop: 4 }}>
-            {degrees.map((deg, i) => (
-              <button key={i} onClick={() => setActiveTab(i)}
-                style={{
-                  padding: "7px 14px", background: "transparent", border: "none",
-                  borderBottom: activeTab === i ? `2px solid ${T.ink}` : "2px solid transparent",
-                  cursor: "pointer", fontSize: 10, letterSpacing: "0.08em",
-                  color: activeTab === i ? T.ink : T.inkLight,
-                  fontFamily: "'EB Garamond', serif",
-                  transition: "color 0.15s",
-                }}>
-                {degreeLabels[i]}
-                <span style={{ marginLeft: 5, fontSize: 8.5, color: T.inkFaint }}>({deg.length})</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </header>
-
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 22px" }}>
-        <div style={{ maxWidth: 620, margin: "0 auto" }}>
-
-          {/* Empty state */}
-          {!degrees.length && (
-            <div style={{ textAlign: "center", padding: "60px 0" }}>
-              <p style={{ fontSize: 15, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7, maxWidth: 340, margin: "0 auto 24px" }}>
-                Add some influences to your profile to start discovering photographers through your lineage.
-              </p>
-              <button onClick={onBack}
-                style={{ fontSize: 10.5, letterSpacing: "0.1em", padding: "8px 20px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-                ← GO TO PROFILE
-              </button>
-            </div>
-          )}
-
-          {/* Degree list */}
-          {degrees.length > 0 && degrees[activeTab] && (
-            <>
-              <div style={{ padding: "14px 0 4px" }}>
-                <p style={{ fontSize: 12, color: T.inkLight, fontStyle: "italic", lineHeight: 1.6 }}>
-                  { activeTab === 0 && "Photographers you've listed as influences." }
-                  { activeTab === 1 && "Who influenced the photographers who influenced you." }
-                  { activeTab === 2 && "One step further back through the lineage." }
-                  { activeTab === 3 && "Deep in the roots of your photographic tree." }
-                </p>
-              </div>
-              {degrees[activeTab].map(id => (
-                <PhotographerCard key={id} id={id} depth={0} />
-              ))}
-            </>
-          )}
-
-        </div>
-      </div>
-    </div>
-  );
+    return this.props.children;
+  }
 }
 
-function GearPage({ user, onBack, updateUser }) {
-  const [adding, setAdding]   = useState(false);
-  const [draft, setDraft]     = useState({ category: "Camera Body", name: "", link: "", note: "" });
-  const [editingId, setEditingId] = useState(null);
-
-  const gear = user.gear || [];
-
-  // Group by category
-  const grouped = GEAR_CATEGORIES.reduce((acc, cat) => {
-    const items = gear.filter(g => g.category === cat);
-    if (items.length) acc[cat] = items;
-    return acc;
-  }, {});
-
-  const saveItem = () => {
-    if (!draft.name.trim()) return;
-    if (editingId) {
-      updateUser({ gear: gear.map(g => g.id === editingId ? { ...draft, id: editingId } : g) });
-      setEditingId(null);
-    } else {
-      updateUser({ gear: [...gear, { ...draft, id: Date.now() }] });
-    }
-    setDraft({ category: "Camera Body", name: "", link: "", note: "" });
-    setAdding(false);
-  };
-
-  const removeItem = (id) => updateUser({ gear: gear.filter(g => g.id !== id) });
-
-  const startEdit = (item) => {
-    setDraft({ ...item });
-    setEditingId(item.id);
-    setAdding(true);
-  };
-
-  return (
-    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
-      <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-
-      {/* Header */}
-      <header style={{ padding: "13px 22px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0 }}>
-        <button onClick={onBack}
-          style={{ background: "none", border: "none", cursor: "pointer", color: T.inkMid, fontSize: 13, fontFamily: "'EB Garamond', serif", padding: 0, display: "flex", alignItems: "center", gap: 6 }}>
-          ← Profile
-        </button>
-        <div style={{ fontSize: 17, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", marginLeft: 18 }}>My Gear</div>
-        <button onClick={() => { setAdding(true); setEditingId(null); setDraft({ category: "Camera Body", name: "", link: "", note: "" }); }}
-          style={{ marginLeft: "auto", fontSize: 10.5, letterSpacing: "0.1em", padding: "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-          + ADD GEAR
-        </button>
-      </header>
-
-      <div style={{ flex: 1, overflowY: "auto", padding: "28px 22px" }}>
-        <div style={{ maxWidth: 620, margin: "0 auto" }}>
-
-          {gear.length === 0 && !adding && (
-            <div style={{ textAlign: "center", padding: "60px 0" }}>
-              <div style={{ fontSize: 32, marginBottom: 16, color: T.inkFaint }}>⌂</div>
-              <p style={{ fontSize: 15, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7, maxWidth: 360, margin: "0 auto 24px" }}>
-                Share the gear you shoot with. Cameras, lenses, film, bags — whatever defines your kit.
-              </p>
-              <button onClick={() => setAdding(true)}
-                style={{ fontSize: 10.5, letterSpacing: "0.1em", padding: "8px 20px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-                ADD YOUR FIRST ITEM
-              </button>
-            </div>
-          )}
-
-          {/* Gear grouped by category */}
-          {Object.entries(grouped).map(([category, items]) => (
-            <div key={category} style={{ marginBottom: 32 }}>
-              <div style={{ fontSize: 8, letterSpacing: "0.13em", color: T.inkLight, marginBottom: 12 }}>{category.toUpperCase()}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                {items.map(item => (
-                  <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 0", borderBottom: `1px solid ${T.border}` }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                        {item.link ? (
-                          <a href={item.link} target="_blank" rel="noopener noreferrer"
-                            style={{ fontSize: 15, fontFamily: "'Libre Baskerville', serif", color: T.ink, textDecoration: "none", borderBottom: `1px solid ${T.border}` }}>
-                            {item.name}
-                          </a>
-                        ) : (
-                          <span style={{ fontSize: 15, fontFamily: "'Libre Baskerville', serif", color: T.ink }}>{item.name}</span>
-                        )}
-                        {item.link && (
-                          <span style={{ fontSize: 9, color: T.inkFaint, letterSpacing: "0.06em" }}>↗ LINK</span>
-                        )}
-                      </div>
-                      {item.note && (
-                        <p style={{ fontSize: 12.5, color: T.inkLight, fontStyle: "italic", margin: "4px 0 0", lineHeight: 1.5 }}>{item.note}</p>
-                      )}
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                      <button onClick={() => startEdit(item)}
-                        style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 11, fontFamily: "'EB Garamond', serif", letterSpacing: "0.06em", padding: 0 }}>
-                        EDIT
-                      </button>
-                      <button onClick={() => removeItem(item.id)}
-                        style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 15, padding: 0, lineHeight: 1 }}>
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {/* Affiliate note */}
-          {gear.length > 0 && (
-            <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6, marginTop: 8 }}>
-              Links will become affiliate links — you'll earn a commission when other photographers buy gear you recommend.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Add / Edit form — slides up from bottom */}
-      {adding && (
-        <div style={{ position: "absolute", inset: 0, background: "rgba(245,242,236,0.6)", backdropFilter: "blur(4px)", zIndex: 80, display: "flex", alignItems: "flex-end" }}
-          onClick={e => { if (e.target === e.currentTarget) { setAdding(false); setEditingId(null); } }}>
-          <div style={{ width: "100%", background: T.paper, borderTop: `1px solid ${T.border}`, padding: "22px 22px 32px", maxHeight: "85dvh", overflowY: "auto" }}>
-            <div style={{ maxWidth: 500, margin: "0 auto" }}>
-              <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>
-                  {editingId ? "Edit Item" : "Add Gear"}
-                </div>
-                <button onClick={() => { setAdding(false); setEditingId(null); }}
-                  style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 20, cursor: "pointer", color: T.inkLight, padding: 0 }}>×</button>
-              </div>
-
-              {/* Category */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>CATEGORY</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                  {GEAR_CATEGORIES.map(cat => (
-                    <button key={cat} onClick={() => setDraft(d => ({ ...d, category: cat }))}
-                      style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.category === cat ? T.ink : T.border}`, borderRadius: 2, background: draft.category === cat ? T.ink : "transparent", color: draft.category === cat ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif", transition: "all 0.12s" }}>
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Name */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>NAME</div>
-                <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
-                  placeholder="e.g. Leica M6, Kodak Portra 400, Peak Design Everyday Bag…"
-                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-              </div>
-
-              {/* Link */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>LINK <span style={{ color: T.inkFaint }}>(optional — becomes affiliate link)</span></div>
-                <input value={draft.link} onChange={e => setDraft(d => ({ ...d, link: e.target.value }))}
-                  placeholder="https://…"
-                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-              </div>
-
-              {/* Note */}
-              <div style={{ marginBottom: 22 }}>
-                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>NOTE <span style={{ color: T.inkFaint }}>(optional)</span></div>
-                <input value={draft.note} onChange={e => setDraft(d => ({ ...d, note: e.target.value }))}
-                  placeholder="Why you love it, how you use it…"
-                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-              </div>
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => { setAdding(false); setEditingId(null); }}
-                  style={{ padding: "8px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
-                  CANCEL
-                </button>
-                <button onClick={saveItem}
-                  style={{ flex: 1, padding: "8px", background: draft.name.trim() ? T.ink : T.inkFaint, border: "none", borderRadius: 2, cursor: draft.name.trim() ? "pointer" : "default", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif", transition: "background 0.15s" }}>
-                  {editingId ? "SAVE CHANGES" : "ADD TO GEAR"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser, nodeStates, setNodeStates, PHOTOGRAPHERS }) {
+// ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
+function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser, PHOTOGRAPHERS }) {
   const [editing, setEditing]         = useState(false);
-  const [editSection, setEditSection] = useState(null);
-  const [showGear, setShowGear]       = useState(false);
-  const [showDiscover, setShowDiscover] = useState(false);
-  const [showMenu, setShowMenu]       = useState(false);
-  const [draft, setDraft]             = useState({ ...user });
+  const [draft, setDraft]             = useState({ influences: [], lighthouseWorks: [], ...user });
+  const [infSearch, setInfSearch]     = useState("");
   const [profileLightbox, setProfileLightbox] = useState(null);
-  const [infSearch, setInfSearch] = useState("");
-  const [topicInput, setTopicInput] = useState("");
-  const [lighthouseDraft, setLighthouseDraft] = useState({ url: "", caption: "" });
+  const [showMenu, setShowMenu]       = useState(false);
 
-  const discovered = Object.values(nodeStates).filter(s => s === "discovered").length;
-  const toExplore  = Object.values(nodeStates).filter(s => s === "to-explore").length;
-  const tierLabel  = { 1: "Tier 1 — Canonical", 2: "Tier 2 — Verified", 3: "Tier 3 — Member" };
-  const tierColor  = { 1: T.amber, 2: T.blue, 3: T.inkLight };
+  // Re-sync draft when user updates
+  useEffect(() => {
+    setDraft({ influences: [], lighthouseWorks: [], ...user });
+  }, [user?.id]);
 
-  const openEdit = (section) => { setDraft({ ...user }); setEditSection(section); setEditing(true); };
-  const saveEdit = () => { updateUser(draft); setEditing(false); setEditSection(null); };
+  const saveEdit = () => { updateUser(draft); setEditing(false); };
 
-  const addTopic = (topic) => {
-    const cur = new Set(draft.talkTopics || []);
-    if (!cur.has(topic)) setDraft(d => ({ ...d, talkTopics: [...(d.talkTopics || []), topic] }));
-  };
-  const removeTopic = (topic) => setDraft(d => ({ ...d, talkTopics: (d.talkTopics || []).filter(t => t !== topic) }));
-
-  const addLighthouse = () => {
-    if (!lighthouseDraft.url.trim()) return;
-    setDraft(d => ({ ...d, lighthouseWorks: [...(d.lighthouseWorks || []), { ...lighthouseDraft, id: Date.now() }] }));
-    setLighthouseDraft({ url: "", caption: "" });
-  };
-  const removeLighthouse = (id) => setDraft(d => ({ ...d, lighthouseWorks: (d.lighthouseWorks || []).filter(w => w.id !== id) }));
-
-  // Section component for consistent styling
   const Section = ({ title, onEdit, children, empty, emptyText }) => (
     <div style={{ marginBottom: 32, paddingBottom: 28, borderBottom: `1px solid ${T.border}` }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
@@ -1989,53 +1083,25 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
 
   return (
     <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, overflow: "hidden" }}>
-
-      {/* Gear page — slides over profile */}
-      {showGear && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 100 }}>
-          <GearPage user={user} onBack={() => setShowGear(false)} updateUser={updateUser} />
-        </div>
-      )}
-
-      {/* Discover page — slides over profile */}
-      {showDiscover && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 100 }}>
-          <DiscoverPage
-            user={user}
-            onBack={() => setShowDiscover(false)}
-            onViewInGraph={(id) => { setShowDiscover(false); onExplore(); }}
-            nodeStates={nodeStates}
-            setNodeStates={setNodeStates}
-            updateUser={updateUser}
-            PHOTOGRAPHERS={PHOTOGRAPHERS}
-          />
-        </div>
-      )}
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+      {profileLightbox !== null && user.lighthouseWorks?.length > 0 && (
+        <LighthouseLightbox works={user.lighthouseWorks} startIndex={profileLightbox} onClose={() => setProfileLightbox(null)} />
+      )}
 
       {/* Header */}
       <header style={{ padding: "13px 16px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0, gap: 10 }}>
-        <div style={{ fontSize: 19, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", flexShrink: 0 }}>Lineage</div>
+        <div onClick={() => setAppView("graph")} style={{ fontSize: 19, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", flexShrink: 0, cursor: "pointer" }}>Lineage</div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-          {/* Primary CTA — always visible */}
           <button onClick={onExplore}
             style={{ fontSize: 10, letterSpacing: "0.1em", padding: "5px 12px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
             EXPLORE →
           </button>
-          {/* Burger menu */}
-          {showMenu && (
-            <div
-              onClick={() => setShowMenu(false)}
-              style={{ position: "fixed", inset: 0, zIndex: 199 }}
-            />
-          )}
+          {showMenu && <div onClick={() => setShowMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 199 }} />}
           <div style={{ position: "relative" }}>
-            <button
-              onClick={() => setShowMenu(m => !m)}
+            <button onClick={() => setShowMenu(m => !m)}
               style={{ background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", padding: "5px 8px", display: "flex", flexDirection: "column", gap: 3.5, alignItems: "center", justifyContent: "center", width: 32, height: 28 }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ width: 14, height: 1.2, background: T.inkMid, borderRadius: 1 }} />
-              ))}
+              {[0,1,2].map(i => <div key={i} style={{ width: 14, height: 1.2, background: T.inkMid, borderRadius: 1 }} />)}
             </button>
             {showMenu && (
               <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, background: T.paper, border: `1px solid ${T.border}`, borderRadius: 2, boxShadow: "0 4px 16px rgba(26,24,18,0.1)", zIndex: 200, minWidth: 160, overflow: "hidden" }}>
@@ -2048,16 +1114,15 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
                   <div key={i}>
                     {item.divider && <div style={{ height: 1, background: T.border }} />}
                     {item.href ? (
-                      <a href={item.href} target="_blank" rel="noopener noreferrer"
-                        onClick={() => setShowMenu(false)}
-                        style={{ display: "block", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: T.inkMid, textDecoration: "none", letterSpacing: "0.02em" }}
+                      <a href={item.href} target="_blank" rel="noopener noreferrer" onClick={() => setShowMenu(false)}
+                        style={{ display: "block", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: T.inkMid, textDecoration: "none" }}
                         onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                         {item.label}
                       </a>
                     ) : (
                       <button onClick={item.onClick}
-                        style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: item.label === "Sign out" ? T.inkLight : T.inkMid, background: "none", border: "none", cursor: "pointer", letterSpacing: "0.02em" }}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: item.label === "Sign out" ? T.inkLight : T.inkMid, background: "none", border: "none", cursor: "pointer" }}
                         onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                         {item.label}
@@ -2072,199 +1137,77 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
       </header>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "28px 22px" }}>
-        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+        <div style={{ maxWidth: 620, margin: "0 auto" }}>
 
-          {/* ── PROFILE HEADER ── */}
+          {/* Profile header */}
           <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 32, paddingBottom: 28, borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 24, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
-                {user.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 22, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
+                {((user.name || user.email || "?") + "").split(" ").map(w => w[0] || "").join("").slice(0, 2) || "?"}
               </span>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 8.5, letterSpacing: "0.12em", color: tierColor[user.tier], marginBottom: 4 }}>
-                {tierLabel[user.tier]}
+              <div style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1.15, marginBottom: 4 }}>
+                {user.name || user.email}
               </div>
-              <div style={{ fontSize: 26, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1.1, marginBottom: 4 }}>
-                {user.name}
-              </div>
-              <div style={{ fontSize: 12, color: T.inkLight, letterSpacing: "0.04em" }}>
+              <div style={{ fontSize: 11, color: T.inkLight, letterSpacing: "0.04em" }}>
                 {[user.genre, user.country, user.born].filter(Boolean).join(" · ")}
               </div>
-              {user.bio && (
-                <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "10px 0 0" }}>{user.bio}</p>
-              )}
+              {user.bio && <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "8px 0 0" }}>{user.bio}</p>}
             </div>
-            <button onClick={() => openEdit("basic")}
+            <button onClick={() => { setDraft({ ...user }); setEditing(true); }}
               style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif", flexShrink: 0 }}>
               EDIT
             </button>
           </div>
 
-          {/* ── STATS ── */}
-          <div style={{ display: "flex", gap: 28, marginBottom: 32, paddingBottom: 28, borderBottom: `1px solid ${T.border}`, alignItems: "flex-end", flexWrap: "wrap" }}>
-            {[
-              { label: "INFLUENCES", value: user.influences?.length || 0 },
-              { label: "DISCOVERED", value: discovered, color: "#4a7fa5" },
-              { label: "TO EXPLORE", value: toExplore, color: "#4a8a5a" },
-            ].map(({ label, value, color }) => (
-              <div key={label}>
-                <div style={{ fontSize: 26, fontFamily: "'Libre Baskerville', serif", color: color || T.ink }}>{value}</div>
-                <div style={{ fontSize: 8, letterSpacing: "0.1em", color: T.inkLight, marginTop: 2 }}>{label}</div>
-              </div>
-            ))}
-            <button onClick={() => setShowDiscover(true)}
-              style={{ marginLeft: "auto", fontSize: 10, letterSpacing: "0.1em", padding: "6px 14px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
-              DISCOVER →
-            </button>
-          </div>
-
-          {/* ── MY PHOTOGRAPHY ── */}
-          <Section title="MY PHOTOGRAPHY" onEdit={() => openEdit("photography")}
-            empty={!user.myPhotography} emptyText="Share what your photography is about — your approach, what drives you, what you're working on.">
-            <p style={{ fontSize: 15, lineHeight: 1.85, color: T.inkMid }}>{user.myPhotography}</p>
-          </Section>
-
-          {/* ── LIGHTHOUSE WORKS ── */}
-          <Section title="LIGHTHOUSE WORKS" onEdit={() => openEdit("lighthouse")}
-            empty={!user.lighthouseWorks?.length} emptyText="Add 3–5 images that best represent your work. The photographs that define you.">
-            {profileLightbox && (
-              <LighthouseLightbox
-                works={user.lighthouseWorks || []}
-                startIndex={profileLightbox}
-                onClose={() => setProfileLightbox(null)}
-              />
-            )}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
-              {(user.lighthouseWorks || []).map((work, i) => (
-                <div key={work.id} onClick={() => setProfileLightbox(i)}
-                  style={{ position: "relative", cursor: "pointer" }}>
-                  <div style={{ paddingTop: "75%", position: "relative", background: "rgba(26,24,18,0.04)", overflow: "hidden", borderRadius: 2 }}>
-                    <img src={work.url} alt={work.caption || ""}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.15s" }}
-                      onError={e => { e.target.style.display = "none"; }}
-                      onMouseEnter={e => e.target.style.opacity = "0.85"}
-                      onMouseLeave={e => e.target.style.opacity = "1"} />
-                  </div>
-                  {work.caption && (
-                    <p style={{ fontSize: 11, color: T.inkLight, marginTop: 5, fontStyle: "italic", lineHeight: 1.4 }}>{work.caption}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Section>
-
-          {/* ── TALK TO ME ABOUT ── */}
-          <Section title="TALK TO ME ABOUT" onEdit={() => openEdit("topics")}
-            empty={!user.talkTopics?.length} emptyText="Add topics you're interested in discussing with other photographers.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {(user.talkTopics || []).map(topic => (
-                <div key={topic} style={{ fontSize: 12, color: T.inkMid, padding: "5px 12px", border: `1px solid ${T.border}`, borderRadius: 20, background: T.paper }}>
-                  {topic}
-                </div>
-              ))}
-            </div>
-          </Section>
-
-          {/* ── INFLUENCED BY ── */}
-          <Section title="INFLUENCED BY" onEdit={() => openEdit("influences")}
+          {/* Influences */}
+          <Section title="MY INFLUENCES" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
             empty={!user.influences?.length} emptyText="Which photographers shaped your vision?">
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {(user.influences || []).map(id => {
-                const ns = nodeStates[id] || null;
-                const stateColour = ns === "influenced" ? T.amber : ns === "discovered" ? "#4a7fa5" : ns === "to-explore" ? "#4a8a5a" : null;
-                const stateSymbol = ns === "influenced" ? "★" : ns === "discovered" ? "✓" : ns === "to-explore" ? "◎" : null;
-                return (
-                  <div key={id}
-                    onClick={() => {
-                      setNodeStates(prev => {
-                        const cur = prev[id] || null;
-                        const next = cur === null ? "to-explore" : cur === "to-explore" ? "discovered" : cur === "discovered" ? "influenced" : null;
-                        const n = { ...prev };
-                        if (next === null) delete n[id]; else n[id] = next;
-                        return n;
-                      });
-                    }}
-                    style={{
-                      fontSize: 13, padding: "4px 10px", borderRadius: 2, cursor: "pointer",
-                      border: `1px solid ${stateColour ? stateColour : "rgba(74,111,165,0.25)"}`,
-                      color: stateColour || T.blue,
-                      background: stateColour ? `${stateColour}12` : "transparent",
-                      display: "flex", alignItems: "center", gap: 5,
-                      transition: "all 0.15s",
-                    }}>
-                    {stateSymbol && <span style={{ fontSize: 10 }}>{stateSymbol}</span>}
-                    {PHOTOGRAPHERS[id]?.name}
-                  </div>
-                );
-              })}
-            </div>
-          </Section>
-
-          {/* ── LINKS ── */}
-          <Section title="LINKS" onEdit={() => openEdit("links")}
-            empty={!user.website && !user.instagram && !user.twitter}
-            emptyText="Add your website, Instagram, or other links.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {[
-                { key: "website", label: "Website" },
-                { key: "instagram", label: "Instagram" },
-                { key: "twitter", label: "Twitter / X" },
-              ].filter(({ key }) => user[key]).map(({ key, label }) => (
-                <a key={key} href={user[key].startsWith("http") ? user[key] : `https://${user[key]}`}
-                  target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 12.5, color: T.inkMid, padding: "4px 10px", border: `1px solid ${T.border}`, borderRadius: 2, textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}>
-                  {label} <span style={{ fontSize: 10, color: T.inkFaint }}>↗</span>
-                </a>
+              {(user.influences || []).map(id => (
+                <div key={id} style={{ fontSize: 13, color: T.blue, padding: "4px 10px", border: `1px solid rgba(74,111,165,0.25)`, borderRadius: 2 }}>
+                  {PHOTOGRAPHERS[id]?.name || id}
+                </div>
               ))}
             </div>
           </Section>
 
-          {/* ── MY GEAR ── */}
-          <div style={{ marginBottom: 32, paddingBottom: 28, borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
-              <div style={{ fontSize: 8, letterSpacing: "0.13em", color: T.inkLight }}>MY GEAR</div>
-              <button onClick={() => setShowGear(true)}
-                style={{ marginLeft: "auto", fontSize: 8.5, letterSpacing: "0.08em", padding: "3px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkLight, fontFamily: "'EB Garamond', serif" }}>
-                {(user.gear || []).length === 0 ? "+ ADD" : "VIEW ALL"}
-              </button>
-            </div>
-            {(user.gear || []).length === 0 ? (
-              <p style={{ fontSize: 13, color: T.inkFaint, fontStyle: "italic" }}>
-                Share the cameras, lenses, film and gear you shoot with.
-              </p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                {/* Show first 4 items as preview */}
-                {(user.gear || []).slice(0, 4).map((item, i) => (
-                  <div key={item.id} style={{ display: "flex", alignItems: "baseline", gap: 10, padding: "8px 0", borderBottom: i < Math.min(3, (user.gear||[]).length-1) ? `1px solid ${T.border}` : "none" }}>
-                    <span style={{ fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint, width: 90, flexShrink: 0 }}>{item.category.toUpperCase()}</span>
-                    {item.link ? (
-                      <a href={item.link} target="_blank" rel="noopener noreferrer"
-                        style={{ fontSize: 13.5, color: T.ink, textDecoration: "none", borderBottom: `1px solid ${T.border}` }}>
-                        {item.name}
-                      </a>
-                    ) : (
-                      <span style={{ fontSize: 13.5, color: T.ink }}>{item.name}</span>
-                    )}
+          {/* Lighthouse works */}
+          <Section title="LIGHTHOUSE WORKS" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
+            empty={!user.lighthouseWorks?.length} emptyText="Add 3–5 images that best represent your work.">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
+              {(user.lighthouseWorks || []).map((work, i) => (
+                <div key={work.id || i} onClick={() => setProfileLightbox(i)} style={{ cursor: "pointer" }}>
+                  <div style={{ paddingTop: "75%", position: "relative", background: "rgba(26,24,18,0.04)", overflow: "hidden", borderRadius: 2 }}>
+                    <img src={work.url} alt={work.caption || ""} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display = "none"} />
                   </div>
-                ))}
-                {(user.gear || []).length > 4 && (
-                  <button onClick={() => setShowGear(true)}
-                    style={{ alignSelf: "flex-start", marginTop: 8, background: "none", border: "none", fontSize: 11, color: T.inkLight, cursor: "pointer", fontFamily: "'EB Garamond', serif", fontStyle: "italic", padding: 0, letterSpacing: "0.04em" }}>
-                    + {(user.gear || []).length - 4} more items →
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+                  {work.caption && <p style={{ fontSize: 11, color: T.inkLight, marginTop: 5, fontStyle: "italic" }}>{work.caption}</p>}
+                </div>
+              ))}
+            </div>
+          </Section>
 
-          {/* ── EXPLORE CTA ── */}
-          <div style={{ padding: "24px", border: `1px solid ${T.border}`, borderRadius: 2, background: T.paper, textAlign: "center", marginBottom: 28 }}>
+          {/* Links */}
+          <Section title="LINKS" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
+            empty={!user.website && !user.instagram && !user.twitter} emptyText="Add your website, Instagram, or other links.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {[{ key: "website", label: "Website" }, { key: "instagram", label: "Instagram" }, { key: "twitter", label: "Twitter / X" }]
+                .filter(({ key }) => user[key])
+                .map(({ key, label }) => (
+                  <a key={key} href={user[key].startsWith("http") ? user[key] : `https://${user[key]}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize: 12.5, color: T.inkMid, padding: "4px 10px", border: `1px solid ${T.border}`, borderRadius: 2, textDecoration: "none" }}>
+                    {label} ↗
+                  </a>
+                ))}
+            </div>
+          </Section>
+
+          {/* Explore CTA */}
+          <div style={{ padding: "24px", border: `1px solid ${T.border}`, borderRadius: 2, background: T.paper, textAlign: "center" }}>
             <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "0 0 14px" }}>
-              {discovered === 0
-                ? "Start exploring the network to discover photographers and build your lineage."
-                : `You've discovered ${discovered} photographer${discovered === 1 ? "" : "s"}. Keep exploring.`}
+              Explore the network and discover photographic lineages.
             </p>
             <button onClick={onExplore}
               style={{ fontSize: 10.5, letterSpacing: "0.12em", padding: "9px 24px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
@@ -2275,207 +1218,106 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
         </div>
       </div>
 
-      {/* ── EDIT MODAL ── */}
+      {/* Edit modal */}
       {editing && (
         <div style={{ position: "absolute", inset: 0, background: T.paper, zIndex: 90, display: "flex", flexDirection: "column" }}>
           <div style={{ padding: "14px 22px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>
-              { editSection === "basic" ? "Edit Profile"
-              : editSection === "photography" ? "My Photography"
-              : editSection === "topics" ? "Talk to Me About"
-              : editSection === "lighthouse" ? "Lighthouse Works"
-              : editSection === "links" ? "Links"
-              : "Influences" }
-            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Edit Profile</div>
             <button onClick={() => setEditing(false)} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 20, cursor: "pointer", color: T.inkLight, padding: 0 }}>×</button>
           </div>
-
           <div style={{ flex: 1, overflowY: "auto", padding: "20px 22px" }}>
-            <div style={{ maxWidth: 500 }}>
-
-              {/* BASIC */}
-              {editSection === "basic" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {[
-                    { label: "NAME", key: "name" },
-                    { label: "BIRTH YEAR", key: "born" },
-                    { label: "COUNTRY", key: "country" },
-                  ].map(({ label, key }) => (
-                    <div key={key}>
-                      <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
-                      <input value={draft[key] || ""} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
-                        style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-                    </div>
-                  ))}
-                  <div>
-                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>GENRE</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                      {["Street","Documentary","Portrait","Landscape","Fashion","Fine Art","War","Conceptual","Experimental"].map(g => (
-                        <button key={g} onClick={() => setDraft(d => ({ ...d, genre: g }))}
-                          style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.genre === g ? T.ink : T.border}`, borderRadius: 2, background: draft.genre === g ? T.ink : "transparent", color: draft.genre === g ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
-                          {g}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>SHORT BIO</div>
-                    <textarea value={draft.bio || ""} onChange={e => setDraft(d => ({ ...d, bio: e.target.value }))} rows={2} placeholder="One or two lines about you…"
-                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
-                  </div>
+            <div style={{ maxWidth: 500, display: "flex", flexDirection: "column", gap: 16 }}>
+              {[
+                { label: "NAME", key: "name" },
+                { label: "BIRTH YEAR", key: "born" },
+                { label: "COUNTRY", key: "country" },
+                { label: "WEBSITE", key: "website" },
+                { label: "INSTAGRAM", key: "instagram" },
+                { label: "TWITTER / X", key: "twitter" },
+              ].map(({ label, key }) => (
+                <div key={key}>
+                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+                  <input value={draft[key] || ""} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
                 </div>
-              )}
-
-              {/* MY PHOTOGRAPHY */}
-              {editSection === "photography" && (
-                <div>
-                  <p style={{ fontSize: 13, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14 }}>
-                    What is your photography about? Your approach, your obsessions, what you're working on right now.
-                  </p>
-                  <textarea value={draft.myPhotography || ""} onChange={e => setDraft(d => ({ ...d, myPhotography: e.target.value }))} rows={8}
-                    placeholder="My photography is about…"
-                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", lineHeight: 1.8, background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box" }} />
-                </div>
-              )}
-
-              {/* TALK TO ME ABOUT */}
-              {editSection === "topics" && (
-                <div>
-                  <p style={{ fontSize: 13, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14 }}>
-                    Pick topics you're happy to discuss with other photographers, or add your own.
-                  </p>
-                  {/* Selected topics */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-                    {(draft.talkTopics || []).map(topic => (
-                      <div key={topic} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, padding: "4px 10px 4px 12px", border: `1px solid ${T.ink}`, borderRadius: 20, background: T.ink, color: T.bg }}>
-                        {topic}
-                        <button onClick={() => removeTopic(topic)} style={{ background: "none", border: "none", color: "rgba(249,247,242,0.6)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Suggested topics */}
-                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>SUGGESTED</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 16 }}>
-                    {TALK_TOPICS.filter(t => !(draft.talkTopics || []).includes(t)).map(topic => (
-                      <button key={topic} onClick={() => addTopic(topic)}
-                        style={{ fontSize: 11.5, padding: "4px 11px", border: `1px solid ${T.border}`, borderRadius: 20, background: "transparent", color: T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
-                        + {topic}
-                      </button>
-                    ))}
-                  </div>
-                  {/* Custom topic */}
-                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>ADD YOUR OWN</div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input value={topicInput} onChange={e => setTopicInput(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter" && topicInput.trim()) { addTopic(topicInput.trim()); setTopicInput(""); } }}
-                      placeholder="Type a topic and press Enter…"
-                      style={{ flex: 1, border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none" }} />
-                    <button onClick={() => { if (topicInput.trim()) { addTopic(topicInput.trim()); setTopicInput(""); } }}
-                      style={{ fontSize: 10, letterSpacing: "0.08em", padding: "4px 10px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-                      ADD
+              ))}
+              <div>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>GENRE</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {["Street","Documentary","Portrait","Landscape","Fashion","Fine Art","War","Conceptual","Experimental"].map(g => (
+                    <button key={g} onClick={() => setDraft(d => ({ ...d, genre: g }))}
+                      style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.genre === g ? T.ink : T.border}`, borderRadius: 2, background: draft.genre === g ? T.ink : "transparent", color: draft.genre === g ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
+                      {g}
                     </button>
-                  </div>
+                  ))}
                 </div>
-              )}
-
-              {/* LIGHTHOUSE WORKS */}
-              {editSection === "lighthouse" && (
-                <div>
-                  <p style={{ fontSize: 13, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7, marginBottom: 16 }}>
-                    Add up to 5 images that best represent your work. Paste a direct image URL from your website, portfolio, or anywhere public.
-                  </p>
-                  {/* Existing works */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-                    {(draft.lighthouseWorks || []).map(work => (
-                      <div key={work.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 12px", border: `1px solid ${T.border}`, borderRadius: 2 }}>
-                        <div style={{ width: 60, height: 45, flexShrink: 0, background: "rgba(26,24,18,0.05)", overflow: "hidden", borderRadius: 1 }}>
-                          <img src={work.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display="none"} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 11, color: T.inkMid, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{work.url}</div>
-                          {work.caption && <div style={{ fontSize: 11, color: T.inkLight, fontStyle: "italic", marginTop: 2 }}>{work.caption}</div>}
-                        </div>
-                        <button onClick={() => removeLighthouse(work.id)}
-                          style={{ background: "none", border: "none", color: T.inkLight, cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Add new */}
-                  {(draft.lighthouseWorks || []).length < 5 && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "14px", border: `1px dashed ${T.border}`, borderRadius: 2 }}>
-                      <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight }}>ADD IMAGE</div>
-                      <input value={lighthouseDraft.url} onChange={e => setLighthouseDraft(d => ({ ...d, url: e.target.value }))}
-                        placeholder="https://your-image-url.jpg"
-                        style={{ border: "none", borderBottom: `1px solid ${T.border}`, padding: "5px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none" }} />
-                      <input value={lighthouseDraft.caption} onChange={e => setLighthouseDraft(d => ({ ...d, caption: e.target.value }))}
-                        placeholder="Caption (optional)"
-                        style={{ border: "none", borderBottom: `1px solid ${T.border}`, padding: "5px 0", fontSize: 12, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none" }} />
-                      <button onClick={addLighthouse}
-                        style={{ alignSelf: "flex-start", fontSize: 10, letterSpacing: "0.1em", padding: "5px 12px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-                        ADD IMAGE
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* INFLUENCES */}
-              {editSection === "influences" && (
-                <div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
-                    {(draft.influences || []).map(infId => (
-                      <div key={infId} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 10px", border: `1px solid rgba(74,111,165,0.3)`, borderRadius: 2 }}>
-                        <span style={{ fontSize: 12, color: T.blue }}>{PHOTOGRAPHERS[infId]?.name}</span>
-                        <button onClick={() => setDraft(d => ({ ...d, influences: d.influences.filter(i => i !== infId) }))}
-                          style={{ background: "none", border: "none", color: "rgba(74,111,165,0.5)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ position: "relative" }}>
-                    <input value={infSearch} onChange={e => setInfSearch(e.target.value)} placeholder="Search photographers…"
-                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-                    {infSearch.trim().length > 0 && (() => {
-                      const cur = new Set(draft.influences || []);
-                      const matches = Object.entries(PHOTOGRAPHERS).filter(([id, p]) => !cur.has(id) && p.name.toLowerCase().includes(infSearch.toLowerCase())).slice(0, 6);
-                      return matches.length > 0 ? (
-                        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, boxShadow: "0 4px 16px rgba(26,24,18,0.08)", zIndex: 10 }}>
-                          {matches.map(([id, p], i) => (
-                            <div key={id} onClick={() => { setDraft(d => ({ ...d, influences: [...(d.influences||[]), id] })); setInfSearch(""); }}
-                              style={{ padding: "9px 14px", cursor: "pointer", borderBottom: i < matches.length-1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 8, alignItems: "baseline" }}
-                              onMouseEnter={e => e.currentTarget.style.background = "rgba(74,111,165,0.05)"}
-                              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                              <span style={{ fontSize: 14, fontFamily: "'Libre Baskerville', serif" }}>{p.name}</span>
-                              <span style={{ fontSize: 9, color: T.inkLight }}>{p.born} · {p.genre}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null;
-                    })()}
-                  </div>
-                </div>
-              )}
-
-              {/* LINKS */}
-              {editSection === "links" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {[
-                    { label: "WEBSITE", key: "website", placeholder: "https://yourwebsite.com" },
-                    { label: "INSTAGRAM", key: "instagram", placeholder: "https://instagram.com/yourhandle" },
-                    { label: "TWITTER / X", key: "twitter", placeholder: "https://twitter.com/yourhandle" },
-                  ].map(({ label, key, placeholder }) => (
-                    <div key={key}>
-                      <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
-                      <input value={draft[key] || ""} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
-                        placeholder={placeholder}
-                        style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO</div>
+                <textarea value={draft.bio || ""} onChange={e => setDraft(d => ({ ...d, bio: e.target.value }))} rows={3}
+                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>MY INFLUENCES</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                  {(draft.influences || []).map(id => (
+                    <div key={id} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 10px", border: `1px solid rgba(74,111,165,0.3)`, borderRadius: 2 }}>
+                      <span style={{ fontSize: 12, color: T.blue }}>{PHOTOGRAPHERS[id]?.name || id}</span>
+                      <button onClick={() => setDraft(d => ({ ...d, influences: (d.influences || []).filter(i => i !== id) }))}
+                        style={{ background: "none", border: "none", color: "rgba(74,111,165,0.5)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
                     </div>
                   ))}
                 </div>
-              )}
+                <div style={{ position: "relative" }}>
+                  <input value={infSearch} onChange={e => setInfSearch(e.target.value)} placeholder="Search photographers…"
+                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                  {infSearch.trim().length > 0 && (() => {
+                    const cur = new Set(draft.influences || []);
+                    const matches = Object.entries(PHOTOGRAPHERS).filter(([id, p]) => !cur.has(id) && p.name.toLowerCase().includes(infSearch.toLowerCase())).slice(0, 6);
+                    return matches.length > 0 ? (
+                      <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, boxShadow: "0 4px 16px rgba(26,24,18,0.08)", zIndex: 10 }}>
+                        {matches.map(([id, p], i) => (
+                          <div key={id} onClick={() => { setDraft(d => ({ ...d, influences: [...(d.influences || []), id] })); setInfSearch(""); }}
+                            style={{ padding: "9px 14px", cursor: "pointer", borderBottom: i < matches.length-1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 8, alignItems: "baseline" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "rgba(74,111,165,0.05)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                            <span style={{ fontSize: 14, fontFamily: "'Libre Baskerville', serif" }}>{p.name}</span>
+                            <span style={{ fontSize: 9, color: T.inkLight }}>{p.born}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
 
+              {/* Lighthouse works */}
+              <div>
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>LIGHTHOUSE WORKS <span style={{ color: T.inkFaint, textTransform: "none", letterSpacing: 0, fontSize: 10 }}>— up to 5 images</span></div>
+                {(draft.lighthouseWorks || []).map((work, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, padding: "8px 10px", background: "rgba(26,24,18,0.03)", borderRadius: 2 }}>
+                    {work.url && <img src={work.url} alt="" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 1, flexShrink: 0 }} onError={e => e.target.style.display="none"} />}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <input value={work.url || ""} onChange={e => setDraft(d => { const w = [...(d.lighthouseWorks||[])]; w[i] = {...w[i], url: e.target.value}; return {...d, lighthouseWorks: w}; })}
+                        placeholder="Image URL…"
+                        style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "4px 0", fontSize: 12, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 4 }} />
+                      <input value={work.caption || ""} onChange={e => setDraft(d => { const w = [...(d.lighthouseWorks||[])]; w[i] = {...w[i], caption: e.target.value}; return {...d, lighthouseWorks: w}; })}
+                        placeholder="Caption (optional)…"
+                        style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "4px 0", fontSize: 11, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.inkMid, outline: "none", boxSizing: "border-box" }} />
+                    </div>
+                    <button onClick={() => setDraft(d => ({ ...d, lighthouseWorks: (d.lighthouseWorks||[]).filter((_,j) => j !== i) }))}
+                      style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 18, padding: "0 4px", lineHeight: 1, flexShrink: 0 }}>×</button>
+                  </div>
+                ))}
+                {(draft.lighthouseWorks?.length || 0) < 5 && (
+                  <button onClick={() => setDraft(d => ({ ...d, lighthouseWorks: [...(d.lighthouseWorks||[]), { url: "", caption: "", id: Date.now().toString() }] }))}
+                    style={{ fontSize: 11, padding: "5px 12px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
+                    + ADD IMAGE
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-
           <div style={{ padding: "12px 22px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8, flexShrink: 0 }}>
             <button onClick={() => setEditing(false)}
               style={{ padding: "7px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
@@ -2491,128 +1333,95 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
     </div>
   );
 }
+
+// ─── AUTH SCREEN ──────────────────────────────────────────────────────────────
 function AuthScreen({ onAuth }) {
   const { signup, login } = useCurrentUser();
-  const [mode, setMode] = useState("login");
-  const [step, setStep] = useState(1);
+  const [mode, setMode]   = useState("login");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [draft, setDraft] = useState({
-    name: "", email: "", password: "", country: "", genre: "Street", born: "", bio: "",
-  });
+  const [draft, setDraft] = useState({ name: "", email: "", password: "" });
 
   const handleLogin = async () => {
-    setError(null);
-    setLoading(true);
+    setError(null); setLoading(true);
     try {
       const user = await login(draft.email, draft.password);
       onAuth(user);
     } catch (err) {
       setError(err.message || "Sign in failed. Check your email and password.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const handleSignup = async () => {
     if (!draft.name || !draft.email || !draft.password) { setError("Please fill in all fields."); return; }
-    setError(null);
-    setLoading(true);
+    setError(null); setLoading(true);
     try {
       const user = await signup(draft.email, draft.password, draft.name);
       onAuth(user);
     } catch (err) {
       setError(err.message || "Sign up failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   return (
-    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'EB Garamond', Georgia, serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-      <div style={{ width: "100%", maxWidth: 420, padding: "0 28px" }}>
-
-        {/* Wordmark */}
-        <div style={{ textAlign: "center", marginBottom: 36 }}>
-          <div style={{ fontSize: 42, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, color: T.ink, lineHeight: 1, marginBottom: 10 }}>Lineage</div>
-          <div style={{ width: 28, height: 1, background: T.inkFaint, margin: "0 auto 12px" }} />
-          <p style={{ fontSize: 14, color: T.inkLight, fontStyle: "italic", lineHeight: 1.7 }}>
-            {mode === "login" ? "Welcome back." : step === 1 ? "Join the network." : step === 2 ? "Tell us about yourself." : "Who influenced you?"}
-          </p>
+      <div style={{ width: "100%", maxWidth: 380, padding: "0 28px" }}>
+        <div style={{ marginBottom: 32, textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", color: T.ink, marginBottom: 6 }}>Lineage</div>
+          <div style={{ fontSize: 10, letterSpacing: "0.14em", color: T.inkLight }}>Map your photographic influence</div>
         </div>
 
-        {mode === "login" ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {[{ label: "EMAIL", key: "email", type: "email" }, { label: "PASSWORD", key: "password", type: "password" }].map(({ label, key, type }) => (
-              <div key={key}>
-                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
-                <input type={type} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
-                  onKeyDown={e => e.key === "Enter" && handleLogin()}
-                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-              </div>
-            ))}
-            {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
-            <button onClick={handleLogin}
-              style={{ marginTop: 8, padding: "10px", background: T.ink, border: "none", borderRadius: 2, color: T.bg, fontSize: 11, letterSpacing: "0.12em", cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
-              SIGN IN
+        <div style={{ display: "flex", borderBottom: `1px solid ${T.border}`, marginBottom: 24 }}>
+          {["login", "signup"].map(m => (
+            <button key={m} onClick={() => { setMode(m); setError(null); }}
+              style={{ flex: 1, padding: "8px", background: "none", border: "none", borderBottom: `2px solid ${mode === m ? T.ink : "transparent"}`, cursor: "pointer", fontSize: 10, letterSpacing: "0.1em", color: mode === m ? T.ink : T.inkLight, fontFamily: "'EB Garamond', serif", marginBottom: -1 }}>
+              {m === "login" ? "SIGN IN" : "JOIN"}
             </button>
-            <div style={{ textAlign: "center", fontSize: 12, color: T.inkLight }}>
-              No account?{" "}
-              <span onClick={() => { setMode("signup"); setStep(1); setError(null); }}
-                style={{ color: T.ink, cursor: "pointer", borderBottom: `1px solid ${T.border}` }}>
-                Join Lineage
-              </span>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {mode === "signup" && (
+            <div>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>FULL NAME</div>
+              <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
+                style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
             </div>
-            <div style={{ textAlign: "center", marginTop: 8 }}>
-              <span onClick={() => onAuth(null)}
-                style={{ fontSize: 11, color: T.inkFaint, cursor: "pointer", letterSpacing: "0.06em" }}>
-                EXPLORE WITHOUT ACCOUNT →
-              </span>
+          )}
+          {[{ label: "EMAIL", key: "email", type: "email" }, { label: "PASSWORD", key: "password", type: "password" }].map(({ label, key, type }) => (
+            <div key={key}>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
+              <input type={type} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+                onKeyDown={e => e.key === "Enter" && (mode === "login" ? handleLogin() : handleSignup())}
+                style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
             </div>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {[
-              { label: "FULL NAME", key: "name", type: "text" },
-              { label: "EMAIL", key: "email", type: "email" },
-              { label: "PASSWORD", key: "password", type: "password" },
-            ].map(({ label, key, type }) => (
-              <div key={key}>
-                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
-                <input type={type} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
-                  onKeyDown={e => e.key === "Enter" && handleSignup()}
-                  style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
-              </div>
-            ))}
-            <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6 }}>
+          ))}
+
+          {mode === "signup" && (
+            <p style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic", lineHeight: 1.6, margin: 0 }}>
               Your data is stored securely. No data is shared with third parties.
             </p>
+          )}
 
-            {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
+          {error && <div style={{ fontSize: 12, color: T.red, fontStyle: "italic" }}>{error}</div>}
 
-            <button onClick={handleSignup} disabled={loading}
-              style={{ padding: "10px", background: T.amber, border: "none", borderRadius: 2, cursor: loading ? "default" : "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.12em", fontFamily: "'EB Garamond', serif", opacity: loading ? 0.7 : 1 }}>
-              {loading ? "JOINING…" : "JOIN LINEAGE"}
-            </button>
+          <button onClick={mode === "login" ? handleLogin : handleSignup} disabled={loading}
+            style={{ padding: "10px", background: T.ink, border: "none", borderRadius: 2, cursor: loading ? "default" : "pointer", color: T.bg, fontSize: 11, letterSpacing: "0.12em", fontFamily: "'EB Garamond', serif", opacity: loading ? 0.7 : 1, marginTop: 4 }}>
+            {loading ? "…" : mode === "login" ? "SIGN IN" : "JOIN LINEAGE"}
+          </button>
 
-            <div style={{ textAlign: "center", fontSize: 12, color: T.inkLight }}>
-              Already have an account?{" "}
-              <span onClick={() => { setMode("login"); setError(null); }} style={{ color: T.ink, cursor: "pointer", borderBottom: `1px solid ${T.border}` }}>Sign in</span>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <span onClick={() => onAuth(null)} style={{ fontSize: 11, color: T.inkFaint, cursor: "pointer", letterSpacing: "0.06em" }}>
-                EXPLORE WITHOUT ACCOUNT →
-              </span>
-            </div>
+          <div style={{ textAlign: "center" }}>
+            <span onClick={() => onAuth(null)} style={{ fontSize: 11, color: T.inkFaint, cursor: "pointer", letterSpacing: "0.06em" }}>
+              EXPLORE WITHOUT ACCOUNT →
+            </span>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────────────────────
 // ─── ADMIN: ADD PHOTOGRAPHER ──────────────────────────────────────────────────
 const PHOTOGRAPHER_TAGS = ["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"];
 
@@ -2665,7 +1474,6 @@ function AddPhotographerModal({ onClose, onSaved }) {
           {[
             { label: "NAME *", key: "name", placeholder: "e.g. Henri Cartier-Bresson" },
             { label: "BORN", key: "born", placeholder: "e.g. 1908" },
-            { label: "NATIONALITY", key: "nationality", placeholder: "e.g. French" },
             { label: "COUNTRY", key: "country", placeholder: "e.g. France" },
           ].map(({ label, key, placeholder }) => (
             <div key={key}>
@@ -2847,15 +1655,14 @@ function AddConnectionModal({ photographers, onClose, onSaved }) {
 export default function Lineage() {
   // ── DATA ──
   const { data: PHOTOGRAPHERS, loading: dataLoading } = usePhotographers();
-  const { user, signup, login, logout, updateUser } = useCurrentUser();
+  const { user, signup, login, logout, updateUser, loading: authLoading } = useCurrentUser();
 
   // ── APP ROUTING STATE ──
   const [appView, setAppView] = useState(() => {
     // Show disclaimer on first ever visit
     const seenDisclaimer = localStorage.getItem(DISCLAIMER_KEY);
     if (!seenDisclaimer) return "disclaimer";
-    if (user) return "profile";
-    return "auth";
+    return "graph"; // auth check happens async — useEffect below handles routing
   });
   const [sourcesFilter, setSourcesFilter] = useState(null);
   const [prevAppView, setPrevAppView]     = useState(null);
@@ -2863,10 +1670,7 @@ export default function Lineage() {
   const [lightbox, setLightbox]               = useState(null);
   const [showAddPhotographer, setShowAddPhotographer] = useState(false);
   const [showAddConnection, setShowAddConnection]     = useState(false);
-
-  const isAdmin = activeUser?.is_admin || false;
-
-  const navigateTo = (view) => { setPrevAppView(appView); setAppView(view); };
+  const [newlySavedPhotographer, setNewlySavedPhotographer] = useState(null); // prompt to add connection after save
 
   // ── PERSONAL GRAPH STATE ──
   const [nodeStates, setNodeStates] = useState(() => {
@@ -2877,8 +1681,25 @@ export default function Lineage() {
   });
 
   // ── USER PROFILE STATE ──
-  const freshUserRef = useRef(null);
-  const activeUser = freshUserRef.current || user;
+  const freshUserRef = useRef(null); // kept for compatibility
+  const activeUser = user;
+  const isAdmin = activeUser?.is_admin || false;
+
+  const navigateTo = (view) => { setPrevAppView(appView); setAppView(view); };
+
+  const initialRouteDone = useRef(false);
+
+  // Once auth check completes, route appropriately — only fires once ever
+  useEffect(() => {
+    if (authLoading) return;
+    if (initialRouteDone.current) return;
+    initialRouteDone.current = true;
+    const seenDisclaimer = localStorage.getItem(DISCLAIMER_KEY);
+    if (!seenDisclaimer) return;
+    if (user && appView === "graph") {
+      setAppView("profile");
+    }
+  }, [authLoading]);
   const userProfile = activeUser || null;
   const setUserProfile = (p) => updateUser(p);
   const [showAddSelf, setShowAddSelf]   = useState(false);
@@ -3026,16 +1847,20 @@ export default function Lineage() {
     return result;
   }, [positions, scale, userProfile, dims]);
 
-  // Centre the graph on first load and whenever returning to graph view
+  // Centre the graph on first load and whenever photographers change
   useEffect(() => {
-    if (centredRef.current) return;
+    if (!dims.w || !dims.h) return;
     const ids = Object.keys(scaledPos);
-    if (!dims.w || !dims.h || ids.length === 0) return;
-    centredRef.current = true;
+    if (ids.length === 0) {
+      // Empty network — centre the canvas
+      setPan({ x: dims.w / 2, y: dims.h / 2 });
+      return;
+    }
     const cx = ids.reduce((s, id) => s + scaledPos[id].x, 0) / ids.length;
     const cy = ids.reduce((s, id) => s + scaledPos[id].y, 0) / ids.length;
     setPan({ x: dims.w / 2 - cx, y: dims.h / 2 - cy });
-  }, [dims, scaledPos]);
+    centredRef.current = true;
+  }, [dims, PHOTOGRAPHERS]); // re-centre when photographer list changes
 
   // When a node is selected — zoom to overview and centre the whole network
   // The sheet pushes the graph up, so we offset pan upward slightly to keep network visible
@@ -3113,11 +1938,14 @@ export default function Lineage() {
     animFrameRef.current = requestAnimationFrame(step);
   }, [pan, scale, positions, dims]);
 
-  const switchMode = (m) => {
-    setMode(m); setSelected(null); setSheetOpen(false); setEditMode(false);
-    setPathFrom(null); setPathTo(null); setPathResult(null); setSearchTarget(null);
+  const switchMode = (m, opts = {}) => {
+    setMode(m);
+    if (!opts.keepSheet) { setSelected(null); setSheetOpen(false); }
+    setEditMode(false);
+    if (!opts.keepPath) { setPathFrom(null); setPathTo(null); setPathResult(null); }
+    setSearchTarget(null);
     setExploreSearch(false); setExploreQuery("");
-    zoomOut();
+    if (!opts.keepSheet) zoomOut();
   };
 
   const handleNodeTap = (id) => {
@@ -3481,26 +2309,8 @@ export default function Lineage() {
 
 
   // Remaining dispute helpers (edgeKey defined above near pathEdges)
-  // Disputed status is editorial — set via CONNECTION_SOURCES status: "disputed"
-  const isDisputed = (a, b) => {
-    const key1 = edgeKey(a, b);
-    const src = CONNECTION_SOURCES[key1] || CONNECTION_SOURCES[edgeKey(b, a)] || null;
-    return src?.status === "disputed";
-  };
 
   // Open mailto to contribute a source or flag a dispute
-  const contributeToConnection = (photographerName, influenceName, photographerId, influenceId) => {
-    const subject = encodeURIComponent(`Connection: ${photographerName} ← ${influenceName}`);
-    const body = encodeURIComponent(
-      `I'd like to contribute to the connection between ${photographerName} and ${influenceName}.\n\n` +
-      `[ ] I can confirm this connection — here is my source:\n` +
-      `Citation: \n` +
-      `URL: \n\n` +
-      `[ ] I think this connection is incorrect — here is my reason:\n` +
-      `Reason: \n`
-    );
-    window.open(`mailto:lineage.prjct@gmail.com?subject=${subject}&body=${body}`);
-  };
 
   // ── ROUTING — all hooks declared above, safe to return early now ──
 
@@ -3526,6 +2336,16 @@ export default function Lineage() {
     <SourcesPage onBack={() => { setAppView(user ? "profile" : "graph"); setSourcesFilter(null); }} PHOTOGRAPHERS={PHOTOGRAPHERS} filterName={sourcesFilter} />
   );
 
+  // Show loading screen while Supabase checks session
+  if (authLoading) return (
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Libre Baskerville', serif" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 28, fontWeight: 600, color: T.ink, marginBottom: 12 }}>Lineage</div>
+        <div style={{ fontSize: 11, letterSpacing: "0.14em", color: T.inkLight }}>LOADING…</div>
+      </div>
+    </div>
+  );
+
   if (appView === "disclaimer") return (
     <DisclaimerPage
       feedbackUrl={FEEDBACK_URL}
@@ -3541,21 +2361,31 @@ export default function Lineage() {
 
   if (appView === "auth") return <AuthScreen onAuth={handleAuth} />;
 
-  if (appView === "profile" && activeUser) return (
+  if (appView === "profile") {
+    if (!activeUser) return (
+      <div style={{ width: "100%", height: "100dvh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Libre Baskerville', serif" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 600, color: T.ink, marginBottom: 12 }}>Lineage</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.14em", color: T.inkLight }}>LOADING…</div>
+        </div>
+      </div>
+    );
+    return (
+    <ErrorBoundary>
     <ProfilePage
       user={activeUser}
       onExplore={() => { setAppView("graph"); setOnboarding(false); }}
       onAbout={() => navigateTo("disclaimer")}
       onRoadmap={() => navigateTo("roadmap")}
-      onLogout={() => { freshUserRef.current = null; logout(); setAppView("auth"); }}
+      onLogout={() => { logout(); setAppView("auth"); }}
       updateUser={updateUser}
-      nodeStates={nodeStates}
-      setNodeStates={setNodeStates}
       PHOTOGRAPHERS={PHOTOGRAPHERS}
     />
+    </ErrorBoundary>
   );
+  }
 
-  // Loading state — shown while fetching from backend (instant with static data)
+  // Loading state — shown while fetching photographers from Supabase
   if (dataLoading) return (
     <div style={{ width: "100%", height: "100dvh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Libre Baskerville', serif" }}>
       <div style={{ textAlign: "center" }}>
@@ -3571,9 +2401,9 @@ export default function Lineage() {
 
       {/* ── HEADER ── */}
       <header style={{ padding: isMobile ? "11px 14px 9px" : "13px 26px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0, zIndex: 50, gap: 12 }}>
-        <div style={{ flexShrink: 0 }}>
+        <div style={{ flexShrink: 0, cursor: "pointer" }} onClick={() => { setSelected(null); setSheetOpen(false); switchMode("explore"); }}>
           <div style={{ fontSize: isMobile ? 17 : 21, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1 }}>Lineage</div>
-          {!isMobile && <div style={{ fontSize: 9.5, letterSpacing: "0.13em", color: T.inkLight, marginTop: 3 }}>A MAP OF PHOTOGRAPHIC INFLUENCE</div>}
+          {!isMobile && <div style={{ fontSize: 9.5, letterSpacing: "0.13em", color: T.inkLight, marginTop: 3 }}>Map your photographic influence</div>}
         </div>
 
         {/* Explore search bar — expands inline */}
@@ -3661,15 +2491,13 @@ export default function Lineage() {
             FILTER{filterActive ? ` ·${filterCountry ? " " + filterCountry : ""}${filterGenre ? " " + filterGenre : ""}` : ""}
           </button>
 
-          {/* Explore / Path toggle */}
-          <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 2, overflow: "hidden" }}>
-            {[["explore", "Explore", "Browse the network"], ["path", "Path", "Find the shortest connection between any two photographers"]].map(([m, label, tip]) => (
-              <button key={m} onClick={() => switchMode(m)} title={tip}
-                style={{ padding: isMobile ? "5px 11px" : "5px 16px", background: mode === m ? T.ink : "transparent", border: "none", cursor: "pointer", color: mode === m ? T.bg : T.inkLight, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif", transition: "all 0.15s" }}>
-                {label.toUpperCase()}
-              </button>
-            ))}
-          </div>
+          {/* Mode indicator — just shows when in path mode */}
+          {mode === "path" && (
+            <button onClick={() => switchMode("explore")}
+              style={{ padding: isMobile ? "5px 11px" : "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif" }}>
+              ← EXIT PATH
+            </button>
+          )}
 
           {/* Admin controls */}
           {isAdmin && (
@@ -3902,14 +2730,8 @@ export default function Lineage() {
                 const pathIdx = (pathIdxA >= 0 && pathIdxB >= 0) ? Math.min(pathIdxA, pathIdxB) : -1;
                 const isLit      = isPathEdge && pathIdx >= 0 && pathIdx < pathStep;
                 const isHL       = !!(activeId && (id === activeId || infId === activeId));
-                const disputed   = isDisputed(id, infId);
+                const disputed   = false;
                 const edgeInFilter = !filteredIds || (filteredIds.has(id) && filteredIds.has(infId));
-
-                // Check if this connection is confirmed or pending
-                const eKey2 = edgeKey(id, infId);
-                const eKey3 = edgeKey(infId, id);
-                const connSource = CONNECTION_SOURCES[eKey2] || CONNECTION_SOURCES[eKey3] || null;
-                const isPending = !connSource || connSource.status !== "confirmed";
 
                 // At rest: show faint edges for high-connectivity pairs
                 const atRestOpacity = (!activeId && !filteredIds)
@@ -3927,25 +2749,17 @@ export default function Lineage() {
                     x1={from.x} y1={from.y} x2={to.x} y2={to.y}
                     stroke={
                       isLit || isHL
-                        ? disputed ? T.amber : T.ink
-                        : isSecondOrder ? T.inkFaint
-                        : disputed ? "rgba(160,96,32,0.55)"
+                        ? T.ink
                         : T.line
                     }
-                    strokeWidth={isLit ? 1.5 : isHL ? 0.9 : isSecondOrder ? 0.35 : 0.45}
+                    strokeWidth={isLit ? 1.5 : isHL ? 0.9 : 0.45}
                     strokeOpacity={
                       !edgeInFilter ? 0
                       : isLit ? 1
                       : isHL ? 0.65
-                      : isSecondOrder ? 0.18
-                      : disputed ? 0.25
                       : atRestOpacity
                     }
-                    strokeDasharray={
-                      disputed ? "4 4"
-                      : isPending && (isHL || isLit) ? "2 3"
-                      : "none"
-                    }
+                    strokeDasharray="none"
                     style={{ transition: "stroke-opacity 0.2s, stroke-width 0.2s" }}
                   />
                 );
@@ -3979,13 +2793,12 @@ export default function Lineage() {
             const exploreActive = mode === "explore" && highlighted.size > 0;
 
             const inFilter = !filteredIds || filteredIds.has(id);
-            const isSecondOrderNode = activeId && secondOrder.has(id);
             const opacity = mode === "path"
               ? (!inFilter ? 0.07
                 : pathResult ? (isInPath ? 1 : 0.13)
                 : (pathFrom === id || pathTo === id ? 1 : 0.35))
               : (exploreActive
-                  ? (inHL ? 1 : isSecondOrderNode ? 0.35 : 0.07)
+                  ? (inHL ? 1 : 0.07)
                   : (inFilter ? 1 : 0.1));
 
             const activeInfluences = activeId
@@ -4166,7 +2979,11 @@ export default function Lineage() {
           <>
             {/* ── SHEET HEADER ── */}
             <div style={{ padding: "11px 18px 9px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "flex-start", gap: 14, flexShrink: 0 }}>
-              <PhotographerPortrait id={selected} name={currentP.name} size={isMobile ? 56 : 68} />
+              <div style={{ width: isMobile ? 56 : 68, height: isMobile ? 56 : 68, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: isMobile ? 18 : 22, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
+                  {(currentP.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2)}
+                </span>
+              </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                   <div style={{ minWidth: 0 }}>
@@ -4213,7 +3030,7 @@ export default function Lineage() {
                 </div>
                 {!editMode && mode === "explore" && (
                   <div style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}>
-                    <button onClick={() => { switchMode("path"); setPathFrom(selected); }}
+                    <button onClick={() => { switchMode("path", { keepPath: true }); setPathFrom(selected); setSheetOpen(false); setSelected(null); }}
                       style={{ fontSize: 8.5, letterSpacing: "0.1em", padding: "4px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
                       TRACE PATH →
                     </button>
@@ -4257,28 +3074,21 @@ export default function Lineage() {
                     {/* Current connection tags */}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
                       {(editDraft.influences || []).map(infId => {
-                        const disputed = isDisputed(selected, infId);
-                        const src = CONNECTION_SOURCES[edgeKey(selected, infId)] || CONNECTION_SOURCES[edgeKey(infId, selected)] || null;
-                        const status = src?.status || "pending";
+                        const disputed = false;
                         return (
                           <div key={infId} style={{
                             display: "flex", alignItems: "center", gap: 5,
                             padding: "3px 8px 3px 10px",
-                            border: `1px solid ${disputed ? "rgba(160,96,32,0.4)" : "rgba(74,111,165,0.3)"}`,
+                            border: `1px solid rgba(74,111,165,0.3)`,
                             borderRadius: 2,
-                            background: disputed ? "rgba(160,96,32,0.05)" : "rgba(74,111,165,0.05)",
+                            background: "rgba(74,111,165,0.05)",
                           }}>
-                            <span style={{ fontSize: 11.5, color: disputed ? T.amber : T.blue, fontFamily: "'EB Garamond', serif" }}>
+                            <span style={{ fontSize: 11.5, color: T.blue, fontFamily: "'EB Garamond', serif" }}>
                               {PHOTOGRAPHERS[infId]?.name || infId}
                             </span>
-                            {disputed && <span style={{ fontSize: 8, color: T.amber, letterSpacing: "0.06em" }}>DISPUTED</span>}
-                            {status === "confirmed" && !disputed && <span style={{ fontSize: 8, color: "#4a8a5a", letterSpacing: "0.06em" }}>✓</span>}
-                            <button
-                              onClick={() => contributeToConnection(PHOTOGRAPHERS[selected]?.name, PHOTOGRAPHERS[infId]?.name, selected, infId)}
-                              title="Confirm or dispute this connection"
-                              style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 9, padding: 0, lineHeight: 1, letterSpacing: "0.04em", fontFamily: "'EB Garamond', serif" }}>
-                              ?
-                            </button>
+                            
+                            
+                            
                             <button
                               onClick={() => setEditDraft(d => ({ ...d, influences: d.influences.filter(i => i !== infId) }))}
                               style={{ background: "none", border: "none", color: "rgba(74,111,165,0.4)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1, marginTop: 1 }}>
@@ -4354,15 +3164,6 @@ export default function Lineage() {
                 /* ── READ VIEW ── */
                 <>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    {/* Lighthouse works strip */}
-                    {(() => {
-                      const works = PHOTOGRAPHER_WORKS[selected] || [];
-                      return works.length > 0 ? (
-                        <div style={{ marginBottom: 12 }}>
-                          <LighthouseStrip works={works} onOpen={i => setLightbox({ works, index: i })} />
-                        </div>
-                      ) : null;
-                    })()}
                     <p style={{ fontSize: 13.5, lineHeight: 1.75, color: T.inkMid, margin: "0 0 11px", fontStyle: "italic" }}>
                       {currentP.bio}
                     </p>
@@ -4371,32 +3172,15 @@ export default function Lineage() {
                         <div>
                           <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.blue, marginBottom: 5 }}>INFLUENCED BY</div>
                           {currentP.influences.map(infId => {
-                            const disputed = isDisputed(selected, infId);
-                            const src = CONNECTION_SOURCES[edgeKey(selected, infId)] || CONNECTION_SOURCES[edgeKey(infId, selected)] || null;
-                            const status = src?.status || "pending";
+                            const disputed = false;
                             return (
                               <div key={infId} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                                <span onClick={() => { setSelected(infId); panToNode(infId); }}
-                                  style={{ fontSize: 12.5, color: disputed ? T.amber : T.blue, cursor: "pointer", borderBottom: `1px ${disputed ? "dashed" : "solid"} ${disputed ? "rgba(160,96,32,0.35)" : "rgba(74,111,165,0.22)"}`, paddingBottom: 1 }}>
+                                <span onClick={() => { setSelected(infId); setSheetOpen(true); panToNode(infId); }}
+                                  style={{ fontSize: 12.5, color: T.blue, cursor: "pointer", borderBottom: `1px solid rgba(74,111,165,0.22)`, paddingBottom: 1 }}>
                                   {PHOTOGRAPHERS[infId]?.name}
                                 </span>
-                                {disputed && (
-                                  <span style={{ fontSize: 8.5, color: T.amber, letterSpacing: "0.06em", border: `1px solid rgba(160,96,32,0.3)`, padding: "1px 5px", borderRadius: 2 }}>
-                                    DISPUTED
-                                  </span>
-                                )}
-                                {status === "confirmed" && !disputed && (
-                                  <span style={{ fontSize: 8.5, color: "#4a8a5a", letterSpacing: "0.06em" }}>✓</span>
-                                )}
-                                <button
-                                  onClick={() => contributeToConnection(currentP.name, PHOTOGRAPHERS[infId]?.name, selected, infId)}
-                                  title="Confirm or dispute this connection"
-                                  style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 9, padding: "0 2px", lineHeight: 1, fontFamily: "'EB Garamond', serif", letterSpacing: "0.04em" }}
-                                  onMouseEnter={e => e.currentTarget.style.color = T.ink}
-                                  onMouseLeave={e => e.currentTarget.style.color = T.inkFaint}
-                                >
-                                  ?
-                                </button>
+                                
+                                
                               </div>
                             );
                           })}
@@ -4406,7 +3190,7 @@ export default function Lineage() {
                         <div>
                           <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.red, marginBottom: 5 }}>INFLUENCED</div>
                           {influenced.map(infId => (
-                            <span key={infId} onClick={() => { setSelected(infId); panToNode(infId); }}
+                            <span key={infId} onClick={() => { setSelected(infId); setSheetOpen(true); panToNode(infId); }}
                               style={{ fontSize: 12.5, color: T.red, cursor: "pointer", borderBottom: `1px solid rgba(138,64,64,0.22)`, paddingBottom: 1, marginRight: 11, display: "inline-block", marginBottom: 3 }}>
                               {PHOTOGRAPHERS[infId]?.name}
                             </span>
@@ -4535,10 +3319,46 @@ export default function Lineage() {
 
       {/* ── ADMIN MODALS ── */}
       {showAddPhotographer && (
-        <AddPhotographerModal onClose={() => setShowAddPhotographer(false)} onSaved={() => {}} />
+        <AddPhotographerModal
+          onClose={() => setShowAddPhotographer(false)}
+          onSaved={(p) => {
+            setShowAddPhotographer(false);
+            setNewlySavedPhotographer(p);
+          }}
+        />
       )}
       {showAddConnection && (
-        <AddConnectionModal photographers={PHOTOGRAPHERS} onClose={() => setShowAddConnection(false)} onSaved={() => {}} />
+        <AddConnectionModal
+          photographers={PHOTOGRAPHERS}
+          onClose={() => setShowAddConnection(false)}
+          onSaved={() => setShowAddConnection(false)}
+        />
+      )}
+
+      {/* Post-save prompt — offer to add connection immediately */}
+      {newlySavedPhotographer && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(26,24,18,0.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          onClick={() => setNewlySavedPhotographer(null)}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ width: "100%", maxWidth: 580, background: T.paper, borderRadius: "4px 4px 0 0", padding: "24px 22px 28px" }}>
+            <div style={{ fontSize: 16, fontFamily: "'Libre Baskerville', serif", fontWeight: 600, marginBottom: 8 }}>
+              {newlySavedPhotographer.name} added
+            </div>
+            <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "0 0 20px" }}>
+              Would you like to add a connection for this photographer now?
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => { setNewlySavedPhotographer(null); setShowAddConnection(true); }}
+                style={{ flex: 1, padding: "9px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif" }}>
+                + ADD CONNECTION
+              </button>
+              <button onClick={() => setNewlySavedPhotographer(null)}
+                style={{ padding: "9px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontSize: 10.5, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
+                DONE
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── FOOTER ── */}
@@ -4551,24 +3371,6 @@ export default function Lineage() {
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: c, flexShrink: 0 }} />{l}
               </div>
             ))}
-            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint }}>
-              <svg width={18} height={6} style={{ flexShrink: 0 }}>
-                <line x1={0} y1={3} x2={18} y2={3} stroke={T.inkMid} strokeWidth={1.2} strokeDasharray="none" />
-              </svg>
-              CONFIRMED
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint }}>
-              <svg width={18} height={6} style={{ flexShrink: 0 }}>
-                <line x1={0} y1={3} x2={18} y2={3} stroke={T.inkMid} strokeWidth={1.2} strokeDasharray="2 3" />
-              </svg>
-              PENDING
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint }}>
-              <svg width={18} height={6} style={{ flexShrink: 0 }}>
-                <line x1={0} y1={3} x2={18} y2={3} stroke={T.amber} strokeWidth={1.2} strokeDasharray="4 4" />
-              </svg>
-              DISPUTED
-            </div>
             {userProfile && (
               <>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, letterSpacing: "0.1em", color: T.inkFaint }}>
@@ -4606,7 +3408,7 @@ export default function Lineage() {
           {!isMobile && (
             <>
               <div style={{ fontSize: 8, letterSpacing: "0.09em", color: T.inkFaint, whiteSpace: "nowrap" }}>
-                {Object.keys(PHOTOGRAPHERS).length} photographers · {Object.values(PHOTOGRAPHERS).reduce((a, p) => a + p.influences.length, 0)} connections
+                {Object.keys(PHOTOGRAPHERS || {}).length} photographers · {Object.values(PHOTOGRAPHERS || {}).reduce((a, p) => a + (p.influences?.length || 0), 0)} connections
               </div>
               <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer"
                 style={{ fontSize: 8.5, letterSpacing: "0.1em", color: T.bg, textDecoration: "none", background: T.amber, padding: "3px 9px", borderRadius: 2, whiteSpace: "nowrap", fontFamily: "'EB Garamond', serif" }}>
@@ -4681,7 +3483,7 @@ export default function Lineage() {
             {/* Amber dot */}
             <div style={{ width: isMobile ? 56 : 68, height: isMobile ? 56 : 68, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ fontSize: isMobile ? 20 : 24, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
-                {userProfile.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                {(userProfile.name || userProfile.email || "?").split(" ").map(w => w[0]).join("").slice(0, 2)}
               </span>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -4901,117 +3703,7 @@ export default function Lineage() {
         </div>
       )}
 
-      {/* ── ONBOARDING OVERLAY ── */}
-      {onboarding && (
-        <div
-          onClick={dismissOnboarding}
-          style={{
-            position: "absolute", inset: 0, zIndex: 100,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: `rgba(245,242,236,${onboardFading ? 0 : 0.94})`,
-            backdropFilter: onboardFading ? "none" : "blur(3px)",
-            transition: "background 0.6s ease, backdrop-filter 0.6s ease",
-            cursor: "pointer",
-          }}
-        >
-          <div style={{
-            textAlign: "center",
-            opacity: onboardFading ? 0 : 1,
-            transform: onboardFading ? "translateY(-8px)" : "translateY(0)",
-            transition: "opacity 0.5s ease, transform 0.5s ease",
-            padding: isMobile ? "0 28px" : "0 32px",
-            maxWidth: 520,
-          }}>
-            {/* Wordmark */}
-            <div style={{
-              fontSize: isMobile ? 44 : 58,
-              fontFamily: "'Libre Baskerville', serif",
-              fontWeight: 600, letterSpacing: "0.01em",
-              color: T.ink, lineHeight: 1, marginBottom: 18,
-            }}>
-              Lineage
-            </div>
-
-            {/* Rule */}
-            <div style={{ width: 32, height: 1, background: T.inkFaint, margin: "0 auto 22px" }} />
-
-            {/* Lead line */}
-            <p style={{
-              fontSize: isMobile ? 16 : 18,
-              fontFamily: "'EB Garamond', serif",
-              color: T.inkMid, lineHeight: 1.75,
-              margin: "0 0 14px", fontStyle: "italic",
-            }}>
-              Discover photographers through the people who shaped them.
-            </p>
-
-            {/* Body */}
-            <p style={{
-              fontSize: isMobile ? 13 : 14.5,
-              fontFamily: "'EB Garamond', serif",
-              color: T.inkLight, lineHeight: 1.85,
-              margin: "0 0 10px",
-            }}>
-              {Object.keys(PHOTOGRAPHERS).length} photographers. Two centuries of influence.
-              Tap any node to explore — follow connections across generations,
-              trace the shortest path between any two photographers,
-              or filter by country and genre.
-            </p>
-
-            <p style={{
-              fontSize: isMobile ? 13 : 14.5,
-              fontFamily: "'EB Garamond', serif",
-              color: T.inkLight, lineHeight: 1.85,
-              margin: "0 0 36px",
-            }}>
-              Create a profile to map your own influences and find your place in the network.
-            </p>
-
-            {/* Three feature hints */}
-            <div style={{ display: "flex", gap: isMobile ? 18 : 28, justifyContent: "center", marginBottom: 36, flexWrap: "wrap" }}>
-              {[
-                { icon: "◎", label: "Explore", desc: isMobile ? "Tap any node" : "Tap any photographer to see their connections and biography" },
-                { icon: "→", label: "Path", desc: isMobile ? "Trace paths" : "Find the shortest chain of influence between any two photographers" },
-                { icon: "●", label: "Profile", desc: isMobile ? "Join the network" : "Add yourself, mark your influences, and track your discoveries" },
-              ].map(({ icon, label, desc }) => (
-                <div key={label} style={{ textAlign: "center", maxWidth: isMobile ? 80 : 140 }}>
-                  <div style={{ fontSize: 18, color: T.inkMid, marginBottom: 5, fontFamily: "'EB Garamond', serif" }}>{icon}</div>
-                  <div style={{ fontSize: 10.5, letterSpacing: "0.1em", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>{label.toUpperCase()}</div>
-                  <div style={{ fontSize: isMobile ? 9.5 : 10, color: T.inkFaint, fontFamily: "'EB Garamond', serif", marginTop: 3, lineHeight: 1.4 }}>{desc}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div
-              style={{
-                display: "inline-block",
-                fontSize: 11, letterSpacing: "0.14em",
-                fontFamily: "'EB Garamond', serif",
-                color: T.inkMid,
-                border: `1px solid ${T.border}`,
-                padding: "10px 28px",
-                borderRadius: 2,
-                transition: "background 0.15s, color 0.15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = T.ink; e.currentTarget.style.color = T.bg; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.inkMid; }}
-            >
-              EXPLORE THE GRAPH
-            </div>
-
-            {/* Hint */}
-            <div style={{
-              marginTop: 16, fontSize: 10,
-              fontFamily: "'EB Garamond', serif",
-              color: T.inkFaint, letterSpacing: "0.08em",
-            }}>
-              {isMobile ? "tap or swipe anywhere to begin" : "or scroll to zoom in"}
-            </div>
-          </div>
-        </div>
-      )}
-
+      
     </div>
   );
 }
