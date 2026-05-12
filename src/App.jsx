@@ -726,8 +726,8 @@ function computeForceLayout(dims, data) {
   });
   const REPULSION    = Math.min(W, H) * (nodeCount < 10 ? 0.28 : nodeCount < 30 ? 0.16 : 0.092);
   const EDGE_ATTRACT = 0.013;
-  const GRAVITY      = nodeCount < 10 ? 0.015 : 0.038;
-  const GENRE_STR    = 0.42;
+  const GRAVITY      = nodeCount < 10 ? 0.008 : 0.038;
+  const GENRE_STR    = nodeCount < 10 ? 0.04 : nodeCount < 30 ? 0.18 : 0.42; // much weaker for small networks
   const BOUNDARY_PAD = Math.min(W, H) * 0.05;
   const BOUNDARY_STR = 0.65;
   const DAMPING      = 0.77;
@@ -804,8 +804,8 @@ function computeForceLayout(dims, data) {
   }
 
   // Post-simulation: enforce minimum node separation so no two nodes overlap
-  const MIN_SEP = Math.max(56, Math.min(W, H) * 0.08);
-  for (let pass = 0; pass < 8; pass++) {
+  const MIN_SEP = nodeCount < 10 ? Math.min(W, H) * 0.15 : Math.max(56, Math.min(W, H) * 0.08);
+  for (let pass = 0; pass < 30; pass++) {
     let moved = false;
     for (let i = 0; i < ids.length; i++) {
       for (let j = i + 1; j < ids.length; j++) {
@@ -2463,8 +2463,8 @@ export default function Lineage() {
           {!isMobile && <div style={{ fontSize: 9.5, letterSpacing: "0.13em", color: T.inkLight, marginTop: 3 }}>Map your photographic influence</div>}
         </div>
 
-        {/* Explore search bar — expands inline */}
-        {mode === "explore" && (
+        {/* Explore search bar — desktop inline, mobile overlay */}
+        {mode === "explore" && !isMobile && (
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
             {exploreSearch ? (
               <div style={{ display: "flex", alignItems: "center", width: "100%", maxWidth: 320, position: "relative" }}>
@@ -2487,44 +2487,63 @@ export default function Lineage() {
                 />
                 <button onClick={() => { setExploreSearch(false); setExploreQuery(""); exploreInputRef.current?.blur(); }}
                   style={{ position: "absolute", right: 0, background: "none", border: "none", color: T.inkLight, cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>
-
-                {/* Dropdown results */}
                 {exploreResults.length > 0 && (
                   <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, zIndex: 400, boxShadow: "0 8px 24px rgba(26,24,18,0.1)", overflow: "hidden", maxHeight: "60dvh", overflowY: "auto" }}>
                     {exploreResults.map(([id, p], i) => (
                       <div key={id}
-                        onPointerDown={e => {
-                          e.preventDefault();
-                          setSelected(id); setSheetOpen(true);
-                          setExploreSearch(false); setExploreQuery("");
-                          panToNode(id);
-                        }}
+                        onClick={() => { setSelected(id); setSheetOpen(true); setExploreSearch(false); setExploreQuery(""); panToNode(id); }}
                         style={{ padding: "12px 14px", cursor: "pointer", borderBottom: i < exploreResults.length - 1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 10, alignItems: "baseline" }}
                         onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
-                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                      >
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                         <span style={{ fontSize: 13.5, fontFamily: "'Libre Baskerville', serif", color: T.ink }}>{p.name}</span>
-                        <span style={{ fontSize: 9, color: T.inkLight, letterSpacing: "0.05em" }}>{p.born}</span>
+                        <span style={{ fontSize: 9, color: T.inkLight }}>{p.born}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
-              /* Desktop only — on mobile the burger menu has search */
-              !isMobile ? (
-              <button
-                onClick={() => { setExploreSearch(true); setTimeout(() => exploreInputRef.current?.focus(), 50); }}
-                style={{ background: "none", border: "none", cursor: "pointer", color: T.inkLight, display: "flex", alignItems: "center", gap: 5, fontSize: 11, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif", padding: "4px 8px" }}
-              >
+              <button onClick={() => { setExploreSearch(true); setTimeout(() => exploreInputRef.current?.focus(), 50); }}
+                style={{ background: "none", border: "none", cursor: "pointer", color: T.inkLight, display: "flex", alignItems: "center", gap: 5, fontSize: 11, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif", padding: "4px 8px" }}>
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.3">
-                  <circle cx="5.5" cy="5.5" r="4" />
-                  <line x1="8.5" y1="8.5" x2="12" y2="12" />
+                  <circle cx="5.5" cy="5.5" r="4" /><line x1="8.5" y1="8.5" x2="12" y2="12" />
                 </svg>
                 SEARCH
               </button>
-              ) : null
             )}
+          </div>
+        )}
+
+        {/* Mobile search — full screen overlay so keyboard doesn't displace footer */}
+        {isMobile && exploreSearch && (
+          <div style={{ position: "fixed", inset: 0, background: T.paper, zIndex: 500, display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+              <input
+                ref={exploreInputRef}
+                autoFocus
+                value={exploreQuery}
+                onChange={e => setExploreQuery(e.target.value)}
+                placeholder="Search photographers…"
+                style={{ flex: 1, border: "none", padding: "6px 0", fontSize: 16, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none" }}
+              />
+              <button onClick={() => { setExploreSearch(false); setExploreQuery(""); exploreInputRef.current?.blur(); }}
+                style={{ background: "none", border: "none", color: T.inkMid, cursor: "pointer", fontSize: 14, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif", padding: "4px 0" }}>
+                CANCEL
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {exploreResults.map(([id, p], i) => (
+                <div key={id}
+                  onPointerDown={e => { e.preventDefault(); setSelected(id); setSheetOpen(true); setExploreSearch(false); setExploreQuery(""); panToNode(id); }}
+                  style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", gap: 10, alignItems: "baseline" }}>
+                  <span style={{ fontSize: 15, fontFamily: "'Libre Baskerville', serif", color: T.ink }}>{p.name}</span>
+                  <span style={{ fontSize: 10, color: T.inkLight }}>{p.born}</span>
+                </div>
+              ))}
+              {exploreQuery && exploreResults.length === 0 && (
+                <p style={{ padding: "20px 16px", fontSize: 14, color: T.inkFaint, fontStyle: "italic" }}>No photographers found.</p>
+              )}
+            </div>
           </div>
         )}
 
