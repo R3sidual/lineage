@@ -798,6 +798,26 @@ function computeForceLayout(dims, data) {
     });
   }
 
+  // Post-simulation: enforce minimum node separation so no two nodes overlap
+  const MIN_SEP = Math.max(32, Math.min(W, H) * 0.06);
+  for (let pass = 0; pass < 8; pass++) {
+    let moved = false;
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const a = pos[ids[i]], b = pos[ids[j]];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        if (dist < MIN_SEP) {
+          const push = (MIN_SEP - dist) / 2 / dist;
+          a.x -= dx * push; a.y -= dy * push;
+          b.x += dx * push; b.y += dy * push;
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+
   return pos;
 }
 
@@ -1669,6 +1689,7 @@ export default function Lineage() {
   const [sourcesFilter, setSourcesFilter] = useState(null);
   const [prevAppView, setPrevAppView]     = useState(null);
   const [footerMenuOpen, setFooterMenuOpen]   = useState(false);
+  const [headerMenuOpen, setHeaderMenuOpen]   = useState(false);
   const [lightbox, setLightbox]               = useState(null);
   const [showAddPhotographer, setShowAddPhotographer] = useState(false);
   const [showAddConnection, setShowAddConnection]     = useState(false);
@@ -2000,17 +2021,18 @@ export default function Lineage() {
       if (last && now - last.time < 300 &&
           Math.abs(touch.clientX - last.x) < 30 &&
           Math.abs(touch.clientY - last.y) < 30) {
-        // Double tap detected — zoom in centered on tap point
         lastTapRef.current = null;
+        // Zoom in 2× centered on tap point
+        const container = containerRef.current;
+        const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
+        const tapX = touch.clientX - rect.left;
+        const tapY = touch.clientY - rect.top;
         setScale(s => {
           const newScale = Math.min(s * 2, 4.5);
-          const container = containerRef.current;
-          const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
-          const tapX = touch.clientX - rect.left;
-          const tapY = touch.clientY - rect.top;
+          const ratio = newScale / s;
           setPan(p => ({
-            x: tapX - (tapX - p.x) * (newScale / s),
-            y: tapY - (tapY - p.y) * (newScale / s),
+            x: tapX - (tapX - p.x) * ratio,
+            y: tapY - (tapY - p.y) * ratio,
           }));
           return newScale;
         });
@@ -2498,49 +2520,90 @@ export default function Lineage() {
           </div>
         )}
 
-        {!exploreSearch && mode === "explore" && (
+        {!exploreSearch && mode === "explore" && !isMobile && (
           <div style={{ fontSize: 9, color: T.inkFaint, letterSpacing: "0.09em", transition: "opacity 0.4s", opacity: showNames ? 0 : 0.7, flexShrink: 0, pointerEvents: "none" }}>
-            {isMobile ? "PINCH FOR NAMES" : "SCROLL FOR NAMES"}
+            SCROLL FOR NAMES
           </div>
         )}
 
         <div style={{ marginLeft: mode === "explore" && exploreSearch ? 0 : "auto", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-          {/* Filter button */}
-          <button
-            onClick={() => setFilterOpen(o => !o)}
-            style={{
-              padding: isMobile ? "5px 10px" : "5px 14px",
-              background: filterActive ? T.ink : "transparent",
-              border: `1px solid ${filterActive ? T.ink : T.border}`,
-              borderRadius: 2, cursor: "pointer",
-              color: filterActive ? T.bg : T.inkLight,
-              fontSize: 10.5, letterSpacing: "0.1em",
-              fontFamily: "'EB Garamond', serif",
-              transition: "all 0.15s",
-              position: "relative",
-            }}>
-            FILTER{filterActive ? ` ·${filterCountry ? " " + filterCountry : ""}${filterGenre ? " " + filterGenre : ""}` : ""}
-          </button>
 
-          {/* Mode indicator — just shows when in path mode */}
-          {mode === "path" && (
-            <button onClick={() => switchMode("explore")}
-              style={{ padding: isMobile ? "5px 11px" : "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif" }}>
-              ← EXIT PATH
-            </button>
-          )}
-
-          {/* Admin controls */}
-          {isAdmin && (
+          {isMobile ? (
+            /* ── MOBILE: burger menu for all controls ── */
             <>
-              <button onClick={() => setShowAddPhotographer(true)}
-                style={{ fontSize: 10, letterSpacing: "0.08em", padding: "5px 10px", background: T.amber, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
-                + PHOTOGRAPHER
+              {/* Search icon stays visible */}
+              {mode === "explore" && !exploreSearch && (
+                <button onClick={() => { setExploreSearch(true); setTimeout(() => exploreInputRef.current?.focus(), 50); }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: T.inkLight, padding: "4px 6px", display: "flex", alignItems: "center" }}>
+                  <svg width="16" height="16" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.3">
+                    <circle cx="5.5" cy="5.5" r="4" /><line x1="8.5" y1="8.5" x2="12" y2="12" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Exit path button if in path mode */}
+              {mode === "path" && (
+                <button onClick={() => switchMode("explore")}
+                  style={{ padding: "5px 10px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 10, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif" }}>
+                  ← EXIT
+                </button>
+              )}
+
+              {/* Burger */}
+              {headerMenuOpen && <div onClick={() => setHeaderMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 199 }} />}
+              <div style={{ position: "relative" }}>
+                <button onClick={() => setHeaderMenuOpen(m => !m)}
+                  style={{ background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", padding: "5px 8px", display: "flex", flexDirection: "column", gap: 3.5, alignItems: "center", justifyContent: "center", width: 32, height: 28 }}>
+                  {[0,1,2].map(i => <div key={i} style={{ width: 14, height: 1.2, background: T.inkMid, borderRadius: 1 }} />)}
+                </button>
+                {headerMenuOpen && (
+                  <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, background: T.paper, border: `1px solid ${T.border}`, borderRadius: 2, boxShadow: "0 4px 16px rgba(26,24,18,0.12)", zIndex: 200, minWidth: 180, overflow: "hidden" }}>
+                    {/* Filter */}
+                    <button onClick={() => { setFilterOpen(o => !o); setHeaderMenuOpen(false); }}
+                      style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: filterActive ? T.ink : T.inkMid, background: filterActive ? "rgba(26,24,18,0.04)" : "none", border: "none", cursor: "pointer", letterSpacing: "0.02em" }}>
+                      {filterActive ? `Filter: ${[filterCountry, filterGenre].filter(Boolean).join(", ")}` : "Filter"}
+                    </button>
+                    {/* Admin buttons */}
+                    {isAdmin && <>
+                      <div style={{ height: 1, background: T.border }} />
+                      <button onClick={() => { setShowAddPhotographer(true); setHeaderMenuOpen(false); }}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: T.amber, background: "none", border: "none", cursor: "pointer" }}>
+                        + Add photographer
+                      </button>
+                      <button onClick={() => { setShowAddConnection(true); setHeaderMenuOpen(false); }}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, fontFamily: "'EB Garamond', serif", color: T.amber, background: "none", border: "none", cursor: "pointer" }}>
+                        + Add connection
+                      </button>
+                    </>}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            /* ── DESKTOP: show all controls ── */
+            <>
+              <button onClick={() => setFilterOpen(o => !o)}
+                style={{ padding: "5px 14px", background: filterActive ? T.ink : "transparent", border: `1px solid ${filterActive ? T.ink : T.border}`, borderRadius: 2, cursor: "pointer", color: filterActive ? T.bg : T.inkLight, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif", transition: "all 0.15s" }}>
+                FILTER{filterActive ? ` ·${filterCountry ? " " + filterCountry : ""}${filterGenre ? " " + filterGenre : ""}` : ""}
               </button>
-              <button onClick={() => setShowAddConnection(true)}
-                style={{ fontSize: 10, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.amber}`, borderRadius: 2, cursor: "pointer", color: T.amber, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
-                + CONNECTION
-              </button>
+              {mode === "path" && (
+                <button onClick={() => switchMode("explore")}
+                  style={{ padding: "5px 14px", background: T.ink, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontSize: 10.5, letterSpacing: "0.1em", fontFamily: "'EB Garamond', serif" }}>
+                  ← EXIT PATH
+                </button>
+              )}
+              {isAdmin && (
+                <>
+                  <button onClick={() => setShowAddPhotographer(true)}
+                    style={{ fontSize: 10, letterSpacing: "0.08em", padding: "5px 10px", background: T.amber, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
+                    + PHOTOGRAPHER
+                  </button>
+                  <button onClick={() => setShowAddConnection(true)}
+                    style={{ fontSize: 10, letterSpacing: "0.08em", padding: "5px 10px", background: "transparent", border: `1px solid ${T.amber}`, borderRadius: 2, cursor: "pointer", color: T.amber, fontFamily: "'EB Garamond', serif", whiteSpace: "nowrap" }}>
+                    + CONNECTION
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
