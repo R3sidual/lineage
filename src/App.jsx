@@ -222,10 +222,8 @@ function usePhotographers() {
         photographers.forEach(p => {
           byId[p.id] = {
             ...p,
-            // genre = first tag, for filter and node colour compatibility
+            // genre = first tag, for filter and node colour
             genre: (p.tags && p.tags.length > 0) ? p.tags[0] : "Documentary",
-            // style = tags joined, for display in sheet
-            style: (p.tags && p.tags.length > 0) ? p.tags.join(" · ") : "",
             influences: [],
           };
         });
@@ -1506,26 +1504,14 @@ function AddPhotographerModal({ onClose, onSaved }) {
           ))}
 
           <div>
-            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 4 }}>GENRE</div>
-            <div style={{ fontSize: 10, color: T.inkFaint, marginBottom: 8, fontStyle: "italic" }}>First selected becomes the primary genre used for filtering and node colour</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-              {PHOTOGRAPHER_TAGS.map((tag, i) => {
-                const idx = draft.tags.indexOf(tag);
-                const isPrimary = idx === 0;
-                return (
-                  <button key={tag} onClick={() => toggleTag(tag)}
-                    style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${idx >= 0 ? T.ink : T.border}`, borderRadius: 2, background: isPrimary ? T.ink : idx > 0 ? "rgba(26,24,18,0.08)" : "transparent", color: idx >= 0 ? (isPrimary ? T.bg : T.ink) : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif", position: "relative" }}>
-                    {isPrimary && <span style={{ marginRight: 4, fontSize: 8 }}>★</span>}
-                    {tag}
-                  </button>
-                );
-              })}
-            </div>
-            {draft.tags.length > 0 && (
-              <div style={{ fontSize: 10, color: T.inkLight, marginTop: 6 }}>
-                Primary: <strong>{draft.tags[0]}</strong>{draft.tags.length > 1 ? ` · also: ${draft.tags.slice(1).join(", ")}` : ""}
-              </div>
-            )}
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>GENRE</div>
+            <select value={draft.tags[0] || ""} onChange={e => setDraft(d => ({ ...d, tags: e.target.value ? [e.target.value] : [] }))}
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: draft.tags[0] ? T.ink : T.inkLight, outline: "none", cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}>
+              <option value="">Select a genre…</option>
+              {PHOTOGRAPHER_TAGS.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -3135,7 +3121,7 @@ export default function Lineage() {
                     {/* Edit / Save / Cancel buttons */}
                     {!editMode ? (
                       <button
-                        onClick={() => { setEditDraft({ bio: currentP.bio, style: currentP.style, links: { ...currentP.links }, influences: [...(currentP.influences || [])] }); setInfSearch(""); setEditMode(true); }}
+                        onClick={() => { setEditDraft({ bio: currentP.bio, tags: currentP.tags || [], links: { ...currentP.links }, influences: [...(currentP.influences || [])] }); setInfSearch(""); setEditMode(true); }}
                         title="Edit profile"
                         style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 2, color: T.inkLight, cursor: "pointer", fontSize: 11, padding: "3px 7px", letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
                         EDIT
@@ -3184,12 +3170,16 @@ export default function Lineage() {
                 /* ── EDIT FORM ── */
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
                   <div>
-                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>STYLE</div>
-                    <input
-                      value={editDraft.style}
-                      onChange={e => setEditDraft(d => ({ ...d, style: e.target.value }))}
-                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "4px 0", fontSize: 12, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box", letterSpacing: "0.03em" }}
-                    />
+                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>GENRE</div>
+                    <select
+                      value={editDraft.tags?.[0] || ""}
+                      onChange={e => setEditDraft(d => ({ ...d, tags: e.target.value ? [e.target.value] : [] }))}
+                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "4px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}>
+                      <option value="">Select a genre…</option>
+                      {PHOTOGRAPHER_TAGS.map(tag => (
+                        <option key={tag} value={tag}>{tag}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO</div>
