@@ -717,8 +717,13 @@ function computeForceLayout(dims, data) {
     };
   });
 
-  // Scale repulsion up for small networks so nodes don't pile up
+  // Spread initial positions more for small networks
   const nodeCount = ids.length;
+  const spreadFactor = nodeCount < 10 ? 3.0 : nodeCount < 30 ? 1.5 : 1.0;
+  ids.forEach(id => {
+    pos[id].x = cx + (pos[id].x - cx) * spreadFactor;
+    pos[id].y = cy + (pos[id].y - cy) * spreadFactor;
+  });
   const REPULSION    = Math.min(W, H) * (nodeCount < 10 ? 0.28 : nodeCount < 30 ? 0.16 : 0.092);
   const EDGE_ATTRACT = 0.013;
   const GRAVITY      = nodeCount < 10 ? 0.015 : 0.038;
@@ -799,7 +804,7 @@ function computeForceLayout(dims, data) {
   }
 
   // Post-simulation: enforce minimum node separation so no two nodes overlap
-  const MIN_SEP = Math.max(32, Math.min(W, H) * 0.06);
+  const MIN_SEP = Math.max(56, Math.min(W, H) * 0.08);
   for (let pass = 0; pass < 8; pass++) {
     let moved = false;
     for (let i = 0; i < ids.length; i++) {
@@ -2448,7 +2453,7 @@ export default function Lineage() {
   );
 
   return (
-    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", overflow: "hidden", color: T.ink, position: "relative" }}>
+    <div style={{ width: "100%", height: "100dvh", background: T.bg, fontFamily: "'EB Garamond', Georgia, serif", display: "flex", flexDirection: "column", color: T.ink, position: "relative" }}>
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 
       {/* ── HEADER ── */}
@@ -2480,7 +2485,7 @@ export default function Lineage() {
                   placeholder="Search photographers…"
                   style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "5px 24px 5px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none" }}
                 />
-                <button onClick={() => { setExploreSearch(false); setExploreQuery(""); }}
+                <button onClick={() => { setExploreSearch(false); setExploreQuery(""); exploreInputRef.current?.blur(); }}
                   style={{ position: "absolute", right: 0, background: "none", border: "none", color: T.inkLight, cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>
 
                 {/* Dropdown results */}
@@ -2506,6 +2511,8 @@ export default function Lineage() {
                 )}
               </div>
             ) : (
+              /* Desktop only — on mobile the burger menu has search */
+              !isMobile ? (
               <button
                 onClick={() => { setExploreSearch(true); setTimeout(() => exploreInputRef.current?.focus(), 50); }}
                 style={{ background: "none", border: "none", cursor: "pointer", color: T.inkLight, display: "flex", alignItems: "center", gap: 5, fontSize: 11, letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif", padding: "4px 8px" }}
@@ -2514,8 +2521,9 @@ export default function Lineage() {
                   <circle cx="5.5" cy="5.5" r="4" />
                   <line x1="8.5" y1="8.5" x2="12" y2="12" />
                 </svg>
-                {!isMobile && "SEARCH"}
+                SEARCH
               </button>
+              ) : null
             )}
           </div>
         )}
