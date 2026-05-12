@@ -1504,14 +1504,24 @@ function AddPhotographerModal({ onClose, onSaved }) {
           ))}
 
           <div>
-            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>GENRE</div>
-            <select value={draft.tags[0] || ""} onChange={e => setDraft(d => ({ ...d, tags: e.target.value ? [e.target.value] : [] }))}
-              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "7px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: draft.tags[0] ? T.ink : T.inkLight, outline: "none", cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}>
-              <option value="">Select a genre…</option>
-              {PHOTOGRAPHER_TAGS.map(tag => (
-                <option key={tag} value={tag}>{tag}</option>
-              ))}
-            </select>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>GENRE</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {PHOTOGRAPHER_TAGS.map(tag => {
+                const selected = (draft.tags || []).includes(tag);
+                return (
+                  <button key={tag} type="button"
+                    onClick={() => setDraft(d => ({
+                      ...d,
+                      tags: selected
+                        ? (d.tags || []).filter(t => t !== tag)
+                        : [...(d.tags || []), tag]
+                    }))}
+                    style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${selected ? T.ink : T.border}`, borderRadius: 2, background: selected ? T.ink : "transparent", color: selected ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div>
@@ -2791,43 +2801,6 @@ export default function Lineage() {
         {/* Transformable world — pan only, zoom handled by scaledPos spread */}
         <div style={{ position: "absolute", inset: 0, transform: `translate(${pan.x}px, ${pan.y}px)`, transformOrigin: "center center" }}>
 
-          {/* ── GENRE CLUSTER LABELS ── floating at cluster centroids, fades on hover */}
-          {mode === "explore" && (() => {
-            // Compute actual centroid of each genre from scaledPos
-            const groups = {};
-            Object.entries(PHOTOGRAPHERS).forEach(([id, p]) => {
-              if (!scaledPos[id]) return;
-              if (!groups[p.genre]) groups[p.genre] = [];
-              groups[p.genre].push(scaledPos[id]);
-            });
-            return Object.entries(groups).map(([genre, pts]) => {
-              const gcx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
-              const gcy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
-              // Place label above cluster centroid
-              const maxR = Math.max(...pts.map(p => Math.sqrt((p.x - gcx) ** 2 + (p.y - gcy) ** 2)));
-              const labelY = gcy - maxR - 10;
-              const meta = GENRE_META[genre];
-              return (
-                <div key={genre} style={{
-                  position: "absolute",
-                  left: gcx, top: labelY,
-                  transform: "translateX(-50%)",
-                  pointerEvents: "none",
-                  zIndex: 2,
-                  fontSize: 8,
-                  letterSpacing: "0.14em",
-                  color: meta?.color || T.inkLight,
-                  opacity: activeId ? 0.15 : (showNames ? 0.6 : 0.45),
-                  transition: "opacity 0.35s",
-                  whiteSpace: "nowrap",
-                  fontFamily: "'EB Garamond', serif",
-                }}>
-                  {genre.toUpperCase()}
-                </div>
-              );
-            });
-          })()}
-
           <svg style={{ position: "absolute", inset: 0, width: dims.w * 3, height: dims.h, overflow: "visible", zIndex: 1 }}>
 
             {/* Edges — use localEdits influences if present */}
@@ -3170,16 +3143,19 @@ export default function Lineage() {
                 /* ── EDIT FORM ── */
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
                   <div>
-                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>GENRE</div>
-                    <select
-                      value={editDraft.tags?.[0] || ""}
-                      onChange={e => setEditDraft(d => ({ ...d, tags: e.target.value ? [e.target.value] : [] }))}
-                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "4px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}>
-                      <option value="">Select a genre…</option>
-                      {PHOTOGRAPHER_TAGS.map(tag => (
-                        <option key={tag} value={tag}>{tag}</option>
-                      ))}
-                    </select>
+                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>GENRE</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                      {PHOTOGRAPHER_TAGS.map(tag => {
+                        const sel = (editDraft.tags || []).includes(tag);
+                        return (
+                          <button key={tag} type="button"
+                            onClick={() => setEditDraft(d => ({ ...d, tags: sel ? (d.tags || []).filter(t => t !== tag) : [...(d.tags || []), tag] }))}
+                            style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${sel ? T.ink : T.border}`, borderRadius: 2, background: sel ? T.ink : "transparent", color: sel ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
+                            {tag}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div>
                     <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO</div>
