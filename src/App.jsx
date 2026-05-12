@@ -217,12 +217,16 @@ function usePhotographers() {
         if (cancelled) return;
 
         // Build the same shape as the old PHOTOGRAPHERS constant:
-        // { [slug]: { name, born, nationality, country, bio, tags, links, influences: [slug, ...] } }
+        // { [slug]: { name, born, nationality, country, bio, tags, genre, links, influences: [] } }
         const byId = {};
         photographers.forEach(p => {
           byId[p.id] = {
             ...p,
-            influences: [], // filled below
+            // genre = first tag, for filter and node colour compatibility
+            genre: (p.tags && p.tags.length > 0) ? p.tags[0] : "Documentary",
+            // style = tags joined, for display in sheet
+            style: (p.tags && p.tags.length > 0) ? p.tags.join(" · ") : "",
+            influences: [],
           };
         });
 
@@ -1502,15 +1506,26 @@ function AddPhotographerModal({ onClose, onSaved }) {
           ))}
 
           <div>
-            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>TAGS</div>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 4 }}>GENRE</div>
+            <div style={{ fontSize: 10, color: T.inkFaint, marginBottom: 8, fontStyle: "italic" }}>First selected becomes the primary genre used for filtering and node colour</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-              {PHOTOGRAPHER_TAGS.map(tag => (
-                <button key={tag} onClick={() => toggleTag(tag)}
-                  style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${draft.tags.includes(tag) ? T.ink : T.border}`, borderRadius: 2, background: draft.tags.includes(tag) ? T.ink : "transparent", color: draft.tags.includes(tag) ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}>
-                  {tag}
-                </button>
-              ))}
+              {PHOTOGRAPHER_TAGS.map((tag, i) => {
+                const idx = draft.tags.indexOf(tag);
+                const isPrimary = idx === 0;
+                return (
+                  <button key={tag} onClick={() => toggleTag(tag)}
+                    style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${idx >= 0 ? T.ink : T.border}`, borderRadius: 2, background: isPrimary ? T.ink : idx > 0 ? "rgba(26,24,18,0.08)" : "transparent", color: idx >= 0 ? (isPrimary ? T.bg : T.ink) : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif", position: "relative" }}>
+                    {isPrimary && <span style={{ marginRight: 4, fontSize: 8 }}>★</span>}
+                    {tag}
+                  </button>
+                );
+              })}
             </div>
+            {draft.tags.length > 0 && (
+              <div style={{ fontSize: 10, color: T.inkLight, marginTop: 6 }}>
+                Primary: <strong>{draft.tags[0]}</strong>{draft.tags.length > 1 ? ` · also: ${draft.tags.slice(1).join(", ")}` : ""}
+              </div>
+            )}
           </div>
 
           <div>
@@ -2306,7 +2321,7 @@ export default function Lineage() {
     [...new Set(Object.values(PHOTOGRAPHERS).map(p => p.country))].sort()
   , [PHOTOGRAPHERS]);
 
-  const allGenres = ["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"];
+  const allGenres = PHOTOGRAPHER_TAGS; // same list as add photographer form
 
   const filterActive = filterCountry || filterGenre;
 
@@ -2315,7 +2330,7 @@ export default function Lineage() {
     return new Set(Object.entries(PHOTOGRAPHERS)
       .filter(([, p]) => {
         const countryMatch = !filterCountry || p.country === filterCountry;
-        const genreMatch   = !filterGenre   || p.genre === filterGenre;
+        const genreMatch   = !filterGenre   || p.genre === filterGenre || (p.tags || []).includes(filterGenre);
         return countryMatch && genreMatch;
       })
       .map(([id]) => id));
@@ -3100,13 +3115,20 @@ export default function Lineage() {
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 8.5, letterSpacing: "0.13em", color: T.inkLight, marginBottom: 2 }}>
-                      {currentP.country} · {currentP.years}
+                      {[currentP.country, currentP.born].filter(Boolean).join(" · ")}
                     </div>
                     <div style={{ fontSize: isMobile ? 16 : 21, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1.1, whiteSpace: isMobile ? "normal" : "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {currentP.name}
                     </div>
-                    <div style={{ fontSize: 10.5, color: T.inkLight, marginTop: 2, letterSpacing: "0.03em" }}>
-                      {editMode && editDraft ? editDraft.style : currentP.style}
+                    {/* Genre tags — match filter categories */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 }}>
+                      {(currentP.tags || (currentP.genre ? [currentP.genre] : [])).map((tag, i) => (
+                        <span key={tag} onClick={() => { setFilterGenre(tag); setFilterOpen(false); }}
+                          style={{ fontSize: 9, letterSpacing: "0.08em", padding: "2px 7px", border: `1px solid ${i === 0 ? T.ink : T.border}`, borderRadius: 10, background: i === 0 ? "rgba(26,24,18,0.06)" : "transparent", color: i === 0 ? T.ink : T.inkLight, cursor: "pointer", fontFamily: "'EB Garamond', serif" }}
+                          title="Filter by this genre">
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
