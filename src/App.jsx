@@ -186,7 +186,7 @@ const T = {
   line: "#ccc4b0", border: "rgba(26,24,18,0.1)",
   blue: "#4a6fa5", red: "#8a4040", amber: "#a06020",
 };
-const SHOW_NAMES_AT  = 0.9;  // names appear earlier so key photographers are readable
+const SHOW_NAMES_AT  = 0.55; // names appear at lower zoom level
 const SHOW_YEARS_AT  = 2.2;
 const OVERVIEW_SCALE = 0.38; // zoomed out enough to see most of the network
 const DETAIL_SCALE   = 1.6;  // zoom level when a node is selected
@@ -1786,7 +1786,6 @@ export default function Lineage() {
   const momentumRef    = useRef(null);
   const lastTouchTime  = useRef(null);
   const lastTouchPos   = useRef(null);
-  const lastTapRef     = useRef(null); // { time, x, y } for double tap detection
 
   const dismissOnboarding = useCallback(() => {
     if (!onboarding) return;
@@ -2020,33 +2019,6 @@ export default function Lineage() {
     momentumRef.current = null;
     lastTouchPos.current = null;
 
-    // Double tap to zoom in
-    if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      const now = Date.now();
-      const last = lastTapRef.current;
-      if (last && now - last.time < 300 &&
-          Math.abs(touch.clientX - last.x) < 30 &&
-          Math.abs(touch.clientY - last.y) < 30) {
-        lastTapRef.current = null;
-        // Zoom in 2× centered on tap point
-        const container = containerRef.current;
-        const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
-        const tapX = touch.clientX - rect.left;
-        const tapY = touch.clientY - rect.top;
-        setScale(s => {
-          const newScale = Math.min(s * 2, 4.5);
-          const ratio = newScale / s;
-          setPan(p => ({
-            x: tapX - (tapX - p.x) * ratio,
-            y: tapY - (tapY - p.y) * ratio,
-          }));
-          return newScale;
-        });
-        return;
-      }
-      lastTapRef.current = { time: now, x: touch.clientX, y: touch.clientY };
-    }
 
     if (e.touches.length === 1) {
       // Record finger start for pan and for tap detection
