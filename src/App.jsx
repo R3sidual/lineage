@@ -672,125 +672,115 @@ const GENRE_META = {
 // their connections demand, creating visible bridges between clusters.
 function computeForceLayout(dims, data) {
   const ids = Object.keys(data);
+  if (ids.length === 0) return {};
+
   const W = dims.w * 3.0;
   const H = dims.h;
   const cx = W / 2, cy = H / 2;
+  const N = ids.length;
 
   // Build adjacency — bidirectional
   const adj = {};
   ids.forEach(id => { adj[id] = new Set(); });
   ids.forEach(id => {
-    data[id].influences.forEach(inf => {
+    (data[id].influences || []).forEach(inf => {
       if (adj[id]) adj[id].add(inf);
       if (adj[inf]) adj[inf].add(id);
     });
   });
 
-  // Connection counts for resistance scaling
   const connC = {};
   ids.forEach(id => { connC[id] = adj[id].size; });
   const maxConn = Math.max(...Object.values(connC), 1);
 
-  // Genre centroids — arranged in a ring at 40% of canvas
-  const genres = Object.keys(GENRE_META);
-  const ringR = Math.min(W, H) * 0.40;
-  const genreCentroids = {};
-  genres.forEach((g, i) => {
-    const angle = (i / genres.length) * 2 * Math.PI - Math.PI / 2;
-    genreCentroids[g] = {
-      x: cx + Math.cos(angle) * ringR,
-      y: cy + Math.sin(angle) * ringR,
-    };
-  });
+  // ── SEED: jittered grid ───────────────────────────────────────────────────
+  // Guarantees initial separation regardless of genre or network size.
+  // Grid cell size scales so all nodes fit comfortably in the canvas.
+  const cols = Math.ceil(Math.sqrt(N * (W / H)));
+  const rows = Math.ceil(N / cols);
+  const cellW = W * 0.8 / Math.max(cols, 1);
+  const cellH = H * 0.8 / Math.max(rows, 1);
+  const startX = cx - (cols * cellW) / 2;
+  const startY = cy - (rows * cellH) / 2;
 
-  // Seed: place nodes near their genre centroid with jitter
+  // Sort by connection count descending so hubs go first (centre of grid)
+  const sorted = [...ids].sort((a, b) => connC[b] - connC[a]);
+
   const pos = {};
-  ids.forEach((id) => {
-    const genre = data[id].genre;
-    const cent = genreCentroids[genre] || { x: cx, y: cy };
-    const seed = id.charCodeAt(0) * 31 + id.length * 17;
-    const jitter = 70;
+  sorted.forEach((id, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    // Deterministic jitter per node
+    const seed = id.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+    const jx = ((seed * 7919) % 1000) / 1000 * cellW * 0.4 - cellW * 0.2;
+    const jy = ((seed * 6271) % 1000) / 1000 * cellH * 0.4 - cellH * 0.2;
     pos[id] = {
-      x: cent.x + (((seed * 7919) % 1000) / 1000 - 0.5) * jitter * 2,
-      y: cent.y + (((seed * 6271) % 1000) / 1000 - 0.5) * jitter * 2,
-      vx: 0, vy: 0,
+      x: startX + col * cellW + cellW / 2 + jx,
+      y: startY + row * cellH + cellH / 2 + jy,
+      vx: 0, vy: 0, fx: 0, fy: 0,
     };
   });
 
-  // Spread initial positions more for small networks
-  const nodeCount = ids.length;
-  const spreadFactor = nodeCount < 10 ? 3.0 : nodeCount < 30 ? 1.5 : 1.0;
-  ids.forEach(id => {
-    pos[id].x = cx + (pos[id].x - cx) * spreadFactor;
-    pos[id].y = cy + (pos[id].y - cy) * spreadFactor;
-  });
-  const REPULSION    = Math.min(W, H) * (nodeCount < 10 ? 0.28 : nodeCount < 30 ? 0.16 : 0.092);
-  const EDGE_ATTRACT = 0.013;
-  const GRAVITY      = nodeCount < 10 ? 0.008 : 0.038;
-  const GENRE_STR    = nodeCount < 10 ? 0.04 : nodeCount < 30 ? 0.18 : 0.42; // much weaker for small networks
-  const BOUNDARY_PAD = Math.min(W, H) * 0.05;
-  const BOUNDARY_STR = 0.65;
-  const DAMPING      = 0.77;
-  const ITERATIONS   = 360;
+  // ── SIMULATION ────────────────────────────────────────────────────────────
+  // Node spacing scales with N so the graph doesn't compress at scale
+  const spacing  = Math.max(80, Math.min(cellW, cellH) * 0.85);
+  const REPULSION    = spacing;
+  const EDGE_ATTRACT = 0.018;
+  const GRAVITY      = N < 15 ? 0.004 : 0.022;
+  const BOUNDARY_PAD = spacing * 0.5;
+  const DAMPING      = 0.80;
+  const ITERATIONS   = 280;
 
   for (let iter = 0; iter < ITERATIONS; iter++) {
     const alpha = 1 - iter / ITERATIONS;
 
     ids.forEach(id => { pos[id].fx = 0; pos[id].fy = 0; });
 
-    // Node–node repulsion
+    // Repulsion: every pair
     for (let i = 0; i < ids.length; i++) {
       for (let j = i + 1; j < ids.length; j++) {
         const a = pos[ids[i]], b = pos[ids[j]];
-        const dx = b.x - a.x, dy = b.y - a.y;
+        const dx = b.x - a.x || 0.01;
+        const dy = b.y - a.y || 0.01;
         const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-        if (dist < REPULSION) {
-          const f = ((REPULSION - dist) / dist) * alpha * 0.6;
-          a.fx -= dx * f; a.fy -= dy * f;
-          b.fx += dx * f; b.fy += dy * f;
+        if (dist < REPULSION * 2) {
+          const f = (REPULSION / dist) * (REPULSION / dist) * alpha * 0.5;
+          a.fx -= dx / dist * f;  a.fy -= dy / dist * f;
+          b.fx += dx / dist * f;  b.fy += dy / dist * f;
         }
       }
     }
 
-    // Edge attraction
+    // Edge attraction — only between connected nodes
     ids.forEach(id => {
       adj[id].forEach(nbId => {
         if (!pos[nbId]) return;
         const dx = pos[nbId].x - pos[id].x;
         const dy = pos[nbId].y - pos[id].y;
-        pos[id].fx += dx * EDGE_ATTRACT * alpha;
-        pos[id].fy += dy * EDGE_ATTRACT * alpha;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        // Attract only when further than spacing
+        if (dist > spacing) {
+          pos[id].fx += dx * EDGE_ATTRACT * alpha;
+          pos[id].fy += dy * EDGE_ATTRACT * alpha;
+        }
       });
     });
 
-    // Centre gravity — weaker for high-degree hubs
+    // Gentle centre gravity — weaker for hubs
     ids.forEach(id => {
-      const degree = adj[id].size;
-      const gravScale = Math.max(0.15, 1 - degree / 12);
+      const gravScale = Math.max(0.1, 1 - connC[id] / maxConn * 0.8);
       pos[id].fx += (cx - pos[id].x) * GRAVITY * gravScale * alpha;
       pos[id].fy += (cy - pos[id].y) * GRAVITY * gravScale * alpha;
-    });
-
-    // Genre gravity — gentle pull toward genre centroid
-    // Highly-connected cross-genre nodes resist (they bridge clusters)
-    ids.forEach(id => {
-      const genre = data[id].genre;
-      const cent = genreCentroids[genre];
-      if (!cent) return;
-      const degree = adj[id].size;
-      const resist = Math.max(0.2, 1 - degree / (maxConn * 1.1));
-      const str = GENRE_STR * resist * alpha;
-      pos[id].fx += (cent.x - pos[id].x) * str;
-      pos[id].fy += (cent.y - pos[id].y) * str;
     });
 
     // Boundary repulsion
     ids.forEach(id => {
       const { x, y } = pos[id];
-      if (x < BOUNDARY_PAD)     pos[id].fx += (BOUNDARY_PAD - x) * BOUNDARY_STR;
-      if (x > W - BOUNDARY_PAD) pos[id].fx -= (x - (W - BOUNDARY_PAD)) * BOUNDARY_STR;
-      if (y < BOUNDARY_PAD)     pos[id].fy += (BOUNDARY_PAD - y) * BOUNDARY_STR;
-      if (y > H - BOUNDARY_PAD) pos[id].fy -= (y - (H - BOUNDARY_PAD)) * BOUNDARY_STR;
+      const bp = BOUNDARY_PAD;
+      if (x < bp)         pos[id].fx += (bp - x) * 0.8;
+      if (x > W - bp)     pos[id].fx -= (x - (W - bp)) * 0.8;
+      if (y < bp)         pos[id].fy += (bp - y) * 0.8;
+      if (y > H - bp)     pos[id].fy -= (y - (H - bp)) * 0.8;
     });
 
     // Integrate
@@ -803,14 +793,16 @@ function computeForceLayout(dims, data) {
     });
   }
 
-  // Post-simulation: enforce minimum node separation so no two nodes overlap
-  const MIN_SEP = nodeCount < 10 ? Math.min(W, H) * 0.15 : Math.max(56, Math.min(W, H) * 0.08);
-  for (let pass = 0; pass < 30; pass++) {
+  // ── POST-PASS: hard minimum separation ───────────────────────────────────
+  // Run until all nodes are at least `spacing * 0.7` apart
+  const MIN_SEP = spacing * 0.7;
+  for (let pass = 0; pass < 40; pass++) {
     let moved = false;
     for (let i = 0; i < ids.length; i++) {
       for (let j = i + 1; j < ids.length; j++) {
         const a = pos[ids[i]], b = pos[ids[j]];
-        const dx = b.x - a.x, dy = b.y - a.y;
+        const dx = b.x - a.x || 0.01;
+        const dy = b.y - a.y || 0.01;
         const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
         if (dist < MIN_SEP) {
           const push = (MIN_SEP - dist) / 2 / dist;
@@ -825,7 +817,6 @@ function computeForceLayout(dims, data) {
 
   return pos;
 }
-
 // ─── BFS ──────────────────────────────────────────────────────────────────────
 function findPath(fromId, toId, localEdits = {}, data = PHOTOGRAPHERS, userProfile = null) {
   if (fromId === toId) return [fromId];
