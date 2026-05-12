@@ -717,9 +717,11 @@ function computeForceLayout(dims, data) {
     };
   });
 
-  const REPULSION    = Math.min(W, H) * 0.092;
+  // Scale repulsion up for small networks so nodes don't pile up
+  const nodeCount = ids.length;
+  const REPULSION    = Math.min(W, H) * (nodeCount < 10 ? 0.28 : nodeCount < 30 ? 0.16 : 0.092);
   const EDGE_ATTRACT = 0.013;
-  const GRAVITY      = 0.038;
+  const GRAVITY      = nodeCount < 10 ? 0.015 : 0.038;
   const GENRE_STR    = 0.42;
   const BOUNDARY_PAD = Math.min(W, H) * 0.05;
   const BOUNDARY_STR = 0.65;
@@ -1465,7 +1467,7 @@ function AddPhotographerModal({ onClose, onSaved }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(26,24,18,0.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ width: "100%", maxWidth: 580, background: T.paper, borderRadius: "4px 4px 0 0", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "100%", maxWidth: 580, background: T.paper, borderRadius: "4px 4px 0 0", maxHeight: "min(90dvh, 600px)", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "16px 22px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
           <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Add Photographer</div>
           <button onClick={onClose} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 22, cursor: "pointer", color: T.inkLight, lineHeight: 1 }}>×</button>
@@ -1606,7 +1608,7 @@ function AddConnectionModal({ photographers, onClose, onSaved }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(26,24,18,0.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ width: "100%", maxWidth: 580, background: T.paper, borderRadius: "4px 4px 0 0", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "100%", maxWidth: 580, background: T.paper, borderRadius: "4px 4px 0 0", maxHeight: "min(90dvh, 600px)", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "16px 22px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
           <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>Add Connection</div>
           <button onClick={onClose} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 22, cursor: "pointer", color: T.inkLight, lineHeight: 1 }}>×</button>
@@ -1753,9 +1755,10 @@ export default function Lineage() {
   const touchRef       = useRef(null);
   const lastTouchDist  = useRef(null);
   const animFrameRef   = useRef(null);
-  const momentumRef    = useRef(null); // stores {vx, vy} for momentum animation
+  const momentumRef    = useRef(null);
   const lastTouchTime  = useRef(null);
   const lastTouchPos   = useRef(null);
+  const lastTapRef     = useRef(null); // { time, x, y } for double tap detection
 
   const dismissOnboarding = useCallback(() => {
     if (!onboarding) return;
@@ -1988,6 +1991,33 @@ export default function Lineage() {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     momentumRef.current = null;
     lastTouchPos.current = null;
+
+    // Double tap to zoom in
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      const now = Date.now();
+      const last = lastTapRef.current;
+      if (last && now - last.time < 300 &&
+          Math.abs(touch.clientX - last.x) < 30 &&
+          Math.abs(touch.clientY - last.y) < 30) {
+        // Double tap detected — zoom in centered on tap point
+        lastTapRef.current = null;
+        setScale(s => {
+          const newScale = Math.min(s * 2, 4.5);
+          const container = containerRef.current;
+          const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
+          const tapX = touch.clientX - rect.left;
+          const tapY = touch.clientY - rect.top;
+          setPan(p => ({
+            x: tapX - (tapX - p.x) * (newScale / s),
+            y: tapY - (tapY - p.y) * (newScale / s),
+          }));
+          return newScale;
+        });
+        return;
+      }
+      lastTapRef.current = { time: now, x: touch.clientX, y: touch.clientY };
+    }
 
     if (e.touches.length === 1) {
       // Record finger start for pan and for tap detection
@@ -2400,7 +2430,7 @@ export default function Lineage() {
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 
       {/* ── HEADER ── */}
-      <header style={{ padding: isMobile ? "11px 14px 9px" : "13px 26px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0, zIndex: 50, gap: 12 }}>
+      <header style={{ padding: isMobile ? "11px 14px 9px" : "13px 26px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0, zIndex: 50, gap: 12, touchAction: "none" }} onTouchStart={e => e.stopPropagation()}>
         <div style={{ flexShrink: 0, cursor: "pointer" }} onClick={() => { setSelected(null); setSheetOpen(false); switchMode("explore"); }}>
           <div style={{ fontSize: isMobile ? 17 : 21, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1 }}>Lineage</div>
           {!isMobile && <div style={{ fontSize: 9.5, letterSpacing: "0.13em", color: T.inkLight, marginTop: 3 }}>Map your photographic influence</div>}
@@ -2433,20 +2463,21 @@ export default function Lineage() {
 
                 {/* Dropdown results */}
                 {exploreResults.length > 0 && (
-                  <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, zIndex: 100, boxShadow: "0 8px 24px rgba(26,24,18,0.1)", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, zIndex: 400, boxShadow: "0 8px 24px rgba(26,24,18,0.1)", overflow: "hidden", maxHeight: "60dvh", overflowY: "auto" }}>
                     {exploreResults.map(([id, p], i) => (
                       <div key={id}
-                        onClick={() => {
+                        onPointerDown={e => {
+                          e.preventDefault();
                           setSelected(id); setSheetOpen(true);
                           setExploreSearch(false); setExploreQuery("");
                           panToNode(id);
                         }}
-                        style={{ padding: "9px 14px", cursor: "pointer", borderBottom: i < exploreResults.length - 1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 10, alignItems: "baseline", transition: "background 0.1s" }}
+                        style={{ padding: "12px 14px", cursor: "pointer", borderBottom: i < exploreResults.length - 1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 10, alignItems: "baseline" }}
                         onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.04)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
                         <span style={{ fontSize: 13.5, fontFamily: "'Libre Baskerville', serif", color: T.ink }}>{p.name}</span>
-                        <span style={{ fontSize: 9, color: T.inkLight, letterSpacing: "0.05em" }}>{p.born} · {p.style}</span>
+                        <span style={{ fontSize: 9, color: T.inkLight, letterSpacing: "0.05em" }}>{p.born}</span>
                       </div>
                     ))}
                   </div>
@@ -3362,7 +3393,7 @@ export default function Lineage() {
       )}
 
       {/* ── FOOTER ── */}
-      <div style={{ padding: "5px 14px", borderTop: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0, zIndex: 30, gap: 10, overflow: "hidden" }}>
+      <div onTouchStart={e => e.stopPropagation()} style={{ padding: "5px 14px", borderTop: `1px solid ${T.border}`, display: "flex", alignItems: "center", background: T.paper, flexShrink: 0, zIndex: 30, gap: 10, overflow: "hidden", touchAction: "none" }}>
         {/* Legend — hidden on mobile */}
         {!isMobile && (
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexShrink: 0 }}>
