@@ -1703,12 +1703,23 @@ export default function Lineage() {
   const [newlySavedPhotographer, setNewlySavedPhotographer] = useState(null); // prompt to add connection after save
 
   // ── PERSONAL GRAPH STATE ──
-  const [nodeStates, setNodeStates] = useState(() => {
-    try {
-      const saved = user ? localStorage.getItem(`lineage_nodes_${user.id}`) : null;
-      return saved ? JSON.parse(saved) : {};
-    } catch { return {}; }
-  });
+  const [nodeStates, setNodeStates] = useState({});
+
+  // Load node states from Supabase profile once user is known
+  useEffect(() => {
+    if (!user) return;
+    const saved = user.nodeStates;
+    if (saved && typeof saved === "object") setNodeStates(saved);
+  }, [user?.id]);
+
+  // Save node states to Supabase profile whenever they change
+  useEffect(() => {
+    if (!user?.id) return;
+    const timer = setTimeout(() => {
+      updateUser({ nodeStates });
+    }, 800); // debounce — don't write on every single tap
+    return () => clearTimeout(timer);
+  }, [nodeStates]);
 
   // ── USER PROFILE STATE ──
   const freshUserRef = useRef(null); // kept for compatibility
@@ -1736,11 +1747,6 @@ export default function Lineage() {
   const [addSelfStep, setAddSelfStep]   = useState(1);
   const [selfDraft, setSelfDraft]       = useState({ name: "", born: "", country: "", genre: "Street", bio: "", influences: [] });
   const [selfInfSearch, setSelfInfSearch] = useState("");
-  useEffect(() => {
-    if (!user) return;
-    localStorage.setItem(`lineage_nodes_${user.id}`, JSON.stringify(nodeStates));
-  }, [nodeStates, user]);
-
   // ── STATE ──
   const [onboarding, setOnboarding]     = useState(true);
   const [onboardFading, setOnboardFading] = useState(false);
@@ -2791,35 +2797,41 @@ export default function Lineage() {
                 const disputed   = false;
                 const edgeInFilter = !filteredIds || (filteredIds.has(id) && filteredIds.has(infId));
 
-                // At rest: show faint edges for high-connectivity pairs
+                // At rest: show edges when zoomed in (showNames = true)
                 const atRestOpacity = (!activeId && !filteredIds)
-                  ? ((connCounts[id] + connCounts[infId]) > 9 ? 0.1 : (connCounts[id] + connCounts[infId]) > 5 ? 0.05 : 0)
+                  ? (showNames ? 0.18 : (connCounts[id] + connCounts[infId]) > 9 ? 0.1 : (connCounts[id] + connCounts[infId]) > 5 ? 0.05 : 0)
                   : 0;
 
-                // Second-order: edge connects a highlighted node to a second-order node
-                const isSecondOrder = !isHL && activeId && (
-                  (highlighted.has(id) && secondOrder.has(infId)) ||
-                  (highlighted.has(infId) && secondOrder.has(id))
-                );
+                // Direction arrow midpoint for highlighted edges
+                const showArrow = isHL && showNames;
+                const midX = (from.x + to.x) / 2;
+                const midY = (from.y + to.y) / 2;
+                const angle = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
 
                 return (
-                  <line key={`${id}-${infId}`}
-                    x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                    stroke={
-                      isLit || isHL
-                        ? T.ink
-                        : T.line
-                    }
-                    strokeWidth={isLit ? 1.5 : isHL ? 0.9 : 0.45}
-                    strokeOpacity={
-                      !edgeInFilter ? 0
-                      : isLit ? 1
-                      : isHL ? 0.65
-                      : atRestOpacity
-                    }
-                    strokeDasharray="none"
-                    style={{ transition: "stroke-opacity 0.2s, stroke-width 0.2s" }}
-                  />
+                  <g key={`${id}-${infId}`}>
+                    <line
+                      x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+                      stroke={isLit || isHL ? T.ink : T.line}
+                      strokeWidth={isLit ? 1.5 : isHL ? 0.9 : showNames ? 0.55 : 0.45}
+                      strokeOpacity={
+                        !edgeInFilter ? 0
+                        : isLit ? 1
+                        : isHL ? 0.65
+                        : atRestOpacity
+                      }
+                      strokeDasharray="none"
+                      style={{ transition: "stroke-opacity 0.2s, stroke-width 0.2s" }}
+                    />
+                    {showArrow && (
+                      <polygon
+                        points="-4,-2.5 4,0 -4,2.5"
+                        transform={`translate(${midX},${midY}) rotate(${angle})`}
+                        fill={T.ink}
+                        opacity={0.5}
+                      />
+                    )}
+                  </g>
                 );
               });
             })}
