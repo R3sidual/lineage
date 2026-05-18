@@ -1736,23 +1736,25 @@ export default function Lineage() {
   const [nodeStates, setNodeStates] = useState({});
   const nodeStatesLoadedRef = useRef(false);
 
-  // Load node states from Supabase profile once user is known
+  // Load node states once profile has loaded (not just when user.id is known)
+  // user.nodeStates comes from profile?.profile which loads async after auth
   useEffect(() => {
     if (!user?.id) return;
+    if (nodeStatesLoadedRef.current) return; // only load once
     const saved = user.nodeStates;
-    if (saved && typeof saved === "object") {
+    if (saved && typeof saved === "object" && Object.keys(saved).length > 0) {
       setNodeStates(saved);
+      nodeStatesLoadedRef.current = true;
     }
-    nodeStatesLoadedRef.current = true;
-  }, [user?.id]);
+  // Depend on user.nodeStates directly so this re-runs when profile loads
+  }, [user?.id, user?.nodeStates]);
 
-  // Save node states to Supabase profile whenever they change — debounced
-  // Only saves after initial load to avoid overwriting with empty {}
+  // Save node states to Supabase — debounced, only after initial load
   const nodeStatesRef = useRef(nodeStates);
   nodeStatesRef.current = nodeStates;
   useEffect(() => {
     if (!user?.id) return;
-    if (!nodeStatesLoadedRef.current) return; // don't save before load completes
+    if (!nodeStatesLoadedRef.current) return;
     const timer = setTimeout(async () => {
       try {
         await updateUser({ nodeStates: nodeStatesRef.current });
