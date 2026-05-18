@@ -550,15 +550,17 @@ function useCurrentUser() {
   const [user, setUser]       = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const profileRef            = useRef(null); // always has latest profile value
 
   const fetchProfile = async (authUser) => {
-    if (!authUser) { setProfile(null); return; }
+    if (!authUser) { setProfile(null); profileRef.current = null; return; }
     const { data } = await supabase
       .from("users")
       .select("*")
       .eq("id", authUser.id)
       .single();
     setProfile(data || null);
+    profileRef.current = data || null;
   };
 
   useEffect(() => {
@@ -600,7 +602,6 @@ function useCurrentUser() {
   const updateUser = async (updates) => {
     if (!user) return;
 
-    // Fields that live on the users table directly
     const directFields = ['name', 'email', 'is_admin', 'access_level'];
     const direct = {};
     const profileUpdates = {};
@@ -610,11 +611,11 @@ function useCurrentUser() {
       else profileUpdates[k] = v;
     });
 
-    // Merge profile updates into the jsonb profile column
     const payload = {};
     if (Object.keys(direct).length) Object.assign(payload, direct);
     if (Object.keys(profileUpdates).length) {
-      const currentProfile = profile?.profile || {};
+      // Always use ref for current profile — avoids stale closure
+      const currentProfile = profileRef.current?.profile || {};
       payload.profile = { ...currentProfile, ...profileUpdates };
     }
 
@@ -624,8 +625,9 @@ function useCurrentUser() {
       .eq("id", user.id)
       .select()
       .single();
-    if (error) throw error;
+    if (error) { console.error("updateUser error:", error); throw error; }
     setProfile(data);
+    profileRef.current = data;
     return data;
   };
 
@@ -1719,8 +1721,13 @@ export default function Lineage() {
   nodeStatesRef.current = nodeStates;
   useEffect(() => {
     if (!user?.id) return;
-    const timer = setTimeout(() => {
-      updateUser({ nodeStates: nodeStatesRef.current });
+    const timer = setTimeout(async () => {
+      try {
+        await updateUser({ nodeStates: nodeStatesRef.current });
+        console.log("nodeStates saved:", Object.keys(nodeStatesRef.current).length, "entries");
+      } catch (err) {
+        console.error("nodeStates save failed:", err);
+      }
     }, 1000);
     return () => clearTimeout(timer);
   }, [nodeStates, user?.id]);
