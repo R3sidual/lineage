@@ -1074,7 +1074,7 @@ class ErrorBoundary extends React.Component {
 }
 
 // ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
-function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser, PHOTOGRAPHERS }) {
+function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser, PHOTOGRAPHERS, nodeStates }) {
   const [editing, setEditing]         = useState(false);
   const [draft, setDraft]             = useState({ influences: [], lighthouseWorks: [], ...user });
   const [infSearch, setInfSearch]     = useState("");
@@ -1187,7 +1187,7 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
 
           {/* Influences */}
           <Section title="MY INFLUENCES" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
-            empty={!user.influences?.length} emptyText="Which photographers shaped your vision?">
+            empty={!user.influences?.length} emptyText="Which photographers shaped your vision? Mark them in the network.">
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {(user.influences || []).map(id => (
                 <div key={id} style={{ fontSize: 13, color: T.blue, padding: "4px 10px", border: `1px solid rgba(74,111,165,0.25)`, borderRadius: 2 }}>
@@ -1196,6 +1196,32 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
               ))}
             </div>
           </Section>
+
+          {/* Discovered */}
+          {Object.entries(nodeStates || {}).filter(([, s]) => s === "discovered").length > 0 && (
+            <Section title="DISCOVERED">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {Object.entries(nodeStates).filter(([, s]) => s === "discovered").map(([id]) => (
+                  <div key={id} style={{ fontSize: 13, color: "#4a7fa5", padding: "4px 10px", border: `1px solid rgba(74,127,165,0.25)`, borderRadius: 2 }}>
+                    {PHOTOGRAPHERS[id]?.name || id}
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {/* To Explore */}
+          {Object.entries(nodeStates || {}).filter(([, s]) => s === "to-explore").length > 0 && (
+            <Section title="WANT TO EXPLORE">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {Object.entries(nodeStates).filter(([, s]) => s === "to-explore").map(([id]) => (
+                  <div key={id} style={{ fontSize: 13, color: "#4a8a5a", padding: "4px 10px", border: `1px solid rgba(74,138,90,0.25)`, borderRadius: 2 }}>
+                    {PHOTOGRAPHERS[id]?.name || id}
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
 
           {/* Lighthouse works */}
           <Section title="LIGHTHOUSE WORKS" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
@@ -1708,19 +1734,25 @@ export default function Lineage() {
 
   // ── PERSONAL GRAPH STATE ──
   const [nodeStates, setNodeStates] = useState({});
+  const nodeStatesLoadedRef = useRef(false);
 
   // Load node states from Supabase profile once user is known
   useEffect(() => {
     if (!user?.id) return;
     const saved = user.nodeStates;
-    if (saved && typeof saved === "object") setNodeStates(saved);
+    if (saved && typeof saved === "object") {
+      setNodeStates(saved);
+    }
+    nodeStatesLoadedRef.current = true;
   }, [user?.id]);
 
   // Save node states to Supabase profile whenever they change — debounced
+  // Only saves after initial load to avoid overwriting with empty {}
   const nodeStatesRef = useRef(nodeStates);
   nodeStatesRef.current = nodeStates;
   useEffect(() => {
     if (!user?.id) return;
+    if (!nodeStatesLoadedRef.current) return; // don't save before load completes
     const timer = setTimeout(async () => {
       try {
         await updateUser({ nodeStates: nodeStatesRef.current });
@@ -2428,6 +2460,7 @@ export default function Lineage() {
       onLogout={() => { logout(); setAppView("auth"); }}
       updateUser={updateUser}
       PHOTOGRAPHERS={PHOTOGRAPHERS}
+      nodeStates={nodeStates}
     />
     </ErrorBoundary>
   );
