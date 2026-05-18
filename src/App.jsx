@@ -629,15 +629,17 @@ function useCurrentUser() {
     return data;
   };
 
-  // merged: null if not authenticated, partial if profile still loading, full when both ready
+  // merged: flatten the jsonb profile column into the user object
+  // profile (db row) contains: id, email, name, is_admin, access_level, profile (jsonb)
+  // profile.profile (jsonb) contains: influences, nodeStates, lighthouseWorks, etc.
   const merged = user ? {
     id: user.id,
     email: user.email,
-    name: (profile?.name) || user.user_metadata?.name || user.email,
+    name: profile?.name || user.user_metadata?.name || user.email,
     is_admin: profile?.is_admin || false,
     access_level: profile?.access_level || "view",
+    // Spread jsonb profile data first so top-level fields can override
     ...(profile?.profile || {}),
-    ...(profile || {}),
   } : null;
 
   return { user: merged, signup, login, logout, updateUser, loading };
@@ -1707,19 +1709,21 @@ export default function Lineage() {
 
   // Load node states from Supabase profile once user is known
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     const saved = user.nodeStates;
     if (saved && typeof saved === "object") setNodeStates(saved);
   }, [user?.id]);
 
-  // Save node states to Supabase profile whenever they change
+  // Save node states to Supabase profile whenever they change — debounced
+  const nodeStatesRef = useRef(nodeStates);
+  nodeStatesRef.current = nodeStates;
   useEffect(() => {
     if (!user?.id) return;
     const timer = setTimeout(() => {
-      updateUser({ nodeStates });
-    }, 800); // debounce — don't write on every single tap
+      updateUser({ nodeStates: nodeStatesRef.current });
+    }, 1000);
     return () => clearTimeout(timer);
-  }, [nodeStates]);
+  }, [nodeStates, user?.id]);
 
   // ── USER PROFILE STATE ──
   const freshUserRef = useRef(null); // kept for compatibility
