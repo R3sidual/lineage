@@ -11,171 +11,6 @@ const supabase = createClient(
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 // Each entry has: country (country of birth, clean string) and genre (primary photographic tradition)
 // Genres: Street · Documentary · Portrait · Landscape · Fashion · Fine Art · War · Conceptual · Experimental
-const PHOTOGRAPHERS = {
-  // ── ROOTS (born before 1880) ────────────────────────────────────────────────
-  "nadar":                  { name: "Nadar",                   born: 1820, years: "1820–1910", nationality: "French",            country: "France",        genre: "Portrait",     style: "Portrait · Aerial",             bio: "Pioneered modern portrait photography and made the first aerial photographs from a balloon.", influences: [], links: { website: "https://www.metmuseum.org/art/collection/search#!?q=nadar", book: "https://www.amazon.com/s?k=nadar+photography" } },
-  "julia-margaret-cameron": { name: "Julia Margaret Cameron",  born: 1815, years: "1815–1879", nationality: "British",           country: "UK",            genre: "Portrait",     style: "Pictorialism · Portrait",       bio: "Victorian pioneer who made photography a vehicle for art. Her blurred soft-focus portraits redefined portraiture.", influences: [], links: { website: "https://www.vam.ac.uk/articles/julia-margaret-cameron", book: "https://www.amazon.com/s?k=julia+margaret+cameron+photography" } },
-  "eugene-atget":           { name: "Eugène Atget",            born: 1857, years: "1857–1927", nationality: "French",            country: "France",        genre: "Documentary", style: "Documentary · Urban",           bio: "Documented Paris streets obsessively for decades. Surrealist icon discovered late in life.", influences: [], links: { website: "https://www.moma.org/artists/229", book: "https://www.amazon.com/s?k=eugene+atget" } },
-  "alfred-stieglitz":       { name: "Alfred Stieglitz",        born: 1864, years: "1864–1946", nationality: "American",            country: "USA",        genre: "Fine Art"    ,          style: "Pictorialism · Modernism",      bio: "Pioneer who elevated photography to fine art. Founded Photo-Secession and gallery 291.", influences: ["nadar"], links: { website: "https://www.metmuseum.org/art/collection/search#!?q=stieglitz", book: "https://www.amazon.com/s?k=alfred+stieglitz" } },
-  "gertrude-kasebier":      { name: "Gertrude Käsebier",       born: 1852, years: "1852–1934", nationality: "American",            country: "USA",        genre: "Portrait"    ,          style: "Pictorialism · Portrait",       bio: "One of the most important women photographers of the early 20th century. Fought to establish photography as fine art.", influences: ["nadar"], links: { website: "https://www.metmuseum.org/art/collection/search#!?q=kasebier", book: "https://www.amazon.com/s?k=gertrude+kasebier" } },
-  "edward-steichen":        { name: "Edward Steichen",         born: 1879, years: "1879–1973", nationality: "American",            country: "USA",        genre: "Fashion"    ,          style: "Pictorialism · Fashion",        bio: "Father of modern fashion photography. Before WWII he was the world's highest-paid photographer. Curated The Family of Man.", influences: ["alfred-stieglitz"], links: { website: "https://www.moma.org/artists/5632", book: "https://www.amazon.com/s?k=edward+steichen" } },
-
-  // ── MODERNIST ERA (1880–1910) ───────────────────────────────────────────────
-  "paul-strand":            { name: "Paul Strand",             born: 1890, years: "1890–1976", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Straight Photography",          bio: "Pioneered straight photography, rejecting pictorialist manipulation for direct seeing.", influences: ["alfred-stieglitz"], links: { book: "https://www.amazon.com/s?k=paul+strand" } },
-  "edward-weston":          { name: "Edward Weston",           born: 1886, years: "1886–1958", nationality: "American",            country: "USA",        genre: "Fine Art"    ,          style: "Fine Art · Modernism",          bio: "Transformed natural forms — peppers, shells, nudes — into abstract sculpture. A master of light and detail.", influences: ["alfred-stieglitz", "paul-strand"], links: { website: "https://www.edward-weston.com", book: "https://www.amazon.com/s?k=edward+weston+photography" } },
-  "imogen-cunningham":      { name: "Imogen Cunningham",       born: 1883, years: "1883–1976", nationality: "American",            country: "USA",        genre: "Fine Art"    ,          style: "Fine Art · Botanical",          bio: "Botanicals, nudes, and industrial forms with precision and tenderness. Member of Group f/64.", influences: ["gertrude-kasebier", "alfred-stieglitz"], links: { website: "https://www.imogencunningham.com", book: "https://www.amazon.com/s?k=imogen+cunningham" } },
-  "berenice-abbott":        { name: "Berenice Abbott",         born: 1898, years: "1898–1991", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Urban",           bio: "Documented New York's transformation in the 1930s, inspired by her mentor Atget's systematic vision of Paris.", influences: ["eugene-atget"], links: { website: "https://www.moma.org/artists/26", book: "https://www.amazon.com/s?k=berenice+abbott" } },
-  "man-ray":                { name: "Man Ray",                 born: 1890, years: "1890–1976", nationality: "American",            country: "USA",        genre: "Experimental"    ,          style: "Surrealism · Experimental",     bio: "Surrealist provocateur who weaponised photography as anti-art. Invented the rayograph and solarisation.", influences: ["alfred-stieglitz"], links: { website: "https://www.manray.net", book: "https://www.amazon.com/s?k=man+ray+photography" } },
-  "tina-modotti":           { name: "Tina Modotti",            born: 1896, years: "1896–1942", nationality: "Italian-Mexican",            country: "Italy",        genre: "Documentary"    ,   style: "Documentary · Political",       bio: "Italian-born photographer of revolutionary Mexico. Merged radical politics with luminous formal beauty.", influences: ["edward-weston"], links: { website: "https://www.moma.org/artists/4048", book: "https://www.amazon.com/s?k=tina+modotti+photography" } },
-  "dorothea-lange":         { name: "Dorothea Lange",          born: 1895, years: "1895–1965", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Social",          bio: "Defined social documentary photography during the Great Depression. Migrant Mother.", influences: ["alfred-stieglitz"], links: { website: "https://www.moma.org/artists/3373", book: "https://www.amazon.com/s?k=dorothea+lange" } },
-  "margaret-bourke-white":  { name: "Margaret Bourke-White",   born: 1904, years: "1904–1971", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Photojournalism · Industrial",  bio: "First female war correspondent, first Western photographer in the Soviet Union. Life magazine's pioneering icon.", influences: ["alfred-stieglitz", "edward-steichen"], links: { website: "https://www.moma.org/artists/770", book: "https://www.amazon.com/s?k=margaret+bourke+white" } },
-
-  // ── MID 20TH CENTURY (1895–1920) ────────────────────────────────────────────
-  "weegee":                 { name: "Weegee",                  born: 1899, years: "1899–1968", nationality: "American",            country: "USA",        genre: "Street"    ,          style: "Crime · Street",                bio: "Tabloid photographer whose raw flash-lit images defined New York's urban underworld.", influences: [], links: { book: "https://www.amazon.com/s?k=weegee+photography" } },
-  "lisette-model":          { name: "Lisette Model",           born: 1901, years: "1901–1983", nationality: "Austrian-American",            country: "Austria",        genre: "Street"    , style: "Street · Portrait",             bio: "Mentor to Diane Arbus. Bold, confrontational portraits of society's margins.", influences: [], links: { book: "https://www.amazon.com/s?k=lisette+model" } },
-  "ansel-adams":            { name: "Ansel Adams",             born: 1902, years: "1902–1984", nationality: "American",            country: "USA",        genre: "Landscape"    ,          style: "Landscape · Fine Art",          bio: "Master of black-and-white landscape photography. Invented the Zone System.", influences: ["alfred-stieglitz", "paul-strand"], links: { website: "https://anseladams.com", book: "https://www.amazon.com/s?k=ansel+adams" } },
-  "walker-evans":           { name: "Walker Evans",            born: 1903, years: "1903–1975", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Social",          bio: "Defined documentary photography's visual language. 'Let Us Now Praise Famous Men'.", influences: ["eugene-atget", "alfred-stieglitz"], links: { website: "https://www.moma.org/artists/1777", book: "https://www.amazon.com/s?k=walker+evans" } },
-  "robert-capa":            { name: "Robert Capa",             born: 1913, years: "1913–1954", nationality: "Hungarian-American",            country: "Hungary",        genre: "War"    , style: "War · Photojournalism",         bio: "The greatest war photographer in history. D-Day, the Spanish Civil War, the decisive risk.", influences: ["henri-cartier-bresson"], links: { website: "https://www.magnumphotos.com/photographer/robert-capa/", book: "https://www.amazon.com/s?k=robert+capa+photography" } },
-  "brassai":                { name: "Brassaï",                 born: 1899, years: "1899–1984", nationality: "Hungarian-French",            country: "Hungary",        genre: "Street"    ,  style: "Street · Nocturnal",            bio: "Photographer of Paris by night. His underworld of cafés, prostitutes, and fog is wholly his own.", influences: ["eugene-atget"], links: { website: "https://www.moma.org/artists/766", book: "https://www.amazon.com/s?k=brassai+photography" } },
-  "henri-cartier-bresson":  { name: "Henri Cartier-Bresson",  born: 1908, years: "1908–2004", nationality: "French",            country: "France",        genre: "Street"    ,            style: "Street · Photojournalism",      bio: "Father of modern photojournalism. Coined 'the decisive moment'. Co-founded Magnum.", influences: ["paul-strand", "eugene-atget"], links: { website: "https://www.henricartierbresson.org", book: "https://www.amazon.com/s?k=henri+cartier-bresson" } },
-  "gordon-parks":           { name: "Gordon Parks",            born: 1912, years: "1912–2006", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Portrait",        bio: "First Black staff photographer at Life magazine. Chronicled civil rights with humanity.", influences: ["dorothea-lange", "walker-evans"], links: { website: "https://www.gordonparksfoundation.org", book: "https://www.amazon.com/s?k=gordon+parks" } },
-  "w-eugene-smith":         { name: "W. Eugene Smith",         born: 1918, years: "1918–1978", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Photojournalism · Essay",       bio: "Pioneer of the photo-essay as art form. Minamata is one of the most powerful bodies of documentary work ever made.", influences: ["dorothea-lange", "margaret-bourke-white"], links: { website: "https://www.magnumphotos.com/photographer/w-eugene-smith/", book: "https://www.amazon.com/s?k=w+eugene+smith+photography" } },
-  "yousuf-karsh":           { name: "Yousuf Karsh",            born: 1908, years: "1908–2002", nationality: "Armenian-Canadian",            country: "Armenia",        genre: "Portrait"    , style: "Portrait",                      bio: "The most celebrated portrait photographer of the 20th century. Churchill, Einstein, Hemingway — all rendered iconic.", influences: ["edward-steichen"], links: { website: "https://karsh.org", book: "https://www.amazon.com/s?k=yousuf+karsh+photography" } },
-  "helmut-newton":          { name: "Helmut Newton",           born: 1920, years: "1920–2004", nationality: "German-Australian",            country: "Germany",        genre: "Fashion"    , style: "Fashion · Erotic",              bio: "Provocateur of fashion photography. Charged, controversial, entirely his own vision.", influences: ["weegee", "edward-steichen"], links: { website: "https://www.helmut-newton.com", book: "https://www.amazon.com/s?k=helmut+newton" } },
-  "irving-penn":            { name: "Irving Penn",             born: 1917, years: "1917–2009", nationality: "American",            country: "USA",        genre: "Fashion"    ,          style: "Fashion · Portrait",            bio: "Technical master of studio photography. Five decades of Vogue covers that defined visual elegance.", influences: ["edward-steichen", "edward-weston"], links: { website: "https://www.irvingpenn.org", book: "https://www.amazon.com/s?k=irving+penn+photography" } },
-  "richard-avedon":         { name: "Richard Avedon",          born: 1923, years: "1923–2004", nationality: "American",            country: "USA",        genre: "Portrait"    ,          style: "Portrait · Fashion",            bio: "Redefined portraiture with white backgrounds and radical intimacy. In the American West is an American monument.", influences: ["irving-penn", "lisette-model"], links: { website: "https://www.avedonfoundation.org", book: "https://www.amazon.com/s?k=richard+avedon+photography" } },
-  "sergio-larrain":         { name: "Sergio Larraín",          born: 1931, years: "1931–2012", nationality: "Chilean",            country: "Chile",        genre: "Street"    ,           style: "Street · Poetic",               bio: "Chile's greatest photographer. Withdrew from the world in the 1970s; his street images endure as poetry.", influences: ["henri-cartier-bresson"], links: { website: "https://www.magnumphotos.com/photographer/sergio-larrain/", book: "https://www.amazon.com/s?k=sergio+larrain+photography" } },
-
-  // ── POST-WAR GENERATION (1920–1940) ─────────────────────────────────────────
-  "diane-arbus":            { name: "Diane Arbus",             born: 1923, years: "1923–1971", nationality: "American",            country: "USA",        genre: "Portrait"    ,          style: "Portrait · Documentary",        bio: "Explored marginalised communities with unflinching intimacy and compassion.", influences: ["lisette-model", "weegee"], links: { website: "https://www.moma.org/artists/255", book: "https://www.amazon.com/s?k=diane+arbus" } },
-  "robert-frank":           { name: "Robert Frank",            born: 1924, years: "1924–2019", nationality: "Swiss-American",            country: "Switzerland",        genre: "Street"    ,    style: "Street · Documentary",          bio: "'The Americans' changed photography forever. Raw, personal, anti-establishment vision.", influences: ["henri-cartier-bresson", "weegee"], links: { website: "https://www.moma.org/artists/1973", book: "https://www.amazon.com/s?k=robert+frank" } },
-  "william-klein":          { name: "William Klein",           born: 1926, years: "1926–2022", nationality: "American-French",            country: "USA",        genre: "Street"    ,   style: "Street · Fashion",              bio: "Radical street photographer. Wide-angle chaos. The anti–Cartier-Bresson.", influences: ["weegee"], links: { book: "https://www.amazon.com/s?k=william+klein" } },
-  "vivian-maier":           { name: "Vivian Maier",            born: 1926, years: "1926–2009", nationality: "American",            country: "USA",        genre: "Street"    ,          style: "Street",                        bio: "Shot 150,000 frames in secret. Discovered posthumously. Photography's greatest mystery.", influences: ["henri-cartier-bresson", "lisette-model"], links: { website: "https://www.vivianmaier.com", book: "https://www.amazon.com/s?k=vivian+maier" } },
-  "garry-winogrand":        { name: "Garry Winogrand",         born: 1928, years: "1928–1984", nationality: "American",            country: "USA",        genre: "Street"    ,          style: "Street",                        bio: "Restless chronicler of American life. Left 2,500 undeveloped rolls at his death.", influences: ["henri-cartier-bresson", "weegee"], links: { website: "https://www.moma.org/artists/6476", book: "https://www.amazon.com/s?k=garry+winogrand" } },
-  "elliott-erwitt":         { name: "Elliott Erwitt",          born: 1928, years: "1928–2023", nationality: "French-American",            country: "France",        genre: "Street"    ,   style: "Street · Humor",                bio: "Master of irony and wit in photography. Dogs, humans, and the absurdity of the everyday.", influences: ["henri-cartier-bresson", "robert-frank"], links: { website: "https://www.elliotterwitt.com", book: "https://www.amazon.com/s?k=elliott+erwitt+photography" } },
-  "don-mcccullin":          { name: "Don McCullin",            born: 1935, years: "1935–",     nationality: "British",            country: "UK",        genre: "War"    ,           style: "War · Documentary",             bio: "Britain's greatest war photographer. Cyprus, Vietnam, Biafra — McCullin went where no one else dared.", influences: ["w-eugene-smith", "robert-capa"], links: { website: "https://www.donmccullin.co.uk", book: "https://www.amazon.com/s?k=don+mccullin+photography" } },
-  "lee-friedlander":        { name: "Lee Friedlander",         born: 1934, years: "1934–",     nationality: "American",            country: "USA",        genre: "Street"    ,          style: "Street · Social Landscape",     bio: "Inventive formalist of American street photography. Reflections, shadows, complexity.", influences: ["walker-evans", "weegee"], links: { website: "https://www.moma.org/artists/1946", book: "https://www.amazon.com/s?k=lee+friedlander" } },
-  "joel-meyerowitz":        { name: "Joel Meyerowitz",         born: 1938, years: "1938–",     nationality: "American",            country: "USA",        genre: "Street"    ,          style: "Street · Color",                bio: "Pioneered color street photography in New York. Cape Light is a landmark in color photography.", influences: ["robert-frank", "garry-winogrand"], links: { website: "https://www.joelmeyerowitz.com", instagram: "https://www.instagram.com/joelmeyerowitz", book: "https://www.amazon.com/s?k=joel+meyerowitz+photography" } },
-  "daido-moriyama":         { name: "Daido Moriyama",          born: 1938, years: "1938–",     nationality: "Japanese",            country: "Japan",        genre: "Street"    ,          style: "Street · Experimental",         bio: "Grain and blur as aesthetic tools. Tokyo's shadow, speed, and erotic energy on film.", influences: ["weegee", "william-klein"], links: { website: "https://www.moriyamadaido.com", instagram: "https://www.instagram.com/moriyamadaido", book: "https://www.amazon.com/s?k=daido+moriyama" } },
-  "william-eggleston":      { name: "William Eggleston",       born: 1939, years: "1939–",     nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Color · Everyday Life",         bio: "Legitimised color photography as fine art. The ordinary made extraordinary.", influences: ["henri-cartier-bresson", "weegee"], links: { website: "https://www.egglestontrust.com", book: "https://www.amazon.com/s?k=william+eggleston" } },
-  "shomei-tomatsu":         { name: "Shōmei Tōmatsu",          born: 1930, years: "1930–2012", nationality: "Japanese",            country: "Japan",        genre: "Documentary"    ,          style: "Documentary · Post-War",        bio: "Chronicled Japan's traumatic post-war transformation. Nagasaki and the American occupation defined his legacy.", influences: ["weegee", "w-eugene-smith"], links: { website: "https://www.moma.org/artists/5808", book: "https://www.amazon.com/s?k=shomei+tomatsu+photography" } },
-  "ernst-haas":             { name: "Ernst Haas",              born: 1921, years: "1921–1986", nationality: "Austrian-American",            country: "Austria",        genre: "Fine Art"    , style: "Color · Abstract",              bio: "First photographer to have a solo exhibition at MoMA. His colour work transformed how photographers thought about light.", influences: ["henri-cartier-bresson", "edward-steichen"], links: { website: "https://www.ernst-haas.com", book: "https://www.amazon.com/s?k=ernst+haas+photography" } },
-  "sabine-weiss":           { name: "Sabine Weiss",            born: 1924, years: "1924–2021", nationality: "Swiss-French",            country: "Switzerland",        genre: "Street"    ,      style: "Humanist · Street",             bio: "Last surviving member of the Humanist Photography movement. Her tender street portraits defined post-war French photography.", influences: ["henri-cartier-bresson", "brassai"], links: { book: "https://www.amazon.com/s?k=sabine+weiss+photography" } },
-
-  // ── 1940s–1950s BIRTHS ──────────────────────────────────────────────────────
-  "sebastiao-salgado":      { name: "Sebastião Salgado",       born: 1944, years: "1944–",     nationality: "Brazilian",            country: "Brazil",        genre: "Documentary"    ,         style: "Documentary · Humanitarian",    bio: "Epic humanitarian photography spanning workers, refugees, and the Genesis project.", influences: ["dorothea-lange", "henri-cartier-bresson"], links: { website: "https://www.amazonasimages.com", instagram: "https://www.instagram.com/sebastiaosalgado", book: "https://www.amazon.com/s?k=sebastiao+salgado" } },
-  "james-nachtwey":         { name: "James Nachtwey",          born: 1948, years: "1948–",     nationality: "American",            country: "USA",        genre: "War"    ,          style: "War · Documentary",             bio: "The most dedicated war photographer alive. His unflinching witness to human suffering is a moral act.", influences: ["w-eugene-smith", "robert-capa"], links: { website: "https://jamesnachtwey.com", book: "https://www.amazon.com/s?k=james+nachtwey+photography" } },
-  "stephen-shore":          { name: "Stephen Shore",           born: 1947, years: "1947–",     nationality: "American",            country: "USA",        genre: "Conceptual"    ,          style: "Color · Conceptual",            bio: "Photographed the American vernacular landscape with deadpan precision. Uncommon Places is essential.", influences: ["walker-evans", "william-eggleston"], links: { website: "https://www.stephenshore.net", instagram: "https://www.instagram.com/stephen_shore", book: "https://www.amazon.com/s?k=stephen+shore+photography" } },
-  "sally-mann":             { name: "Sally Mann",              born: 1951, years: "1951–",     nationality: "American",            country: "USA",        genre: "Fine Art"    ,          style: "Fine Art · Family",             bio: "Immediate Family made her famous and infamous. Mann's South is gothic, beautiful, and deeply American.", influences: ["edward-weston", "diane-arbus"], links: { website: "https://www.sallymann.com", book: "https://www.amazon.com/s?k=sally+mann+photography" } },
-  "martin-parr":            { name: "Martin Parr",             born: 1952, years: "1952–",     nationality: "British",            country: "UK",        genre: "Documentary"    ,           style: "Documentary · Color",           bio: "Satirist of consumer culture and British life. Color, flash, unflinching observation.", influences: ["william-eggleston", "walker-evans"], links: { website: "https://www.martinparr.com", instagram: "https://www.instagram.com/martinparrstudio", book: "https://www.amazon.com/s?k=martin+parr" } },
-  "nan-goldin":             { name: "Nan Goldin",              born: 1953, years: "1953–",     nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Intimate",        bio: "'The Ballad of Sexual Dependency' — raw diaristic photography as survival and testimony.", influences: ["diane-arbus", "weegee"], links: { website: "https://www.moma.org/artists/7487", instagram: "https://www.instagram.com/nangoldin1", book: "https://www.amazon.com/s?k=nan+goldin" } },
-  "cindy-sherman":          { name: "Cindy Sherman",           born: 1954, years: "1954–",     nationality: "American",            country: "USA",        genre: "Conceptual"    ,          style: "Conceptual · Self-Portrait",    bio: "Constructs elaborate alternate identities through performance, costume, and camera.", influences: ["diane-arbus"], links: { website: "https://www.moma.org/artists/5392", book: "https://www.amazon.com/s?k=cindy+sherman" } },
-  "joel-sternfeld":         { name: "Joel Sternfeld",          born: 1944, years: "1944–",     nationality: "American",            country: "USA",        genre: "Landscape"    ,          style: "Color · Landscape",             bio: "American Prospects redefined landscape photography. His large-format color work is wry, sad, and precise.", influences: ["walker-evans", "william-eggleston"], links: { book: "https://www.amazon.com/s?k=joel+sternfeld+photography" } },
-  "lee-miller":             { name: "Lee Miller",              born: 1907, years: "1907–1977", nationality: "American",            country: "USA",        genre: "War"    ,          style: "Surrealism · War",              bio: "Surrealist muse turned fearless war photographer. Her images of Dachau's liberation are among the most important ever taken.", influences: ["man-ray", "edward-steichen"], links: { website: "https://www.leemiller.co.uk", book: "https://www.amazon.com/s?k=lee+miller+photography" } },
-  "marc-riboud":            { name: "Marc Riboud",             born: 1923, years: "1923–2016", nationality: "French",            country: "France",        genre: "Documentary"    ,            style: "Photojournalism · Travel",      bio: "Magnum photographer who spent decades chronicling Asia with curiosity and grace. The Painter of the Eiffel Tower is iconic.", influences: ["henri-cartier-bresson"], links: { book: "https://www.amazon.com/s?k=marc+riboud+photography" } },
-  "mary-ellen-mark":        { name: "Mary Ellen Mark",         born: 1940, years: "1940–2015", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Portrait",        bio: "Spent decades documenting society's margins — sex workers, the homeless, circus performers — with humanity.", influences: ["diane-arbus", "dorothea-lange"], links: { website: "https://www.maryellenmark.com", book: "https://www.amazon.com/s?k=mary+ellen+mark+photography" } },
-
-  // ── 1950s–1960s BIRTHS ──────────────────────────────────────────────────────
-  "helmut-newton-fashion":  { name: "Guy Bourdin",             born: 1928, years: "1928–1991", nationality: "French",            country: "France",        genre: "Fashion"    ,            style: "Fashion · Surrealist",          bio: "French Vogue's most radical fashion photographer. Bourdin's images were disturbing, erotic, and entirely cinematic.", influences: ["man-ray", "helmut-newton"], links: { book: "https://www.amazon.com/s?k=guy+bourdin+photography" } },
-  "andreas-gursky":         { name: "Andreas Gursky",          born: 1955, years: "1955–",     nationality: "German",            country: "Germany",        genre: "Conceptual"    ,            style: "Conceptual · Large Format",     bio: "Creates vast, digitally-manipulated photographs of globalisation's landscapes. Rhine II sold for $4.3m.", influences: ["stephen-shore", "walker-evans"], links: { website: "https://www.andreasgursky.com", book: "https://www.amazon.com/s?k=andreas+gursky+photography" } },
-  "nobuyoshi-araki":        { name: "Nobuyoshi Araki",         born: 1940, years: "1940–",     nationality: "Japanese",            country: "Japan",        genre: "Experimental"    ,          style: "Intimate · Erotic",             bio: "Prolific and controversial chronicler of desire, death, and Tokyo. Over 450 published books.", influences: ["daido-moriyama", "weegee"], links: { book: "https://www.amazon.com/s?k=nobuyoshi+araki+photography" } },
-  "carrie-mae-weems":       { name: "Carrie Mae Weems",        born: 1953, years: "1953–",     nationality: "American",            country: "USA",        genre: "Conceptual"    ,          style: "Conceptual · Social",           bio: "The Kitchen Table Series transformed documentary photography into art. Race, gender, family — all examined with intelligence.", influences: ["gordon-parks", "diane-arbus"], links: { website: "https://carriemaeweems.net", book: "https://www.amazon.com/s?k=carrie+mae+weems+photography" } },
-  "nick-ut":                { name: "Nick Ut",                 born: 1951, years: "1951–",     nationality: "Vietnamese-American",            country: "Vietnam",        genre: "War"    , style: "Photojournalism · War",        bio: "Napalm Girl (1972) is one of the most important photographs ever taken. It changed public opinion on the Vietnam War.", influences: ["robert-capa", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=nick+ut+photography" } },
-  "steve-mccurry":          { name: "Steve McCurry",           born: 1950, years: "1950–",     nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Photojournalism · Portrait",    bio: "Afghan Girl is the most recognised image in National Geographic history. McCurry's colour photography is a benchmark.", influences: ["henri-cartier-bresson", "sebastiao-salgado"], links: { website: "https://www.stevemccurry.com", instagram: "https://www.instagram.com/stevemccurry", book: "https://www.amazon.com/s?k=steve+mccurry+photography" } },
-  "trent-parke":            { name: "Trent Parke",             born: 1971, years: "1971–",     nationality: "Australian",            country: "Australia",        genre: "Street"    ,        style: "Street · Atmospheric",         bio: "First Australian member of Magnum. His Dream/Life series turned Sydney streets into surreal dreamscapes.", influences: ["daido-moriyama", "robert-frank"], links: { website: "https://www.magnumphotos.com/photographer/trent-parke/", book: "https://www.amazon.com/s?k=trent+parke+photography" } },
-  "alec-soth":              { name: "Alec Soth",               born: 1969, years: "1969–",     nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Poetic",          bio: "Sleeping by the Mississippi announced a photographer who makes the American heartland feel mythic and tender.", influences: ["stephen-shore", "joel-sternfeld"], links: { website: "https://alecsoth.com", instagram: "https://www.instagram.com/alecsothstudio", book: "https://www.amazon.com/s?k=alec+soth+photography" } },
-  "alex-webb":              { name: "Alex Webb",               born: 1952, years: "1952–",     nationality: "American",            country: "USA",        genre: "Street"    ,          style: "Color · Street",                bio: "Magnum photographer who pushes color and layered composition to their limit. Haiti to Istanbul.", influences: ["henri-cartier-bresson", "william-eggleston"], links: { website: "https://www.magnumphotos.com/photographer/alex-webb/", book: "https://www.amazon.com/s?k=alex+webb+photography" } },
-  "graciela-iturbide":      { name: "Graciela Iturbide",       born: 1942, years: "1942–",     nationality: "Mexican",            country: "Mexico",        genre: "Documentary"    ,           style: "Documentary · Surrealist",      bio: "Mexico's greatest photographer. Her images of indigenous communities are strange, dignified, and enduring.", influences: ["manuel-alvarez-bravo", "tina-modotti"], links: { website: "https://www.gracielaiturbide.org", book: "https://www.amazon.com/s?k=graciela+iturbide+photography" } },
-  "manuel-alvarez-bravo":   { name: "Manuel Álvarez Bravo",    born: 1902, years: "1902–2002", nationality: "Mexican",            country: "Mexico",        genre: "Documentary"    ,           style: "Surrealism · Documentary",      bio: "The father of Mexican photography. His images fuse surrealism with indigenous culture and revolutionary politics.", influences: ["tina-modotti", "eugene-atget"], links: { website: "https://www.moma.org/artists/246", book: "https://www.amazon.com/s?k=manuel+alvarez+bravo+photography" } },
-
-  // ── CONTEMPORARY (1960s–1980s) ───────────────────────────────────────────────
-  "helmut-newton-ii":       { name: "Hiroshi Sugimoto",        born: 1948, years: "1948–",     nationality: "Japanese",            country: "Japan",        genre: "Fine Art"    ,          style: "Conceptual · Minimalist",       bio: "Long-exposure seascapes and theatre photographs that stretch time into near-abstraction. Philosophy as photography.", influences: ["edward-weston", "ansel-adams"], links: { website: "https://www.sugimotohiroshi.com", book: "https://www.amazon.com/s?k=hiroshi+sugimoto+photography" } },
-  "wolfgang-tillmans":      { name: "Wolfgang Tillmans",       born: 1968, years: "1968–",     nationality: "German",            country: "Germany",        genre: "Conceptual"    ,            style: "Conceptual · Documentary",      bio: "Blurred boundaries between documentary and abstraction. Turner Prize 2000.", influences: ["nan-goldin", "martin-parr"], links: { website: "https://www.tillmans.co.uk", instagram: "https://www.instagram.com/wolfgangtillmans", book: "https://www.amazon.com/s?k=wolfgang+tillmans" } },
-  "rinko-kawauchi":         { name: "Rinko Kawauchi",          born: 1972, years: "1972–",     nationality: "Japanese",            country: "Japan",        genre: "Fine Art"    ,          style: "Fine Art · Poetic",             bio: "Lyrical, light-suffused photography of the everyday. Tenderness as a photographic method.", influences: ["daido-moriyama", "vivian-maier"], links: { website: "https://rinkokawauchi.com", instagram: "https://www.instagram.com/rinkokawauchi", book: "https://www.amazon.com/s?k=rinko+kawauchi" } },
-  "taryn-simon":            { name: "Taryn Simon",             born: 1975, years: "1975–",     nationality: "American",            country: "USA",        genre: "Conceptual"    ,          style: "Conceptual · Investigative",    bio: "Photographs hidden systems and invisible infrastructures. An American Index of the Hidden and Unfamiliar.", influences: ["cindy-sherman", "stephen-shore"], links: { website: "https://www.tarynsimon.com", book: "https://www.amazon.com/s?k=taryn+simon+photography" } },
-  "gregory-crewdson":       { name: "Gregory Crewdson",        born: 1962, years: "1962–",     nationality: "American",            country: "USA",        genre: "Conceptual"    ,          style: "Cinematic · Staged",            bio: "Cinematic suburban nightmares shot with Hollywood production budgets. Twilight is deeply unsettling.", influences: ["cindy-sherman", "diane-arbus"], links: { website: "https://www.gagosian.com/artists/gregory-crewdson", book: "https://www.amazon.com/s?k=gregory+crewdson+photography" } },
-  "richard-misrach":        { name: "Richard Misrach",         born: 1949, years: "1949–",     nationality: "American",            country: "USA",        genre: "Landscape"    ,          style: "Landscape · Environmental",     bio: "Large-format documentation of the American desert and its nuclear wounds. Bravo 20 is both beautiful and horrifying.", influences: ["ansel-adams", "stephen-shore"], links: { book: "https://www.amazon.com/s?k=richard+misrach+photography" } },
-  "zanele-muholi":          { name: "Zanele Muholi",           born: 1972, years: "1972–",     nationality: "South African",            country: "South Africa",        genre: "Documentary"    ,     style: "Documentary · Identity",        bio: "Visual activist documenting Black LGBTQI+ lives in South Africa. Somnyama Ngonyama is a declaration of selfhood.", influences: ["carrie-mae-weems", "diane-arbus"], links: { website: "https://www.stevenson.info/artist/zanele-muholi", instagram: "https://www.instagram.com/zanelemuholi", book: "https://www.amazon.com/s?k=zanele+muholi+photography" } },
-  "sebastiaan-bremer":      { name: "Boris Mikhailov",         born: 1938, years: "1938–",     nationality: "Ukrainian",            country: "Ukraine",        genre: "Documentary"    ,         style: "Documentary · Social",          bio: "The most important photographer to emerge from the Soviet Union. His unsparing work on post-Soviet collapse is essential.", influences: ["weegee", "diane-arbus"], links: { book: "https://www.amazon.com/s?k=boris+mikhailov+photography" } },
-  "eli-reed":               { name: "Eli Reed",                born: 1946, years: "1946–",     nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Social",          bio: "First African American to become a full member of Magnum. His Beirut diary and Benighted in America are benchmarks.", influences: ["gordon-parks", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=eli+reed+photography" } },
-  "martin-parr-ii":         { name: "Philip-Lorca diCorcia",   born: 1951, years: "1951–",     nationality: "American",            country: "USA",        genre: "Conceptual"    ,          style: "Staged · Street",               bio: "Blurred the line between documentary and fiction. His secretly-strobed street portraits in Times Square are breathtaking.", influences: ["nan-goldin", "stephen-shore"], links: { book: "https://www.amazon.com/s?k=philip+lorca+dicorcia+photography" } },
-  "viviane-sassen":         { name: "Viviane Sassen",          born: 1972, years: "1972–",     nationality: "Dutch",            country: "Netherlands",        genre: "Fashion"    ,             style: "Fashion · Fine Art",            bio: "African light, radical cropping, bodies dissolved into shadow. One of the most original fashion photographers working today.", influences: ["helmut-newton", "nan-goldin"], links: { website: "https://www.vivianesassen.com", instagram: "https://www.instagram.com/vivianesassen", book: "https://www.amazon.com/s?k=viviane+sassen+photography" } },
-  "pieter-hugo":            { name: "Pieter Hugo",             born: 1976, years: "1976–",     nationality: "South African",            country: "South Africa",        genre: "Portrait"    ,     style: "Documentary · Portrait",        bio: "Unsettling portraits from across Africa that challenge Western assumptions about the continent.", influences: ["diane-arbus", "richard-avedon"], links: { book: "https://www.amazon.com/s?k=pieter+hugo+photography" } },
-  "fan-ho":                 { name: "Fan Ho",                  born: 1931, years: "1931–2016", nationality: "Hong Kong",            country: "Hong Kong",        genre: "Street"    ,         style: "Street · Fine Art",             bio: "Hong Kong's master of light and shadow. His 1950s street photographs transform the quotidian into cinema.", influences: ["brassai", "eugene-atget"], links: { book: "https://www.amazon.com/s?k=fan+ho+photography" } },
-  "raghu-rai":              { name: "Raghu Rai",               born: 1942, years: "1942–",     nationality: "Indian",            country: "India",        genre: "Documentary"    ,            style: "Photojournalism · Documentary", bio: "India's most celebrated photojournalist. His images of the Bhopal gas tragedy remain the definitive record.", influences: ["henri-cartier-bresson", "sebastiao-salgado"], links: { book: "https://www.amazon.com/s?k=raghu+rai+photography" } },
-  "nobuyoshi-araki-ii":     { name: "Masahisa Fukase",         born: 1934, years: "1934–2012", nationality: "Japanese",            country: "Japan",        genre: "Experimental"    ,          style: "Personal · Psychological",     bio: "Ravens — made during a period of breakdown after his divorce — is one of the most intense bodies of work in photography.", influences: ["daido-moriyama", "shomei-tomatsu"], links: { book: "https://www.amazon.com/s?k=masahisa+fukase+photography" } },
-  "cristina-garcia-rodero":  { name: "Cristina García Rodero", born: 1949, years: "1949–",     nationality: "Spanish",            country: "Spain",        genre: "Documentary"    ,           style: "Documentary · Ritual",          bio: "First Spanish woman to join Magnum. Her Spain Hidden is a haunting record of religious and folk tradition.", influences: ["henri-cartier-bresson", "dorothea-lange"], links: { book: "https://www.amazon.com/s?k=cristina+garcia+rodero+photography" } },
-  "anders-petersen":        { name: "Anders Petersen",         born: 1944, years: "1944–",     nationality: "Swedish",            country: "Sweden",        genre: "Street"    ,           style: "Street · Intimate",             bio: "Café Lehmitz is one of the most intimate photobooks ever made. Petersen photographed the marginalised with love.", influences: ["nan-goldin", "weegee"], links: { book: "https://www.amazon.com/s?k=anders+petersen+photography" } },
-  "bruce-davidson":         { name: "Bruce Davidson",          born: 1933, years: "1933–",     nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Social",          bio: "East 100th Street and Brooklyn Gang are landmarks of engaged, humanistic documentary photography.", influences: ["walker-evans", "diane-arbus"], links: { website: "https://www.magnumphotos.com/photographer/bruce-davidson/", book: "https://www.amazon.com/s?k=bruce+davidson+photography" } },
-
-  // ── ADDITIONAL 18 TO REACH 100 ───────────────────────────────────────────────
-  "gordon-matta-clark":     { name: "Lewis Hine",              born: 1874, years: "1874–1940", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Social",          bio: "His photographs of child labour directly shaped US law. Photography as instrument of social reform.", influences: ["nadar"], links: { website: "https://www.moma.org/artists/2663", book: "https://www.amazon.com/s?k=lewis+hine+photography" } },
-  "robert-doisneau":        { name: "Robert Doisneau",         born: 1912, years: "1912–1994", nationality: "French",            country: "France",        genre: "Street"    ,            style: "Humanist · Street",             bio: "The poet of Parisian everyday life. Le Baiser de l'Hôtel de Ville is the most reproduced photograph in history.", influences: ["brassai", "henri-cartier-bresson"], links: { website: "https://www.robert-doisneau.com", book: "https://www.amazon.com/s?k=robert+doisneau+photography" } },
-  "josef-koudelka":         { name: "Josef Koudelka",          born: 1938, years: "1938–",     nationality: "Czech",            country: "Czech Republic",        genre: "Documentary"    ,             style: "Documentary · Gypsies",         bio: "His images of the Soviet invasion of Prague in 1968 were published anonymously. Gypsies is a masterwork of empathy.", influences: ["henri-cartier-bresson", "robert-frank"], links: { website: "https://www.magnumphotos.com/photographer/josef-koudelka/", book: "https://www.amazon.com/s?k=josef+koudelka+photography" } },
-  "larry-clark":            { name: "Larry Clark",             born: 1943, years: "1943–",     nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Youth Culture",   bio: "Tulsa and Teenage Lust broke every taboo about how photographers could depict youth. Raw, dangerous, and essential.", influences: ["weegee", "nan-goldin"], links: { book: "https://www.amazon.com/s?k=larry+clark+photography" } },
-  "bruce-gilden":           { name: "Bruce Gilden",            born: 1946, years: "1946–",     nationality: "American",            country: "USA",        genre: "Street"    ,          style: "Street · Confrontational",      bio: "Shoots strangers at point-blank range with a flash in New York. Aggressive, uncompromising, utterly distinctive.", influences: ["weegee", "lisette-model"], links: { website: "https://www.magnumphotos.com/photographer/bruce-gilden/", instagram: "https://www.instagram.com/bruce_gilden_magnum", book: "https://www.amazon.com/s?k=bruce+gilden+photography" } },
-  "eve-arnold":             { name: "Eve Arnold",              born: 1912, years: "1912–2012", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Photojournalism · Portrait",    bio: "First woman to join Magnum Photos. Her portraits of Marilyn Monroe defined an era.", influences: ["dorothea-lange", "lisette-model"], links: { website: "https://www.magnumphotos.com/photographer/eve-arnold/", book: "https://www.amazon.com/s?k=eve+arnold+photography" } },
-  "david-lachapelle":       { name: "David LaChapelle",        born: 1963, years: "1963–",     nationality: "American",            country: "USA",        genre: "Fashion"    ,          style: "Fashion · Hyperrealist",        bio: "Hyper-saturated, theatrical images that treat pop culture as both subject and critique.", influences: ["helmut-newton", "cindy-sherman"], links: { website: "https://www.lachapellestudio.com", instagram: "https://www.instagram.com/davidlachapelle", book: "https://www.amazon.com/s?k=david+lachapelle+photography" } },
-  "edward-curtis":          { name: "Edward S. Curtis",        born: 1868, years: "1868–1952", nationality: "American",            country: "USA",        genre: "Documentary"    ,          style: "Documentary · Ethnographic",    bio: "Spent 30 years documenting Native American peoples in The North American Indian — a monumental and contested project.", influences: ["nadar"], links: { book: "https://www.amazon.com/s?k=edward+curtis+photography" } },
-  "helmut-gernsheim":       { name: "Roger Fenton",            born: 1819, years: "1819–1869", nationality: "British",            country: "UK",        genre: "War"    ,           style: "War · Documentary",             bio: "The first war photographer. His Crimean War images brought conflict photography into existence.", influences: [], links: { website: "https://www.metmuseum.org/art/collection/search#!?q=roger+fenton", book: "https://www.amazon.com/s?k=roger+fenton+photography" } },
-  "dorothea-lange-ii":      { name: "Germaine Krull",          born: 1897, years: "1897–1985", nationality: "German-French",            country: "Germany",        genre: "Fine Art"    ,     style: "Modernism · Industrial",        bio: "Her book Métal (1928) is a defining work of the New Vision movement. Bridges, machines, and movement abstracted.", influences: ["alfred-stieglitz", "man-ray"], links: { book: "https://www.amazon.com/s?k=germaine+krull+photography" } },
-  "ragnar-axelsson":        { name: "Ragnar Axelsson",         born: 1952, years: "1952–",     nationality: "Icelandic",            country: "Iceland",        genre: "Documentary"    ,         style: "Documentary · Arctic",          bio: "Spent decades photographing the people and landscapes of the Arctic as climate change transforms them.", influences: ["sebastiao-salgado", "ansel-adams"], links: { book: "https://www.amazon.com/s?k=ragnar+axelsson+photography" } },
-  "sebastien-lebbe":        { name: "Sebastião Barbosa",       born: 1961, years: "1961–",     nationality: "Brazilian",            country: "Brazil",        genre: "Documentary"    ,         style: "Documentary · Urban",           bio: "Documents the favelas and social contrasts of Brazil with unflinching directness.", influences: ["sebastiao-salgado", "weegee"], links: { book: "https://www.amazon.com/s?k=sebastiao+barbosa+photography" } },
-  "ming-smith":             { name: "Ming Smith",              born: 1950, years: "1950–",     nationality: "American",            country: "USA",        genre: "Fine Art"    ,          style: "Fine Art · Jazz",               bio: "First Black woman photographer acquired by MoMA. Her dream-like images of Black life blend jazz and photography.", influences: ["gordon-parks", "diane-arbus"], links: { book: "https://www.amazon.com/s?k=ming+smith+photography" } },
-  "daidojiro":              { name: "Ishiuchi Miyako",         born: 1947, years: "1947–",     nationality: "Japanese",            country: "Japan",        genre: "Fine Art"    ,          style: "Fine Art · Memory",             bio: "Photographs of her mother's belongings and Hiroshima survivors' garments — intimate archaeology of loss.", influences: ["rinko-kawauchi", "shomei-tomatsu"], links: { book: "https://www.amazon.com/s?k=ishiuchi+miyako+photography" } },
-  "deana-lawson":           { name: "Deana Lawson",            born: 1979, years: "1979–",     nationality: "American",            country: "USA",        genre: "Portrait"    ,          style: "Portrait · Conceptual",         bio: "Staged portraits exploring Black intimacy, spirituality, and beauty with extraordinary formal precision.", influences: ["carrie-mae-weems", "richard-avedon"], links: { book: "https://www.amazon.com/s?k=deana+lawson+photography" } },
-  "paul-graham":            { name: "Paul Graham",             born: 1956, years: "1956–",     nationality: "British",            country: "UK",        genre: "Documentary"    ,           style: "Documentary · Color",           bio: "The End of an Age and A Shimmer of Possibility are among the most thoughtful bodies of work in contemporary photography.", influences: ["william-eggleston", "stephen-shore"], links: { book: "https://www.amazon.com/s?k=paul+graham+photography" } },
-  "dayanita-singh":         { name: "Dayanita Singh",          born: 1961, years: "1961–",     nationality: "Indian",            country: "India",        genre: "Documentary"    ,            style: "Documentary · Archive",         bio: "Reinvents the photobook as portable museum. Her books are objects that reframe how we encounter photography.", influences: ["raghu-rai", "henri-cartier-bresson"], links: { book: "https://www.amazon.com/s?k=dayanita+singh+photography" } },
-  "tokihiro-sato":          { name: "Tokihiro Sato",           born: 1957, years: "1957–",     nationality: "Japanese",            country: "Japan",        genre: "Fine Art"    ,          style: "Fine Art · Light",              bio: "Creates long-exposure images of himself moving through landscapes, leaving trails of light as proof of presence.", influences: ["ansel-adams", "shomei-tomatsu"], links: { book: "https://www.amazon.com/s?k=tokihiro+sato+photography" } },
-  "saul-leiter":            { name: "Saul Leiter",             born: 1923, years: "1923–2013", nationality: "American",            country: "USA",          genre: "Street",                style: "Color · Painterly",             bio: "Pioneer of colour photography whose intimate, painterly street images were largely unseen until rediscovered late in his life. Blurred windows, reflections and fragments of New York turned the city into abstract poetry.", influences: ["henri-cartier-bresson", "edward-steichen"], links: { website: "https://www.saulleiterfoundation.org", book: "https://www.amazon.com/s?k=saul+leiter+photography" } },
-
-  // ── CLUSTER A — NON-WESTERN TRADITIONS ───────────────────────────────────────
-
-  // Japanese
-  "hiroshi-hamaya":         { name: "Hiroshi Hamaya",           born: 1915, years: "1915–1999", nationality: "Japanese",            country: "Japan",        genre: "Documentary",           style: "Documentary · Landscape",       bio: "Documented the transformation of rural Japan and anti-government protests with equal sensitivity. His Snow Land series is among the most lyrical bodies of work in Japanese photography.", influences: ["eugene-atget", "henri-cartier-bresson"], links: { book: "https://www.amazon.com/s?k=hiroshi+hamaya+photography" } },
-  "ken-domon":              { name: "Ken Domon",                born: 1909, years: "1909–1990", nationality: "Japanese",            country: "Japan",        genre: "Documentary",           style: "Realist · Documentary",         bio: "Pioneer of Japanese realist photography. His unflinching images of atomic bomb survivors in Hiroshima and of children in poverty defined a socially committed photographic practice in postwar Japan.", influences: ["dorothea-lange", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=ken+domon+photography" } },
-  "yutaka-takanashi":       { name: "Yutaka Takanashi",         born: 1935, years: "1935–",     nationality: "Japanese",            country: "Japan",        genre: "Street",                style: "Urban · Atmospheric",           bio: "Co-founder of the Provoke magazine collective alongside Daido Moriyama and Takuma Nakahira. His Toshi-e (Towards the City) series captured Tokyo's post-war urban transformation with melancholy precision.", influences: ["daido-moriyama", "william-klein"], links: { book: "https://www.amazon.com/s?k=yutaka+takanashi+photography" } },
-  "masahisa-fukase":        { name: "Masahisa Fukase",          born: 1934, years: "1934–2012", nationality: "Japanese",            country: "Japan",        genre: "Fine Art",              style: "Expressionist · Personal",      bio: "His Ravens series — obsessive photographs of crows taken after his divorce — is one of the most psychologically raw bodies of work in photography. Voted the world's best photobook 1986–2009.", influences: ["daido-moriyama", "shomei-tomatsu"], links: { book: "https://www.amazon.com/s?k=masahisa+fukase+ravens" } },
-
-  // Indian
-  "raghubir-singh":         { name: "Raghubir Singh",           born: 1942, years: "1942–1999", nationality: "Indian",              country: "India",        genre: "Documentary",           style: "Color · Street",               bio: "The master of Indian colour photography. Singh used the snapshot aesthetic to document the subcontinent's streets and people with vivid, democratic intimacy — insisting that colour was the natural language of India.", influences: ["henri-cartier-bresson", "william-eggleston"], links: { book: "https://www.amazon.com/s?k=raghubir+singh+photography" } },
-  "ketaki-sheth":           { name: "Ketaki Sheth",             born: 1957, years: "1957–",     nationality: "Indian",              country: "India",        genre: "Documentary",           style: "Portrait · Documentary",        bio: "Known for her long-term projects on identity and community, including her seminal work on twins and the Sidis of India. Her photography combines anthropological depth with lyrical visual intelligence.", influences: ["dorothea-lange", "diane-arbus"], links: { book: "https://www.amazon.com/s?k=ketaki+sheth+photography" } },
-
-  // Latin American
-  "flor-garduno":           { name: "Flor Garduño",             born: 1957, years: "1957–",     nationality: "Mexican",             country: "Mexico",       genre: "Fine Art",              style: "Magical Realist · Portrait",    bio: "Studied under Manuel Álvarez Bravo and developed a visual language steeped in Mexican mythology and indigenous culture. Her photographs of women and ritual are among the most spiritually charged images in Latin American photography.", influences: ["manuel-alvarez-bravo", "tina-modotti"], links: { book: "https://www.amazon.com/s?k=flor+garduno+photography" } },
-  "paz-errazuriz":          { name: "Paz Errázuriz",            born: 1944, years: "1944–",     nationality: "Chilean",             country: "Chile",        genre: "Documentary",           style: "Portrait · Social Documentary", bio: "Chile's most important documentary photographer. During the Pinochet dictatorship she photographed marginalised communities — boxers, sex workers, the mentally ill — with profound tenderness and moral courage.", influences: ["diane-arbus", "dorothea-lange"], links: { book: "https://www.amazon.com/s?k=paz+errazuriz+photography" } },
-
-  // African
-  "seydou-keita":           { name: "Seydou Keïta",             born: 1921, years: "1921–2001", nationality: "Malian",              country: "Mali",         genre: "Portrait",              style: "Studio Portrait",               bio: "Bamako's most celebrated portrait photographer. His studio portraits from the 1940s–60s defined an image of modern African identity on Africa's own terms — elegant, self-possessed, deeply humanist.", influences: ["nadar", "yousuf-karsh"], links: { book: "https://www.amazon.com/s?k=seydou+keita+photography" } },
-  "malick-sidibe":          { name: "Malick Sidibé",            born: 1935, years: "1935–2016", nationality: "Malian",              country: "Mali",         genre: "Portrait",              style: "Studio Portrait · Social",      bio: "Photographer of Malian youth culture and independence-era joy. His images of dances, celebrations and young people in Bamako capture a society defining itself with exuberance. Winner of the Golden Lion at Venice, 2007.", influences: ["seydou-keita", "henri-cartier-bresson"], links: { book: "https://www.amazon.com/s?k=malick+sidibe+photography" } },
-  "samuel-fosso":           { name: "Samuel Fosso",             born: 1962, years: "1962–",     nationality: "Cameroonian",         country: "Central African Republic", genre: "Fine Art",       style: "Self-Portrait · Conceptual",    bio: "Began photographing himself in his studio at night as a teenager; transformed self-portraiture into a conceptual practice exploring identity, colonialism and African history through elaborate costumed performances.", influences: ["malick-sidibe", "cindy-sherman"], links: { book: "https://www.amazon.com/s?k=samuel+fosso+photography" } },
-  "santu-mofokeng":         { name: "Santu Mofokeng",           born: 1956, years: "1956–2020", nationality: "South African",       country: "South Africa", genre: "Documentary",           style: "Documentary · Personal",        bio: "One of the most significant photographers of apartheid and post-apartheid South Africa. His Chasing Shadows project documents sacred sites and the spiritual landscape of Black South African communities.", influences: ["gordon-parks", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=santu+mofokeng+photography" } },
-
-  // Middle Eastern
-  "reza-deghati":           { name: "Reza Deghati",             born: 1952, years: "1952–",     nationality: "Iranian",             country: "France",       genre: "Documentary",           style: "Photojournalism · Humanitarian", bio: "Known simply as Reza, he has documented conflicts and humanitarian crises across more than 100 countries for National Geographic and Magnum. Born in Tabriz, his work bridges the Middle East and the wider world with deep empathy.", influences: ["henri-cartier-bresson", "sebastiao-salgado"], links: { website: "https://www.rezaphoto.org", book: "https://www.amazon.com/s?k=reza+deghati+photography" } },
-
-  // ── CLUSTER B — DOCUMENTARY / PHOTOJOURNALISM ────────────────────────────────
-
-  "larry-burrows":          { name: "Larry Burrows",             born: 1926, years: "1926–1971", nationality: "British",             country: "UK",           genre: "Documentary",           style: "War · Photojournalism",         bio: "Life magazine's most celebrated war photographer. His colour photographs from Vietnam — especially Reaching Out — set a new standard for combat photography. Killed in a helicopter crash over Laos in 1971.", influences: ["w-eugene-smith", "robert-capa"], links: { book: "https://www.amazon.com/s?k=larry+burrows+photography" } },
-  "eddie-adams":            { name: "Eddie Adams",               born: 1933, years: "1933–2004", nationality: "American",            country: "USA",           genre: "Documentary",           style: "Photojournalism · Portrait",    bio: "Won the Pulitzer Prize in 1969 for his photograph of the execution of a Viet Cong prisoner — one of the most consequential images in photographic history. Spent decades grappling with its impact and the ethics of conflict photography.", influences: ["robert-capa", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=eddie+adams+photographer" } },
-  "david-turnley":          { name: "David Turnley",             born: 1955, years: "1955–",     nationality: "American",            country: "USA",           genre: "Documentary",           style: "Humanist · Photojournalism",    bio: "Pulitzer Prize-winning photojournalist who documented the fall of apartheid, the collapse of the Soviet Union, and conflicts across four decades. Known for his empathetic, intimate approach to photographing people in extremis.", influences: ["sebastiao-salgado", "w-eugene-smith"], links: { book: "https://www.amazon.com/s?k=david+turnley+photography" } },
-  "susan-meiselas":         { name: "Susan Meiselas",            born: 1948, years: "1948–",     nationality: "American",            country: "USA",           genre: "Documentary",           style: "Political · Long-form",         bio: "Her photographs of the Nicaraguan revolution in 1978–79 are among the defining images of political conflict photography. A Magnum photographer known for long-term engagement with communities and for raising questions about representation and consent.", influences: ["dorothea-lange", "w-eugene-smith"], links: { website: "https://www.susanmeiselas.com", book: "https://www.amazon.com/s?k=susan+meiselas+photography" } },
-  "gilles-peress":          { name: "Gilles Peress",             born: 1946, years: "1946–",     nationality: "French",              country: "France",        genre: "Documentary",           style: "Political · Conceptual",        bio: "Magnum photographer whose books on Ireland, Iran and Rwanda question what photographs can and cannot tell us. His work is as much an investigation of the medium's limits as it is documentary evidence.", influences: ["henri-cartier-bresson", "robert-frank"], links: { book: "https://www.amazon.com/s?k=gilles+peress+photography" } },
-
-  // ── CLUSTER C — FINE ART / CONCEPTUAL ────────────────────────────────────────
-
-  "bernd-hilla-becher":     { name: "Bernd & Hilla Becher",      born: 1931, years: "1931–2007 / 1934–2015", nationality: "German",   country: "Germany",      genre: "Fine Art",              style: "Typological · Conceptual",      bio: "Spent four decades systematically photographing industrial structures — water towers, blast furnaces, gas tanks — in strict frontal compositions. Their typological method became the foundation for the Düsseldorf School and influenced a generation of artists including Gursky, Ruff and Struth.", influences: ["eugene-atget", "walker-evans"], links: { book: "https://www.amazon.com/s?k=bernd+hilla+becher+photography" } },
-  "thomas-ruff":            { name: "Thomas Ruff",               born: 1958, years: "1958–",     nationality: "German",              country: "Germany",       genre: "Fine Art",              style: "Conceptual · Large Format",     bio: "Studied under the Bechers at the Düsseldorf Academy and developed a practice that systematically questions what photographs represent. His large-scale passport-style portraits, press photographs, and internet-sourced nudes explore photography as information rather than expression.", influences: ["bernd-hilla-becher", "andreas-gursky"], links: { book: "https://www.amazon.com/s?k=thomas+ruff+photography" } },
-  "francesca-woodman":      { name: "Francesca Woodman",         born: 1958, years: "1958–1981", nationality: "American",            country: "USA",           genre: "Fine Art",              style: "Surrealist · Self-Portrait",    bio: "Made almost all her photographs between the ages of 13 and 22 before her death at 22. Her blurred self-portraits in empty interiors — the body dissolving into wallpaper and architecture — are among the most haunting images in photography.", influences: ["man-ray", "cindy-sherman"], links: { book: "https://www.amazon.com/s?k=francesca+woodman+photography" } },
-  "sophie-calle":           { name: "Sophie Calle",              born: 1953, years: "1953–",     nationality: "French",              country: "France",        genre: "Fine Art",              style: "Conceptual · Narrative",        bio: "Makes work that blurs photography, writing, and performance. She followed strangers, invented personas, and asked others to photograph her — turning surveillance, intimacy and loss into conceptual art that uses photography as both tool and subject.", influences: ["cindy-sherman", "nan-goldin"], links: { website: "https://www.sophiecalle.net", book: "https://www.amazon.com/s?k=sophie+calle+photography" } },
-
-  // ── CLUSTER D — CONTEMPORARY ─────────────────────────────────────────────────
-
-  "daniel-shea":            { name: "Daniel Shea",               born: 1986, years: "1986–",     nationality: "American",            country: "USA",           genre: "Documentary",           style: "Industrial · Long-form",        bio: "Documents the American industrial landscape and the communities shaped by it, from coal country to the Chicago stockyards. His long-term projects probe the relationship between labour, landscape, and economic decline.", influences: ["stephen-shore", "walker-evans"], links: { website: "https://www.danielshea.com", book: "https://www.amazon.com/s?k=daniel+shea+photography" } },
-  "vanessa-winship":        { name: "Vanessa Winship",           born: 1960, years: "1960–",     nationality: "British",             country: "UK",            genre: "Documentary",           style: "Poetic · Portrait",             bio: "Winner of the Henri Cartier-Bresson Award. Her quiet, lyrical black-and-white portraits of communities in Eastern Europe, the Caucasus and America explore identity, belonging and the passage of time with unusual delicacy.", influences: ["henri-cartier-bresson", "diane-arbus"], links: { book: "https://www.amazon.com/s?k=vanessa+winship+photography" } },
-  "daisuke-yokota":         { name: "Daisuke Yokota",            born: 1983, years: "1983–",     nationality: "Japanese",            country: "Japan",          genre: "Fine Art",              style: "Experimental · Abstract",       bio: "Makes photographs through extreme chemical and physical manipulation of film — bleaching, scratching, re-photographing — until the original image is barely recognisable. One of the most radical experimenters with photographic materiality in contemporary practice.", influences: ["daido-moriyama", "masahisa-fukase"], links: { book: "https://www.amazon.com/s?k=daisuke+yokota+photography" } },
-};
-
 const BORN_MIN = 1810;
 const BORN_MAX = 1985;
 const LINK_LABELS = { instagram: "Instagram", website: "Website", book: "Buy Book" };
@@ -1733,41 +1568,39 @@ export default function Lineage() {
   const [newlySavedPhotographer, setNewlySavedPhotographer] = useState(null); // prompt to add connection after save
 
   // ── PERSONAL GRAPH STATE ──
-  const [nodeStates, setNodeStates] = useState({});
-  const nodeStatesLoadedRef = useRef(false);
+  // nodeStates: loaded directly from user.nodeStates (which comes from profile?.profile)
+  // We derive it from user rather than keeping separate state, to avoid sync issues
+  const [nodeStates, setNodeStatesLocal] = useState({});
+  const nodeStatesSavedRef = useRef(""); // JSON string of last saved state
 
-  // Load node states once profile has loaded (not just when user.id is known)
-  // user.nodeStates comes from profile?.profile which loads async after auth
+  // Sync nodeStates from user profile whenever user.nodeStates changes
   useEffect(() => {
-    if (!user?.id) return;
-    if (nodeStatesLoadedRef.current) return; // only load once
-    const saved = user.nodeStates;
-    if (saved && typeof saved === "object" && Object.keys(saved).length > 0) {
-      setNodeStates(saved);
-      nodeStatesLoadedRef.current = true;
+    const fromProfile = user?.nodeStates;
+    if (!fromProfile || typeof fromProfile !== "object") return;
+    // Only update if the data actually changed (avoid loops)
+    const incoming = JSON.stringify(fromProfile);
+    if (incoming !== nodeStatesSavedRef.current) {
+      setNodeStatesLocal(fromProfile);
+      nodeStatesSavedRef.current = incoming;
     }
-  // Depend on user.nodeStates directly so this re-runs when profile loads
-  }, [user?.id, user?.nodeStates]);
+  }, [JSON.stringify(user?.nodeStates)]);
 
-  // Save node states to Supabase — debounced, only after initial load
-  const nodeStatesRef = useRef(nodeStates);
-  nodeStatesRef.current = nodeStates;
-  useEffect(() => {
-    if (!user?.id) return;
-    if (!nodeStatesLoadedRef.current) return;
-    const timer = setTimeout(async () => {
-      try {
-        await updateUser({ nodeStates: nodeStatesRef.current });
-        console.log("nodeStates saved:", Object.keys(nodeStatesRef.current).length, "entries");
-      } catch (err) {
-        console.error("nodeStates save failed:", err);
-      }
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [nodeStates, user?.id]);
+  // Wrap setNodeStates to also persist to Supabase
+  const setNodeStates = (updater) => {
+    setNodeStatesLocal(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      // Save to Supabase after a short debounce
+      clearTimeout(window._nodeStatesSaveTimer);
+      window._nodeStatesSaveTimer = setTimeout(() => {
+        updateUser({ nodeStates: next }).catch(err =>
+          console.error("nodeStates save failed:", err)
+        );
+      }, 800);
+      return next;
+    });
+  };
 
   // ── USER PROFILE STATE ──
-  const freshUserRef = useRef(null); // kept for compatibility
   const activeUser = user;
   const isAdmin = activeUser?.is_admin || false;
 
@@ -1787,14 +1620,8 @@ export default function Lineage() {
     }
   }, [authLoading]);
   const userProfile = activeUser || null;
-  const setUserProfile = (p) => updateUser(p);
-  const [showAddSelf, setShowAddSelf]   = useState(false);
-  const [addSelfStep, setAddSelfStep]   = useState(1);
-  const [selfDraft, setSelfDraft]       = useState({ name: "", born: "", country: "", genre: "Street", bio: "", influences: [] });
-  const [selfInfSearch, setSelfInfSearch] = useState("");
   // ── STATE ──
   const [onboarding, setOnboarding]     = useState(true);
-  const [onboardFading, setOnboardFading] = useState(false);
   const [mode, setMode]                 = useState("explore");
   const [editMode, setEditMode]         = useState(false);
   const [editDraft, setEditDraft]       = useState(null);
@@ -2397,8 +2224,7 @@ export default function Lineage() {
   // ── ROUTING — all hooks declared above, safe to return early now ──
 
   const handleAuth = (u) => {
-    freshUserRef.current = u;
-    if (!u) setOnboarding(false); // skip intro overlay when skipping sign-in
+    if (!u) setOnboarding(false);
     setAppView(u ? "profile" : "graph");
   };
 
@@ -3698,140 +3524,6 @@ export default function Lineage() {
       )}
 
       {/* ── ADD YOURSELF MODAL ── */}
-      {showAddSelf && (
-        <div style={{ position: "absolute", inset: 0, background: T.paper, zIndex: 90, display: "flex", flexDirection: "column" }}>
-          {/* Header */}
-          <div style={{ padding: "14px 20px 11px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: 8.5, letterSpacing: "0.13em", color: T.amber, marginBottom: 2 }}>STEP {addSelfStep} OF 2</div>
-              <div style={{ fontSize: isMobile ? 16 : 19, fontWeight: 600, fontFamily: "'Libre Baskerville', serif" }}>
-                {addSelfStep === 1 ? "Who are you?" : "Who influenced you?"}
-              </div>
-            </div>
-            <button onClick={() => setShowAddSelf(false)}
-              style={{ marginLeft: "auto", background: "none", border: "none", color: T.inkLight, cursor: "pointer", fontSize: 20, padding: 0 }}>×</button>
-          </div>
-
-          <div style={{ flex: 1, overflowY: "auto", padding: "20px 22px" }}>
-            {addSelfStep === 1 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 440 }}>
-                {[
-                  { label: "NAME", key: "name", placeholder: "Your full name" },
-                  { label: "BIRTH YEAR", key: "born", placeholder: "e.g. 1988" },
-                  { label: "COUNTRY OF BIRTH", key: "country", placeholder: "e.g. Germany" },
-                ].map(({ label, key, placeholder }) => (
-                  <div key={key}>
-                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
-                    <input
-                      value={selfDraft[key] || ""}
-                      onChange={e => setSelfDraft(d => ({ ...d, [key]: e.target.value }))}
-                      placeholder={placeholder}
-                      style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 15, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }}
-                    />
-                  </div>
-                ))}
-                <div>
-                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>GENRE</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"].map(g => (
-                      <button key={g} onClick={() => setSelfDraft(d => ({ ...d, genre: g }))}
-                        style={{ fontSize: 10.5, padding: "3px 9px", border: `1px solid ${selfDraft.genre === g ? T.amber : T.border}`, borderRadius: 2, background: selfDraft.genre === g ? T.amber : "transparent", color: selfDraft.genre === g ? T.bg : T.inkMid, cursor: "pointer", fontFamily: "'EB Garamond', serif', transition: 'all 0.12s" }}>
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>BIO <span style={{ color: T.inkFaint }}>(optional)</span></div>
-                  <textarea
-                    value={selfDraft.bio || ""}
-                    onChange={e => setSelfDraft(d => ({ ...d, bio: e.target.value }))}
-                    placeholder="A few words about your work…"
-                    rows={2}
-                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 13, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.ink, outline: "none", resize: "none", boxSizing: "border-box", lineHeight: 1.6 }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div style={{ maxWidth: 440 }}>
-                <p style={{ fontSize: 13.5, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, marginBottom: 16 }}>
-                  Which photographers shaped your vision?
-                </p>
-                {/* Selected influences */}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-                  {(selfDraft.influences || []).map(infId => (
-                    <div key={infId} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 10px", border: `1px solid rgba(74,111,165,0.3)`, borderRadius: 2, background: "rgba(74,111,165,0.05)" }}>
-                      <span style={{ fontSize: 11.5, color: T.blue, fontFamily: "'EB Garamond', serif" }}>{PHOTOGRAPHERS[infId]?.name}</span>
-                      <button onClick={() => setSelfDraft(d => ({ ...d, influences: d.influences.filter(i => i !== infId) }))}
-                        style={{ background: "none", border: "none", color: "rgba(74,111,165,0.5)", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
-                    </div>
-                  ))}
-                  {(selfDraft.influences || []).length === 0 && (
-                    <span style={{ fontSize: 11, color: T.inkFaint, fontStyle: "italic" }}>None added yet — you can always update this later</span>
-                  )}
-                </div>
-                {/* Search */}
-                <div style={{ position: "relative" }}>
-                  <input
-                    autoFocus
-                    value={selfInfSearch}
-                    onChange={e => setSelfInfSearch(e.target.value)}
-                    placeholder="Search photographers…"
-                    style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }}
-                  />
-                  {selfInfSearch.trim().length > 0 && (() => {
-                    const cur = new Set(selfDraft.influences || []);
-                    const matches = Object.entries(PHOTOGRAPHERS)
-                      .filter(([id, p]) => !cur.has(id) && p.name.toLowerCase().includes(selfInfSearch.toLowerCase()))
-                      .slice(0, 6);
-                    return matches.length > 0 ? (
-                      <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: T.paper, border: `1px solid ${T.border}`, boxShadow: "0 6px 20px rgba(26,24,18,0.09)", zIndex: 10, overflow: "hidden" }}>
-                        {matches.map(([id, p], i) => (
-                          <div key={id}
-                            onClick={() => { setSelfDraft(d => ({ ...d, influences: [...(d.influences || []), id] })); setSelfInfSearch(""); }}
-                            style={{ padding: "9px 14px", cursor: "pointer", borderBottom: i < matches.length - 1 ? `1px solid ${T.border}` : "none", display: "flex", gap: 8, alignItems: "baseline" }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(74,111,165,0.05)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                            <span style={{ fontSize: 14, fontFamily: "'Libre Baskerville', serif", color: T.ink }}>{p.name}</span>
-                            <span style={{ fontSize: 9, color: T.inkLight }}>{p.born} · {p.style}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null;
-                  })()}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Footer buttons */}
-          <div style={{ padding: "12px 22px", borderTop: `1px solid ${T.border}`, display: "flex", gap: 8, justifyContent: "flex-end", flexShrink: 0 }}>
-            {addSelfStep === 2 && (
-              <button onClick={() => setAddSelfStep(1)}
-                style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "7px 16px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
-                ← BACK
-              </button>
-            )}
-            {addSelfStep === 1 ? (
-              <button
-                disabled={!selfDraft.name?.trim() || !selfDraft.born?.trim() || !selfDraft.country?.trim()}
-                onClick={() => setAddSelfStep(2)}
-                style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "7px 20px", background: selfDraft.name?.trim() && selfDraft.born?.trim() && selfDraft.country?.trim() ? T.amber : T.inkFaint, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", transition: "background 0.15s" }}>
-                NEXT →
-              </button>
-            ) : (
-              <button onClick={() => {
-                setUserProfile({ ...selfDraft, influences: selfDraft.influences || [] });
-                setShowAddSelf(false);
-                setSelfInfSearch("");
-              }}
-                style={{ fontSize: 10.5, letterSpacing: "0.08em", padding: "7px 20px", background: T.amber, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif" }}>
-                {userProfile ? "SAVE CHANGES" : "ADD TO GRAPH"}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       
     </div>
