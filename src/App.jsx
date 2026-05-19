@@ -57,8 +57,8 @@ function usePhotographers() {
         photographers.forEach(p => {
           byId[p.id] = {
             ...p,
-            // genre = first tag, for filter and node colour
             genre: (p.tags && p.tags.length > 0) ? p.tags[0] : "Documentary",
+            lighthouseWorks: p.data?.lighthouseWorks || [],
             influences: [],
           };
         });
@@ -505,7 +505,26 @@ const GENRE_META = {
   "Landscape":    { color: "#3a6048" },
 };
 
-// ─── GENRE-GRAVITY FORCE LAYOUT ──────────────────────────────────────────────
+// ─── STORAGE HELPERS ──────────────────────────────────────────────────────────
+async function uploadUserFile(userId, file, folder = "lighthouse") {
+  const ext = file.name.split(".").pop().toLowerCase();
+  const path = `${userId}/${folder}/${Date.now()}.${ext}`;
+  const { data, error } = await supabase.storage
+    .from("user-media")
+    .upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data: { publicUrl } } = supabase.storage
+    .from("user-media")
+    .getPublicUrl(data.path);
+  return publicUrl;
+}
+
+async function deleteUserFile(publicUrl) {
+  // Extract path from public URL
+  const match = publicUrl.match(/user-media\/(.+)$/);
+  if (!match) return;
+  await supabase.storage.from("user-media").remove([match[1]]);
+}
 // Standard force layout (repulsion + edge attraction + centre gravity)
 // plus a gentle pull toward each genre's centroid arranged in a ring.
 // GENRE_STRENGTH = 0.42, RING_RATIO = 0.40 (40% of canvas).
@@ -1015,11 +1034,32 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
 
           {/* Profile header */}
           <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 32, paddingBottom: 28, borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 22, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
-                {((user.name || user.email || "?") + "").split(" ").map(w => w[0] || "").join("").slice(0, 2) || "?"}
-              </span>
-            </div>
+            {/* Avatar — click to upload */}
+            <label style={{ width: 64, height: 64, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", position: "relative" }}>
+              {user.avatarUrl
+                ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <span style={{ fontSize: 22, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
+                    {((user.name || user.email || "?") + "").split(" ").map(w => w[0] || "").join("").slice(0, 2) || "?"}
+                  </span>
+              }
+              {/* Hover overlay */}
+              <div style={{ position: "absolute", inset: 0, background: "rgba(26,24,18,0.4)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+                <span style={{ fontSize: 9, color: "#fff", letterSpacing: "0.08em" }}>CHANGE</span>
+              </div>
+              <input type="file" accept="image/*" style={{ display: "none" }}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !user?.id) return;
+                  try {
+                    const url = await uploadUserFile(user.id, file, "avatar");
+                    await updateUser({ avatarUrl: url });
+                  } catch (err) { console.error("Avatar upload failed:", err); }
+                  e.target.value = "";
+                }}
+              />
+            </label>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1.15, marginBottom: 4 }}>
                 {user.name || user.email}
@@ -1211,30 +1251,45 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
                 </div>
               </div>
 
-              {/* Lighthouse works */}
+              {/* Lighthouse works — file upload */}
               <div>
-                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>LIGHTHOUSE WORKS <span style={{ color: T.inkFaint, textTransform: "none", letterSpacing: 0, fontSize: 10 }}>— up to 5 images</span></div>
-                {(draft.lighthouseWorks || []).map((work, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, padding: "8px 10px", background: "rgba(26,24,18,0.03)", borderRadius: 2 }}>
-                    {work.url && <img src={work.url} alt="" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 1, flexShrink: 0 }} onError={e => e.target.style.display="none"} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <input value={work.url || ""} onChange={e => setDraft(d => { const w = [...(d.lighthouseWorks||[])]; w[i] = {...w[i], url: e.target.value}; return {...d, lighthouseWorks: w}; })}
-                        placeholder="Image URL…"
-                        style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "4px 0", fontSize: 12, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 4 }} />
-                      <input value={work.caption || ""} onChange={e => setDraft(d => { const w = [...(d.lighthouseWorks||[])]; w[i] = {...w[i], caption: e.target.value}; return {...d, lighthouseWorks: w}; })}
-                        placeholder="Caption (optional)…"
-                        style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "4px 0", fontSize: 11, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.inkMid, outline: "none", boxSizing: "border-box" }} />
+                <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 4 }}>LIGHTHOUSE WORKS</div>
+                <div style={{ fontSize: 10, color: T.inkFaint, fontStyle: "italic", marginBottom: 10 }}>Up to 5 images that best represent your work</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {(draft.lighthouseWorks || []).map((work, i) => (
+                    <div key={work.id || i} style={{ display: "flex", gap: 8, alignItems: "center", padding: "8px 10px", background: "rgba(26,24,18,0.03)", borderRadius: 2 }}>
+                      {work.url && <img src={work.url} alt="" style={{ width: 52, height: 40, objectFit: "cover", borderRadius: 1, flexShrink: 0 }} onError={e => e.target.style.display="none"} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 10, color: T.inkMid, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 3 }}>
+                          {work.url ? work.url.split("/").pop() : "No image"}
+                        </div>
+                        <input value={work.caption || ""} onChange={e => setDraft(d => { const w = [...(d.lighthouseWorks||[])]; w[i] = {...w[i], caption: e.target.value}; return {...d, lighthouseWorks: w}; })}
+                          placeholder="Caption (optional)…"
+                          style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "2px 0", fontSize: 10, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.inkMid, outline: "none", boxSizing: "border-box" }} />
+                      </div>
+                      <button onClick={async () => {
+                        if (work.url) await deleteUserFile(work.url).catch(() => {});
+                        setDraft(d => ({ ...d, lighthouseWorks: (d.lighthouseWorks||[]).filter((_,j) => j !== i) }));
+                      }} style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 16, padding: "0 2px", lineHeight: 1, flexShrink: 0 }}>×</button>
                     </div>
-                    <button onClick={() => setDraft(d => ({ ...d, lighthouseWorks: (d.lighthouseWorks||[]).filter((_,j) => j !== i) }))}
-                      style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 18, padding: "0 4px", lineHeight: 1, flexShrink: 0 }}>×</button>
-                  </div>
-                ))}
-                {(draft.lighthouseWorks?.length || 0) < 5 && (
-                  <button onClick={() => setDraft(d => ({ ...d, lighthouseWorks: [...(d.lighthouseWorks||[]), { url: "", caption: "", id: Date.now().toString() }] }))}
-                    style={{ fontSize: 11, padding: "5px 12px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
-                    + ADD IMAGE
-                  </button>
-                )}
+                  ))}
+                  {(draft.lighthouseWorks?.length || 0) < 5 && (
+                    <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px dashed ${T.border}`, borderRadius: 2, cursor: "pointer" }}>
+                      <span style={{ fontSize: 11, color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>+ Upload image</span>
+                      <input type="file" accept="image/*" style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !user?.id) return;
+                          try {
+                            const url = await uploadUserFile(user.id, file, "lighthouse");
+                            setDraft(d => ({ ...d, lighthouseWorks: [...(d.lighthouseWorks||[]), { url, caption: "", id: Date.now().toString() }] }));
+                          } catch (err) { console.error("Upload failed:", err); }
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1345,7 +1400,7 @@ function AuthScreen({ onAuth }) {
 // ─── ADMIN: ADD PHOTOGRAPHER ──────────────────────────────────────────────────
 const PHOTOGRAPHER_TAGS = ["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"];
 
-function AddPhotographerModal({ onClose, onSaved }) {
+function AddPhotographerModal({ onClose, onSaved, photographers }) {
   const [draft, setDraft] = useState({ name: "", born: "", nationality: "", bio: "", tags: [], links: {} });
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState(null);
@@ -1390,8 +1445,32 @@ function AddPhotographerModal({ onClose, onSaved }) {
           <button onClick={onClose} style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 22, cursor: "pointer", color: T.inkLight, lineHeight: 1 }}>×</button>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Name field with live duplicate check */}
+          <div>
+            <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>NAME *</div>
+            <input value={draft.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Henri Cartier-Bresson"
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "6px 0", fontSize: 14, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box" }} />
+            {/* Similar name warning */}
+            {draft.name.trim().length > 2 && (() => {
+              const query = draft.name.toLowerCase();
+              const similar = Object.values(photographers).filter(p =>
+                p.name.toLowerCase().includes(query) || query.includes(p.name.toLowerCase().split(" ")[0])
+              ).slice(0, 3);
+              return similar.length > 0 ? (
+                <div style={{ marginTop: 8, padding: "8px 10px", background: "rgba(160,96,32,0.06)", border: `1px solid rgba(160,96,32,0.2)`, borderRadius: 2 }}>
+                  <div style={{ fontSize: 9, letterSpacing: "0.1em", color: T.amber, marginBottom: 4 }}>SIMILAR NAMES ALREADY IN THE NETWORK</div>
+                  {similar.map(p => (
+                    <div key={p.id} style={{ fontSize: 12, color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
+                      {p.name}{p.born ? ` (${p.born})` : ""}{p.nationality ? ` · ${p.nationality}` : ""}
+                    </div>
+                  ))}
+                </div>
+              ) : null;
+            })()}
+          </div>
+
           {[
-            { label: "NAME *", key: "name", placeholder: "e.g. Henri Cartier-Bresson" },
             { label: "BORN", key: "born", placeholder: "e.g. 1908" },
             { label: "NATIONALITY", key: "nationality", placeholder: "e.g. French" },
           ].map(({ label, key, placeholder }) => (
@@ -2994,7 +3073,7 @@ export default function Lineage() {
                     {/* Edit / Save / Cancel buttons */}
                     {!editMode ? (
                       <button
-                        onClick={() => { setEditDraft({ bio: currentP.bio, tags: currentP.tags || [], links: { ...currentP.links }, influences: [...(currentP.influences || [])] }); setInfSearch(""); setEditMode(true); }}
+                        onClick={() => { setEditDraft({ bio: currentP.bio, tags: currentP.tags || [], links: { ...currentP.links }, influences: [...(currentP.influences || [])], lighthouseWorks: [...(currentP.lighthouseWorks || [])] }); setInfSearch(""); setEditMode(true); }}
                         title="Edit profile"
                         style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 2, color: T.inkLight, cursor: "pointer", fontSize: 11, padding: "3px 7px", letterSpacing: "0.08em", fontFamily: "'EB Garamond', serif" }}>
                         EDIT
@@ -3002,7 +3081,17 @@ export default function Lineage() {
                     ) : (
                       <>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
+                            try {
+                              await supabase.from("photographers").update({
+                                bio:  editDraft.bio,
+                                tags: editDraft.tags,
+                                links: editDraft.links,
+                                data: { lighthouseWorks: editDraft.lighthouseWorks || [] },
+                              }).eq("id", selected);
+                            } catch (err) {
+                              console.error("Save photographer failed:", err);
+                            }
                             setLocalEdits(prev => ({ ...prev, [selected]: editDraft }));
                             setEditMode(false); setEditDraft(null);
                           }}
@@ -3151,6 +3240,32 @@ export default function Lineage() {
                         />
                       </div>
                     ))}
+                  </div>
+
+                  {/* Lighthouse works for photographer */}
+                  <div>
+                    <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 8 }}>LIGHTHOUSE WORKS <span style={{ color: T.inkFaint, fontSize: 9, letterSpacing: 0 }}>up to 5 images</span></div>
+                    {(editDraft.lighthouseWorks || []).map((work, i) => (
+                      <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8, padding: "6px 8px", background: "rgba(26,24,18,0.03)", borderRadius: 2 }}>
+                        {work.url && <img src={work.url} alt="" style={{ width: 40, height: 30, objectFit: "cover", borderRadius: 1, flexShrink: 0 }} onError={e => e.target.style.display="none"} />}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <input value={work.url || ""} onChange={e => setEditDraft(d => { const w = [...(d.lighthouseWorks||[])]; w[i] = {...w[i], url: e.target.value}; return {...d, lighthouseWorks: w}; })}
+                            placeholder="Image URL…"
+                            style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "3px 0", fontSize: 11, fontFamily: "'EB Garamond', serif", background: "transparent", color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 3 }} />
+                          <input value={work.caption || ""} onChange={e => setEditDraft(d => { const w = [...(d.lighthouseWorks||[])]; w[i] = {...w[i], caption: e.target.value}; return {...d, lighthouseWorks: w}; })}
+                            placeholder="Caption (optional)…"
+                            style={{ width: "100%", border: "none", borderBottom: `1px solid ${T.border}`, padding: "3px 0", fontSize: 10, fontFamily: "'EB Garamond', serif", fontStyle: "italic", background: "transparent", color: T.inkMid, outline: "none", boxSizing: "border-box" }} />
+                        </div>
+                        <button onClick={() => setEditDraft(d => ({ ...d, lighthouseWorks: (d.lighthouseWorks||[]).filter((_,j) => j !== i) }))}
+                          style={{ background: "none", border: "none", color: T.inkFaint, cursor: "pointer", fontSize: 16, padding: "0 2px", lineHeight: 1, flexShrink: 0 }}>×</button>
+                      </div>
+                    ))}
+                    {(editDraft.lighthouseWorks?.length || 0) < 5 && (
+                      <button onClick={() => setEditDraft(d => ({ ...d, lighthouseWorks: [...(d.lighthouseWorks||[]), { url: "", caption: "", id: Date.now().toString() }] }))}
+                        style={{ fontSize: 10, padding: "4px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif" }}>
+                        + ADD IMAGE
+                      </button>
+                    )}
                   </div>
                   {localEdits[selected] && (
                     <button
@@ -3320,6 +3435,7 @@ export default function Lineage() {
       {/* ── ADMIN MODALS ── */}
       {showAddPhotographer && (
         <AddPhotographerModal
+          photographers={PHOTOGRAPHERS}
           onClose={() => setShowAddPhotographer(false)}
           onSaved={(p) => {
             setShowAddPhotographer(false);
