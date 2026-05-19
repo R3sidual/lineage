@@ -1025,7 +1025,7 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
                 {user.name || user.email}
               </div>
               <div style={{ fontSize: 11, color: T.inkLight, letterSpacing: "0.04em" }}>
-                {[user.genre, user.country, user.born].filter(Boolean).join(" · ")}
+                {[user.genre, user.nationality, user.born].filter(Boolean).join(" · ")}
               </div>
               {user.bio && <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "8px 0 0" }}>{user.bio}</p>}
             </div>
@@ -1150,7 +1150,7 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
               {[
                 { label: "NAME", key: "name" },
                 { label: "BIRTH YEAR", key: "born" },
-                { label: "COUNTRY", key: "country" },
+                { label: "NATIONALITY", key: "nationality" },
                 { label: "WEBSITE", key: "website" },
                 { label: "INSTAGRAM", key: "instagram" },
                 { label: "TWITTER / X", key: "twitter" },
@@ -1346,7 +1346,7 @@ function AuthScreen({ onAuth }) {
 const PHOTOGRAPHER_TAGS = ["Street", "Documentary", "Portrait", "Landscape", "Fashion", "Fine Art", "War", "Conceptual", "Experimental"];
 
 function AddPhotographerModal({ onClose, onSaved }) {
-  const [draft, setDraft] = useState({ name: "", born: "", nationality: "", country: "", bio: "", tags: [], links: {} });
+  const [draft, setDraft] = useState({ name: "", born: "", nationality: "", bio: "", tags: [], links: {} });
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState(null);
 
@@ -1365,7 +1365,6 @@ function AddPhotographerModal({ onClose, onSaved }) {
           name:        draft.name.trim(),
           born:        draft.born ? parseInt(draft.born) : null,
           nationality: draft.nationality.trim() || null,
-          country:     draft.country.trim() || null,
           bio:         draft.bio.trim() || null,
           tags:        draft.tags,
           links:       draft.links,
@@ -1394,7 +1393,7 @@ function AddPhotographerModal({ onClose, onSaved }) {
           {[
             { label: "NAME *", key: "name", placeholder: "e.g. Henri Cartier-Bresson" },
             { label: "BORN", key: "born", placeholder: "e.g. 1908" },
-            { label: "COUNTRY", key: "country", placeholder: "e.g. France" },
+            { label: "NATIONALITY", key: "nationality", placeholder: "e.g. French" },
           ].map(({ label, key, placeholder }) => (
             <div key={key}>
               <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 5 }}>{label}</div>
@@ -2199,7 +2198,7 @@ export default function Lineage() {
 
   // Filter derived values
   const allCountries = useMemo(() =>
-    [...new Set(Object.values(PHOTOGRAPHERS).map(p => p.country))].sort()
+    [...new Set(Object.values(PHOTOGRAPHERS).map(p => p.nationality).filter(Boolean))].sort()
   , [PHOTOGRAPHERS]);
 
   const allGenres = PHOTOGRAPHER_TAGS; // same list as add photographer form
@@ -2210,7 +2209,7 @@ export default function Lineage() {
     if (!filterCountry && !filterGenre) return null; // null = show all
     return new Set(Object.entries(PHOTOGRAPHERS)
       .filter(([, p]) => {
-        const countryMatch = !filterCountry || p.country === filterCountry;
+        const countryMatch = !filterCountry || p.nationality === filterCountry;
         const genreMatch   = !filterGenre   || p.genre === filterGenre || (p.tags || []).includes(filterGenre);
         return countryMatch && genreMatch;
       })
@@ -2538,9 +2537,9 @@ export default function Lineage() {
         <div style={{ padding: isMobile ? "12px 14px" : "12px 26px", background: T.paper, borderBottom: `1px solid ${T.border}`, flexShrink: 0, zIndex: 45 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
 
-            {/* Country filter */}
+            {/* Nationality filter */}
             <div style={{ flex: 1, minWidth: isMobile ? "100%" : 200 }}>
-              <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 7 }}>COUNTRY OF BIRTH</div>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 7 }}>NATIONALITY</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                 {allCountries.map(c => (
                   <button key={c} onClick={() => setFilterCountry(filterCountry === c ? null : c)}
@@ -2975,7 +2974,7 @@ export default function Lineage() {
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 8.5, letterSpacing: "0.13em", color: T.inkLight, marginBottom: 2 }}>
-                      {[currentP.country, currentP.born].filter(Boolean).join(" · ")}
+                      {[currentP.nationality, currentP.born].filter(Boolean).join(" · ")}
                     </div>
                     <div style={{ fontSize: isMobile ? 16 : 21, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1.1, whiteSpace: isMobile ? "normal" : "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {currentP.name}
@@ -3489,7 +3488,7 @@ export default function Lineage() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 8.5, letterSpacing: "0.13em", color: T.amber, marginBottom: 2 }}>
-                YOU · {userProfile.country} · {userProfile.born}
+                YOU · {userProfile.nationality} · {userProfile.born}
               </div>
               <div style={{ fontSize: isMobile ? 16 : 21, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", lineHeight: 1.1 }}>{userProfile.name}</div>
               <div style={{ fontSize: 10.5, color: T.inkLight, marginTop: 2, letterSpacing: "0.03em" }}>{userProfile.genre}</div>
