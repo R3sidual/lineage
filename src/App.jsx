@@ -909,7 +909,22 @@ class ErrorBoundary extends React.Component {
 }
 
 // ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
-function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser, PHOTOGRAPHERS, nodeStates }) {
+function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser, PHOTOGRAPHERS, nodeStates, onNavigateToPhotographer }) {
+
+  // Colour system for states — distinct from each other
+  const STATE_COLORS = {
+    influenced: { text: "#4a6fa5", border: "rgba(74,111,165,0.25)", bg: "rgba(74,111,165,0.06)" },
+    discovered: { text: "#2a7a7a", border: "rgba(42,122,122,0.25)", bg: "rgba(42,122,122,0.06)" },
+    "to-explore": { text: "#6a7a2a", border: "rgba(106,122,42,0.25)", bg: "rgba(106,122,42,0.06)" },
+  };
+
+  // Score counts
+  const influenceCount  = (user.influences || []).length;
+  const discoveredCount = Object.values(nodeStates || {}).filter(s => s === "discovered").length;
+  const exploreCount    = Object.values(nodeStates || {}).filter(s => s === "to-explore").length;
+  const totalNetwork    = Object.keys(PHOTOGRAPHERS || {}).length;
+
+  const navigateTo = (id) => onNavigateToPhotographer?.(id) || onExplore?.();
   const [editing, setEditing]         = useState(false);
   const [draft, setDraft]             = useState({ influences: [], lighthouseWorks: [], ...user });
   const [infSearch, setInfSearch]     = useState("");
@@ -1020,12 +1035,30 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
             </button>
           </div>
 
+          {/* Score summary */}
+          {(influenceCount + discoveredCount + exploreCount) > 0 && (
+            <div style={{ display: "flex", gap: 0, marginBottom: 28, border: `1px solid ${T.border}`, borderRadius: 2, overflow: "hidden" }}>
+              {[
+                { label: "Influences", count: influenceCount, color: STATE_COLORS.influenced.text },
+                { label: "Discovered", count: discoveredCount, color: STATE_COLORS.discovered.text },
+                { label: "To explore", count: exploreCount, color: STATE_COLORS["to-explore"].text },
+                { label: "In network", count: totalNetwork, color: T.inkLight },
+              ].map(({ label, count, color }, i) => (
+                <div key={label} style={{ flex: 1, padding: "10px 6px", textAlign: "center", borderLeft: i > 0 ? `1px solid ${T.border}` : "none" }}>
+                  <div style={{ fontSize: 20, fontWeight: 600, fontFamily: "'Libre Baskerville', serif", color, lineHeight: 1 }}>{count}</div>
+                  <div style={{ fontSize: 9, letterSpacing: "0.08em", color: T.inkFaint, marginTop: 4 }}>{label.toUpperCase()}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Influences */}
           <Section title="MY INFLUENCES" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
             empty={!user.influences?.length} emptyText="Which photographers shaped your vision? Mark them in the network.">
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {(user.influences || []).map(id => (
-                <div key={id} style={{ fontSize: 13, color: T.blue, padding: "4px 10px", border: `1px solid rgba(74,111,165,0.25)`, borderRadius: 2 }}>
+                <div key={id} onClick={() => navigateTo(id)}
+                  style={{ fontSize: 13, color: STATE_COLORS.influenced.text, padding: "4px 10px", border: `1px solid ${STATE_COLORS.influenced.border}`, borderRadius: 2, cursor: "pointer", background: STATE_COLORS.influenced.bg }}>
                   {PHOTOGRAPHERS[id]?.name || id}
                 </div>
               ))}
@@ -1033,11 +1066,12 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
           </Section>
 
           {/* Discovered */}
-          {Object.entries(nodeStates || {}).filter(([, s]) => s === "discovered").length > 0 && (
+          {discoveredCount > 0 && (
             <Section title="DISCOVERED">
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {Object.entries(nodeStates).filter(([, s]) => s === "discovered").map(([id]) => (
-                  <div key={id} style={{ fontSize: 13, color: "#4a7fa5", padding: "4px 10px", border: `1px solid rgba(74,127,165,0.25)`, borderRadius: 2 }}>
+                  <div key={id} onClick={() => navigateTo(id)}
+                    style={{ fontSize: 13, color: STATE_COLORS.discovered.text, padding: "4px 10px", border: `1px solid ${STATE_COLORS.discovered.border}`, borderRadius: 2, cursor: "pointer", background: STATE_COLORS.discovered.bg }}>
                     {PHOTOGRAPHERS[id]?.name || id}
                   </div>
                 ))}
@@ -1046,11 +1080,12 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
           )}
 
           {/* To Explore */}
-          {Object.entries(nodeStates || {}).filter(([, s]) => s === "to-explore").length > 0 && (
+          {exploreCount > 0 && (
             <Section title="WANT TO EXPLORE">
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {Object.entries(nodeStates).filter(([, s]) => s === "to-explore").map(([id]) => (
-                  <div key={id} style={{ fontSize: 13, color: "#4a8a5a", padding: "4px 10px", border: `1px solid rgba(74,138,90,0.25)`, borderRadius: 2 }}>
+                  <div key={id} onClick={() => navigateTo(id)}
+                    style={{ fontSize: 13, color: STATE_COLORS["to-explore"].text, padding: "4px 10px", border: `1px solid ${STATE_COLORS["to-explore"].border}`, borderRadius: 2, cursor: "pointer", background: STATE_COLORS["to-explore"].bg }}>
                     {PHOTOGRAPHERS[id]?.name || id}
                   </div>
                 ))}
@@ -2286,6 +2321,16 @@ export default function Lineage() {
       onAbout={() => navigateTo("disclaimer")}
       onRoadmap={() => navigateTo("roadmap")}
       onLogout={() => { logout(); setAppView("auth"); }}
+      onNavigateToPhotographer={(id) => {
+        setAppView("graph");
+        setOnboarding(false);
+        // Use setTimeout to let the graph mount before selecting
+        setTimeout(() => {
+          setSelected(id);
+          setSheetOpen(true);
+          panToNode(id);
+        }, 100);
+      }}
       updateUser={updateUser}
       PHOTOGRAPHERS={PHOTOGRAPHERS}
       nodeStates={nodeStates}
