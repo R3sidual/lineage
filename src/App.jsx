@@ -3596,11 +3596,14 @@ export default function Lineage() {
       {selected === "__user__" && userProfile && sheetOpen && (
         <div style={{ flexShrink: 0, height: isMobile ? "60dvh" : "320px", background: T.paper, borderTop: `1px solid ${T.amber}`, zIndex: 65, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "11px 18px 9px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "flex-start", gap: 14, flexShrink: 0 }}>
-            {/* Amber dot */}
-            <div style={{ width: isMobile ? 56 : 68, height: isMobile ? 56 : 68, borderRadius: "50%", background: T.amber, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: isMobile ? 20 : 24, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
-                {(userProfile.name || userProfile.email || "?").split(" ").map(w => w[0]).join("").slice(0, 2)}
-              </span>
+            {/* Avatar */}
+            <div style={{ width: isMobile ? 56 : 68, height: isMobile ? 56 : 68, borderRadius: "50%", background: T.amber, flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {userProfile.avatarUrl
+                ? <img src={userProfile.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <span style={{ fontSize: isMobile ? 20 : 24, fontFamily: "'Libre Baskerville', serif", color: T.bg, fontWeight: 600 }}>
+                    {(userProfile.name || userProfile.email || "?").split(" ").map(w => w[0]).join("").slice(0, 2)}
+                  </span>
+              }
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 8.5, letterSpacing: "0.13em", color: T.amber, marginBottom: 2 }}>
@@ -3610,9 +3613,9 @@ export default function Lineage() {
               <div style={{ fontSize: 10.5, color: T.inkLight, marginTop: 2, letterSpacing: "0.03em" }}>{userProfile.genre}</div>
             </div>
             <div style={{ display: "flex", gap: 7, alignItems: "center", flexShrink: 0 }}>
-              <button onClick={() => { setShowAddSelf(true); setSelfDraft({ ...userProfile }); setAddSelfStep(1); }}
+              <button onClick={() => { setAppView("profile"); }}
                 style={{ fontSize: 8.5, letterSpacing: "0.1em", padding: "4px 8px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid }}>
-                EDIT
+                FULL PROFILE
               </button>
               <button onClick={() => { setSelected(null); setSheetOpen(false); }}
                 style={{ background: "none", border: "none", color: T.inkLight, cursor: "pointer", fontSize: 19, padding: 0 }}>×</button>
@@ -3622,47 +3625,54 @@ export default function Lineage() {
             <div style={{ flex: 1, minWidth: 0 }}>
               {userProfile.bio && <p style={{ fontSize: 13.5, lineHeight: 1.75, color: T.inkMid, margin: "0 0 11px", fontStyle: "italic" }}>{userProfile.bio}</p>}
               {userProfile.influences?.length > 0 && (
-                <div>
+                <div style={{ marginBottom: 10 }}>
                   <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.blue, marginBottom: 5 }}>INFLUENCED BY</div>
                   {userProfile.influences.map(infId => (
-                    <span key={infId} onClick={() => { setSelected(infId); }}
+                    <span key={infId} onClick={() => { setSelected(infId); setSheetOpen(true); panToNode(infId); }}
                       style={{ fontSize: 12.5, color: T.blue, cursor: "pointer", borderBottom: `1px solid rgba(74,111,165,0.22)`, paddingBottom: 1, marginRight: 11, display: "inline-block", marginBottom: 3 }}>
                       {PHOTOGRAPHERS[infId]?.name}
                     </span>
                   ))}
                 </div>
               )}
+              {/* Lighthouse works */}
+              {userProfile.lighthouseWorks?.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 7 }}>LIGHTHOUSE WORKS</div>
+                  <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
+                    {userProfile.lighthouseWorks.map((work, i) => (
+                      <div key={i} onClick={() => setLightbox({ works: userProfile.lighthouseWorks, index: i })}
+                        style={{ width: 64, height: 64, flexShrink: 0, borderRadius: 2, overflow: "hidden", cursor: "pointer", background: "rgba(26,24,18,0.06)" }}>
+                        <img src={work.url} alt={work.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display="none"} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div style={{ width: isMobile ? "auto" : 180, flexShrink: 0 }}>
+            <div style={{ width: isMobile ? "auto" : 160, flexShrink: 0 }}>
               {/* Stats */}
               <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 6 }}>YOUR GRAPH</div>
               <div style={{ fontSize: 11, color: T.inkMid, lineHeight: 1.6, marginBottom: 10 }}>
                 <div><span style={{ color: "#4a7fa5" }}>●</span> {Object.values(nodeStates).filter(s => s === "discovered").length} discovered</div>
                 <div><span style={{ color: "#4a8a5a" }}>●</span> {Object.values(nodeStates).filter(s => s === "to-explore").length} to explore</div>
               </div>
-
-              {/* You might like */}
               {recommendations.length > 0 && (
-                <div style={{ marginBottom: 10 }}>
+                <div>
                   <div style={{ fontSize: 8, letterSpacing: "0.12em", color: T.inkLight, marginBottom: 7 }}>YOU MIGHT LIKE</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {recommendations.map(id => {
                       const p = PHOTOGRAPHERS[id];
                       const ns = nodeStates[id];
                       return (
-                        <div key={id}
-                          onClick={() => { setSelected(id); setSheetOpen(true); panToNode(id); }}
+                        <div key={id} onClick={() => { setSelected(id); setSheetOpen(true); panToNode(id); }}
                           style={{ display: "flex", alignItems: "center", gap: 7, cursor: "pointer", padding: "4px 0", borderBottom: `1px solid ${T.border}` }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(26,24,18,0.02)"}
-                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                        >
-                          {/* State indicator */}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                           <div style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0, background: ns === "discovered" ? "#4a7fa5" : ns === "to-explore" ? "#4a8a5a" : T.inkFaint }} />
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 11.5, fontFamily: "'EB Garamond', serif", color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                              {p.name}
-                            </div>
-                            <div style={{ fontSize: 8.5, color: T.inkLight, letterSpacing: "0.04em" }}>{p.genre} · {p.born}</div>
+                            <div style={{ fontSize: 11.5, fontFamily: "'EB Garamond', serif", color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
+                            <div style={{ fontSize: 8.5, color: T.inkLight }}>{p.genre} · {p.born}</div>
                           </div>
                           <span style={{ marginLeft: "auto", fontSize: 10, color: T.inkFaint, flexShrink: 0 }}>↗</span>
                         </div>
@@ -3670,13 +3680,6 @@ export default function Lineage() {
                     })}
                   </div>
                 </div>
-              )}
-
-              {userProfile && (
-                <button onClick={() => { switchMode("path"); setPathFrom("__user__"); setSelected(null); setSheetOpen(false); }}
-                  style={{ marginTop: 4, fontSize: 8.5, letterSpacing: "0.1em", padding: "5px 8px", background: T.amber, border: "none", borderRadius: 2, cursor: "pointer", color: T.bg, fontFamily: "'EB Garamond', serif", width: "100%" }}>
-                  TRACE MY PATH →
-                </button>
               )}
             </div>
           </div>
