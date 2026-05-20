@@ -1068,6 +1068,20 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
                 {[user.genre, user.nationality, user.born].filter(Boolean).join(" · ")}
               </div>
               {user.bio && <p style={{ fontSize: 14, color: T.inkMid, fontStyle: "italic", lineHeight: 1.7, margin: "8px 0 0" }}>{user.bio}</p>}
+              {/* Links — shown inline in header */}
+              {(user.website || user.instagram || user.twitter) && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                  {[{ key: "website", label: "Website" }, { key: "instagram", label: "Instagram" }, { key: "twitter", label: "Twitter / X" }]
+                    .filter(({ key }) => user[key])
+                    .map(({ key, label }) => (
+                      <a key={key} href={user[key].startsWith("http") ? user[key] : `https://${user[key]}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: 11, color: T.inkMid, padding: "2px 8px", border: `1px solid ${T.border}`, borderRadius: 2, textDecoration: "none" }}>
+                        {label} ↗
+                      </a>
+                    ))}
+                </div>
+              )}
             </div>
             <button onClick={() => { setDraft({ ...user }); setEditing(true); }}
               style={{ fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", background: "transparent", border: `1px solid ${T.border}`, borderRadius: 2, cursor: "pointer", color: T.inkMid, fontFamily: "'EB Garamond', serif", flexShrink: 0 }}>
@@ -1091,6 +1105,21 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
               ))}
             </div>
           )}
+
+          {/* Lighthouse works — now second, below score */}
+          <Section title="LIGHTHOUSE WORKS" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
+            empty={!user.lighthouseWorks?.length} emptyText="Add 3–5 images that best represent your work.">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
+              {(user.lighthouseWorks || []).map((work, i) => (
+                <div key={work.id || i} onClick={() => setProfileLightbox(i)} style={{ cursor: "pointer" }}>
+                  <div style={{ paddingTop: "75%", position: "relative", background: "rgba(26,24,18,0.04)", overflow: "hidden", borderRadius: 2 }}>
+                    <img src={work.url} alt={work.caption || ""} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display = "none"} />
+                  </div>
+                  {work.caption && <p style={{ fontSize: 11, color: T.inkLight, marginTop: 5, fontStyle: "italic" }}>{work.caption}</p>}
+                </div>
+              ))}
+            </div>
+          </Section>
 
           {/* Influences */}
           <Section title="MY INFLUENCES" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
@@ -1132,37 +1161,6 @@ function ProfilePage({ user, onExplore, onAbout, onRoadmap, onLogout, updateUser
               </div>
             </Section>
           )}
-
-          {/* Lighthouse works */}
-          <Section title="LIGHTHOUSE WORKS" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
-            empty={!user.lighthouseWorks?.length} emptyText="Add 3–5 images that best represent your work.">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
-              {(user.lighthouseWorks || []).map((work, i) => (
-                <div key={work.id || i} onClick={() => setProfileLightbox(i)} style={{ cursor: "pointer" }}>
-                  <div style={{ paddingTop: "75%", position: "relative", background: "rgba(26,24,18,0.04)", overflow: "hidden", borderRadius: 2 }}>
-                    <img src={work.url} alt={work.caption || ""} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display = "none"} />
-                  </div>
-                  {work.caption && <p style={{ fontSize: 11, color: T.inkLight, marginTop: 5, fontStyle: "italic" }}>{work.caption}</p>}
-                </div>
-              ))}
-            </div>
-          </Section>
-
-          {/* Links */}
-          <Section title="LINKS" onEdit={() => { setDraft({ ...user }); setEditing(true); }}
-            empty={!user.website && !user.instagram && !user.twitter} emptyText="Add your website, Instagram, or other links.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {[{ key: "website", label: "Website" }, { key: "instagram", label: "Instagram" }, { key: "twitter", label: "Twitter / X" }]
-                .filter(({ key }) => user[key])
-                .map(({ key, label }) => (
-                  <a key={key} href={user[key].startsWith("http") ? user[key] : `https://${user[key]}`}
-                    target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize: 12.5, color: T.inkMid, padding: "4px 10px", border: `1px solid ${T.border}`, borderRadius: 2, textDecoration: "none" }}>
-                    {label} ↗
-                  </a>
-                ))}
-            </div>
-          </Section>
 
           {/* Explore CTA */}
           <div style={{ padding: "24px", border: `1px solid ${T.border}`, borderRadius: 2, background: T.paper, textAlign: "center" }}>
